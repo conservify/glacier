@@ -1,0 +1,12 @@
+Reference, Value, Footprint, Datasheet, SPN
+"U1","ICL7660","Housings_DIP:DIP-8_W7.62mm_LongPads","","ICL7660SIPAZ-ND"
+"U2","IC741","Housings_DIP:DIP-8_W7.62mm_LongPads","","LM741CNNS/NOPB-ND"
+"R2","2.2k","Resistors_ThroughHole:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal","","2.2KQBK-ND"
+"R3","180k","Resistors_ThroughHole:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal","","CF14JT180KCT-ND"
+"RV1","1M","Socket_Strips:Socket_Strip_Angled_1x03","","3310C-001-105L-ND"
+"C1","10uF","Capacitors_ThroughHole:CP_Radial_D10.0mm_P5.00mm_P7.50mm","","493-7383-1-ND"
+"C3","10uF","Capacitors_ThroughHole:CP_Radial_D10.0mm_P5.00mm_P7.50mm","","493-7383-1-ND"
+"C2","10uF","Capacitors_ThroughHole:CP_Radial_D10.0mm_P5.00mm_P7.50mm","","493-7383-1-ND"
+"P1","CONN_01X02","Socket_Strips:Socket_Strip_Straight_1x02",""
+"R1","47k","Resistors_ThroughHole:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal","","CF14JT47K0CT-ND"
+"P2","CONN_01X03","Socket_Strips:Socket_Strip_Straight_1x03",""
