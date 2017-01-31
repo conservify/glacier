@@ -280,7 +280,7 @@ Wire Wire Line
 Wire Wire Line
 	4650 1650 4900 1650
 Wire Wire Line
-	4650 1050 4650 1650
+	4650 950  4650 1650
 Wire Wire Line
 	5050 1250 4650 1250
 Connection ~ 4650 1250
@@ -315,7 +315,7 @@ Connection ~ 4200 1850
 Connection ~ 6950 1750
 Text Label 3850 1850 0    60   ~ 0
 -5V
-Text Notes 4700 950  0    60   ~ 0
+Text Notes 5000 950  0    60   ~ 0
 22k = 10x lower gain\n220 = 10x higher gain
 $Comp
 L CONN_01X02 P2
@@ -467,7 +467,7 @@ Wire Wire Line
 Wire Wire Line
 	4650 3300 4900 3300
 Wire Wire Line
-	4650 2700 4650 3300
+	4650 2600 4650 3300
 Wire Wire Line
 	5050 2900 4650 2900
 Connection ~ 4650 2900
@@ -502,7 +502,7 @@ Connection ~ 4200 3500
 Connection ~ 6950 3400
 Text Label 3850 3500 0    60   ~ 0
 -5V
-Text Notes 4700 2600 0    60   ~ 0
+Text Notes 5000 2600 0    60   ~ 0
 22k = 10x lower gain\n220 = 10x higher gain
 $Comp
 L IC741 U4
@@ -586,7 +586,7 @@ Wire Wire Line
 Wire Wire Line
 	4650 4950 4900 4950
 Wire Wire Line
-	4650 4350 4650 4950
+	4650 4250 4650 4950
 Wire Wire Line
 	5050 4550 4650 4550
 Connection ~ 4650 4550
@@ -621,7 +621,7 @@ Connection ~ 4200 5150
 Connection ~ 6950 5050
 Text Label 3850 5150 0    60   ~ 0
 -5V
-Text Notes 4700 4250 0    60   ~ 0
+Text Notes 5050 4250 0    60   ~ 0
 22k = 10x lower gain\n220 = 10x higher gain
 Wire Wire Line
 	3800 1850 3800 5150
@@ -708,4 +708,58 @@ F 3 "" H 8650 1800 50  0000 C CNN
 $EndComp
 Text Label 3600 1850 0    60   ~ 0
 -5V
+$Comp
+L CONN_01X02 P5
+U 1 1 58911DFB
+P 4800 750
+F 0 "P5" H 4800 900 50  0000 C CNN
+F 1 "CONN_01X02" V 4900 750 50  0000 C CNN
+F 2 "Socket_Strips:Socket_Strip_Straight_1x02" H 4800 750 50  0001 C CNN
+F 3 "" H 4800 750 50  0000 C CNN
+	1    4800 750 
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4850 950  4950 950 
+Wire Wire Line
+	4950 950  4950 1050
+Wire Wire Line
+	4750 950  4650 950 
+Connection ~ 4650 1050
+$Comp
+L CONN_01X02 P6
+U 1 1 589122FA
+P 4800 2400
+F 0 "P6" H 4800 2550 50  0000 C CNN
+F 1 "CONN_01X02" V 4900 2400 50  0000 C CNN
+F 2 "Socket_Strips:Socket_Strip_Straight_1x02" H 4800 2400 50  0001 C CNN
+F 3 "" H 4800 2400 50  0000 C CNN
+	1    4800 2400
+	0    -1   -1   0   
+$EndComp
+$Comp
+L CONN_01X02 P7
+U 1 1 5891236E
+P 4800 4050
+F 0 "P7" H 4800 4200 50  0000 C CNN
+F 1 "CONN_01X02" V 4900 4050 50  0000 C CNN
+F 2 "Socket_Strips:Socket_Strip_Straight_1x02" H 4800 4050 50  0001 C CNN
+F 3 "" H 4800 4050 50  0000 C CNN
+	1    4800 4050
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	4650 4250 4750 4250
+Connection ~ 4650 4350
+Wire Wire Line
+	4850 4250 4950 4250
+Wire Wire Line
+	4950 4250 4950 4350
+Wire Wire Line
+	4750 2600 4650 2600
+Connection ~ 4650 2700
+Wire Wire Line
+	4850 2600 4950 2600
+Wire Wire Line
+	4950 2600 4950 2700
 $EndSCHEMATC
