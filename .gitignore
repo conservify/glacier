@@ -1,1 +1,6 @@
 *.bak
+.gradle
+build
+firmwaretool.properties
+gradle.properties
+log.txt
