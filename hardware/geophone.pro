@@ -1,4 +1,4 @@
-update=1/26/2017 9:44:06 AM
+update=2/1/2017 5:50:45 PM
 version=1
 last_client=kicad
 [pcbnew]
@@ -61,3 +61,4 @@ LibName29=valves
 LibName30=icl7660
 LibName31=ic741
 LibName32=mcp413x
+LibName33=feather
