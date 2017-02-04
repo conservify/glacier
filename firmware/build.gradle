@@ -21,7 +21,7 @@ model {
                 "Wire",
                 "AtSamd",
                 "RTCZero",
-                "Adafruit_GPS-master"
+                "Adafruit_GPS"
             ]
         }
     }
