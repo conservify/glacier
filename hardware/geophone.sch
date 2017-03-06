@@ -624,9 +624,9 @@ Wire Wire Line
 	8150 1600 7850 1600
 Wire Wire Line
 	7850 1800 8150 1800
-Text Label 7850 1800 0    60   ~ 0
-X_IN-
 Text Label 7850 1600 0    60   ~ 0
+X_IN-
+Text Label 7850 1800 0    60   ~ 0
 X_IN+
 Text Label 10600 1700 0    60   ~ 0
 X_SIGNAL
@@ -974,9 +974,9 @@ Wire Wire Line
 	8150 3400 7850 3400
 Wire Wire Line
 	7850 3600 8150 3600
-Text Label 7850 3600 0    60   ~ 0
-Y_IN-
 Text Label 7850 3400 0    60   ~ 0
+Y_IN-
+Text Label 7850 3600 0    60   ~ 0
 Y_IN+
 Text Label 10600 3500 0    60   ~ 0
 Y_SIGNAL
@@ -1335,9 +1335,9 @@ Wire Wire Line
 	8150 5200 7850 5200
 Wire Wire Line
 	7850 5400 8150 5400
-Text Label 7850 5400 0    60   ~ 0
-Z_IN-
 Text Label 7850 5200 0    60   ~ 0
+Z_IN-
+Text Label 7850 5400 0    60   ~ 0
 Z_IN+
 Text Label 10600 5300 0    60   ~ 0
 Z_SIGNAL
