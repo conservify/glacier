@@ -4,7 +4,8 @@
 #include <RTCZero.h>
 #include <Adafruit_GPS.h>
 
-// #define DISABLE_SD
+#define STARTUP_WAIT_TIME              20 * 1000
+#define DISABLE_SD
 
 #define GEODATA_PINX                   A5
 #define GEODATA_PINY                   A4
@@ -294,9 +295,19 @@ void setup() {
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, LOW);
 
-    while (!Serial && millis() < 20 * 1000) {
+    #ifdef DISABLE_SD
+    while (!Serial) {
+        delay(100);
+
+        if (millis() > STARTUP_WAIT_TIME) {
+            NVIC_SystemReset();
+        }
+    }
+    #else
+    while (!Serial && millis() < STARTUP_WAIT_TIME) {
         delay(100);
     }
+    #endif
 
     gps.begin(9600);
     gps.sendCommand(PMTK_SET_NMEA_OUTPUT_ALLDATA);
@@ -378,17 +389,6 @@ void loop() {
             logfile.print(",");
             logfile.print(gd2[i]);
             logfile.println();
-
-            // Serial.print(epoch);
-            // Serial.print(",");
-            // Serial.print(timestamps[i]);
-            // Serial.print(",");
-            // Serial.print(gd0[i]);
-            // Serial.print(",");
-            // Serial.print(gd1[i]);
-            // Serial.print(",");
-            // Serial.print(gd2[i]);
-            // Serial.println();
 #else
             Serial.print(epoch);
             Serial.print(",");
