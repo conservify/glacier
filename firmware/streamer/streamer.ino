@@ -1,11 +1,7 @@
 #include <Arduino.h>
-#include <SD.h>
 #include <Wire.h>
-#include <RTCZero.h>
-#include <Adafruit_GPS.h>
 
 #define STARTUP_WAIT_TIME              20 * 1000
-#define DISABLE_SD
 
 #define GEODATA_PINX                   A5
 #define GEODATA_PINY                   A4
@@ -18,8 +14,6 @@
 #define NUMBER_OF_GEODATA_SAMPLES      (SAMPLE_RATE * 2)
 
 #define CPU_HZ                         48000000
-
-#define PIN_SD_CS                      4
 
 typedef struct geodata_t {
     uint8_t pin;
@@ -36,11 +30,6 @@ uint32_t file_written_at = 0;
 uint32_t epoch = 0;
 uint32_t epoch_millis_offset = 0;
 bool buffer_written = false;
-File logfile;
-RTCZero rtc;
-Adafruit_GPS gps(&Serial1);
-
-void report_open();
 
 void report_blink();
 
@@ -53,35 +42,6 @@ extern "C" char *sbrk(int32_t i);
 uint32_t atsamd_free_memory() {
     char stack_dummy = 0;
     return &stack_dummy - sbrk(0);
-}
-
-void report_open() {
-    // TODO: Keep track of the last file we opened.
-    while (true) {
-        for (long i = 0; i <= 99999999; i++) {
-            char filename[13];
-            String fn(i);
-            while (fn.length() < 8) {
-                fn = '0' + fn;
-            }
-            fn = fn + ".CSV";
-            fn.toCharArray(filename, sizeof(filename));
-            if (!SD.exists(filename)) {
-                // only open a new file if it doesn't exist
-                Serial.print("Logging to: ");
-                Serial.println(filename);
-                logfile = SD.open(filename, FILE_WRITE);
-                break;
-            }
-        }
-
-        if (logfile) {
-            break;
-        }
-
-        Serial.println("Unable to create file, retrying...");
-        delay(1000);
-    }
 }
 
 #if defined(ARDUINO_SAMD_FEATHER_M0)
@@ -295,7 +255,6 @@ void setup() {
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, LOW);
 
-    #ifdef DISABLE_SD
     while (!Serial) {
         delay(100);
 
@@ -303,62 +262,8 @@ void setup() {
             NVIC_SystemReset();
         }
     }
-    #else
-    while (!Serial && millis() < STARTUP_WAIT_TIME) {
-        delay(100);
-    }
-    #endif
-
-    gps.begin(9600);
-    gps.sendCommand(PMTK_SET_NMEA_OUTPUT_ALLDATA);
-    gps.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);
-    gps.sendCommand(PGCMD_ANTENNA);
-
-    rtc.begin();
-
-    if (!SD.begin(PIN_SD_CS)) {
-        digitalWrite(LED_PIN, HIGH);
-        while (true);
-    }
-
-    while (true) {
-        while (Serial1.available()) {
-            gps.read();
-        }
-
-        if (gps.newNMEAreceived()) {
-            if (gps.parse(gps.lastNMEA())) {
-                if (gps.fixquality > 0 && gps.year > 0) {
-                    Serial.println(gps.lastNMEA());
-
-                    rtc.setHours(gps.hour);
-                    rtc.setMinutes(gps.minute);
-                    rtc.setSeconds(gps.seconds);
-
-                    rtc.setDay(gps.day);
-                    rtc.setMonth(gps.month);
-                    rtc.setYear(gps.year);
-
-                    epoch_millis_offset = millis();
-                    epoch = rtc.getEpoch();
-
-                    Serial.println(epoch);
-                    Serial.println(epoch_millis_offset);
-
-                    break;
-                }
-            }
-        }
-    }
-
-#ifndef DISABLE_SD
-    report_open();
-#endif
 
     sampling_start();
-
-    Serial.print("Free memory: ");
-    Serial.println(atsamd_free_memory());
 }
 
 void loop() {
@@ -378,18 +283,6 @@ void loop() {
         short *gd2 = geophones[2].active;
 
         for (uint32_t i = 0; i < NUMBER_OF_GEODATA_SAMPLES; ++i) {
-#ifndef DISABLE_SD
-            logfile.print(timestamps[i]);
-            logfile.print(",");
-            logfile.print(i);
-            logfile.print(",");
-            logfile.print(gd0[i]);
-            logfile.print(",");
-            logfile.print(gd1[i]);
-            logfile.print(",");
-            logfile.print(gd2[i]);
-            logfile.println();
-#else
             Serial.print(epoch);
             Serial.print(",");
             Serial.print(timestamps[i]);
@@ -402,12 +295,7 @@ void loop() {
             Serial.print(",");
             Serial.print(gd2[i]);
             Serial.println();
-#endif
         }
-
-#ifndef DISABLE_SD
-        logfile.flush();
-#endif
 
         for (uint8_t j = 0; j < 3; ++j) {
             geophones[j].full = false;
@@ -416,16 +304,5 @@ void loop() {
         file_written_at = millis();
         batches_written += 1;
         buffer_written = true;
-
-#ifndef DISABLE_SD
-        if (batches_written == NUMBER_OF_BATCHES_PER_FILE) {
-            Serial.println("New File...");
-            logfile.flush();
-            logfile.close();
-            report_open();
-            batches_written = 0;
-            Serial.println("Done.");
-        }
-#endif
     }
 }
