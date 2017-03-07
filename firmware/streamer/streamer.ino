@@ -24,7 +24,6 @@ typedef struct geodata_t {
 } geodata_t;
 
 geodata_t geophones[3];
-uint32_t timestamps[NUMBER_OF_GEODATA_SAMPLES * 2];
 uint32_t batches_written = 0;
 uint32_t file_written_at = 0;
 uint32_t epoch = 0;
@@ -197,14 +196,6 @@ void sampling_take() {
         const int scale = 8192 / adc_resolution;
         sample = (short)((double)sample * scale);
 
-        if (i == 0) {
-            timestamps[gd->index] = millis() - epoch_millis_offset;
-        }
-
-        if (gd->full) {
-            // Serial.println("Writing to full buffer.");
-        }
-
         gd->samples[gd->index++] = sample;
 
         // Raise a semaphor if the buffer is full and tell which buffer
@@ -284,10 +275,6 @@ void loop() {
 
         for (uint32_t i = 0; i < NUMBER_OF_GEODATA_SAMPLES; ++i) {
             Serial.print(epoch);
-            Serial.print(",");
-            Serial.print(timestamps[i]);
-            Serial.print(",");
-            Serial.print(i == 0 ? 0 :  timestamps[i] - timestamps[i - 1]);
             Serial.print(",");
             Serial.print(gd0[i]);
             Serial.print(",");
