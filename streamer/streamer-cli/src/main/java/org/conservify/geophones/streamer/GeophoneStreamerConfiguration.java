@@ -6,17 +6,19 @@ import java.util.Date;
 import java.util.function.Predicate;
 
 public class GeophoneStreamerConfiguration {
-    private int samplesPerFile = 512 * 60;
+    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
     public int getSamplesPerFile() {
-        return samplesPerFile;
+        return 512 * 60;
     }
 
-    public void setSamplesPerFile(int samplesPerFile) {
-        this.samplesPerFile = samplesPerFile;
+    public int getBaudRate() {
+        return 115200;
     }
 
-    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss");
+    public long getActivityTimeout() {
+        return 5 * 1000;
+    }
 
     public String generateFileName() {
         return "geophone_" + formatter.format(new Date()) + ".bin";

@@ -13,15 +13,9 @@ public class GeophoneWriter {
     private static final Logger logger = LoggerFactory.getLogger(GeophoneWriter.class);
 
     private final GeophoneStreamerConfiguration configuration;
-
-    private FileOutputStream fileStream;
     private DataOutputStream dataStream;
     private FileLock lock;
     private long samplesWritten;
-
-    public long getSamplesWritten() {
-        return samplesWritten;
-    }
 
     public GeophoneWriter(GeophoneStreamerConfiguration configuration) {
         this.configuration = configuration;
@@ -34,12 +28,11 @@ public class GeophoneWriter {
                     lock.release();
                     lock.close();
                     IOUtils.closeQuietly(dataStream);
-                    IOUtils.closeQuietly(fileStream);
                 }
 
                 String fileName = configuration.generateFileName();
                 logger.info("Opening {}", fileName);
-                fileStream = new FileOutputStream(fileName);
+                FileOutputStream fileStream = new FileOutputStream(fileName);
                 dataStream = new DataOutputStream(fileStream);
                 lock = fileStream.getChannel().lock();
                 samplesWritten = 0;

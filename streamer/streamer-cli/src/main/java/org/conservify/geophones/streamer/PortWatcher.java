@@ -5,7 +5,9 @@ import jssc.SerialPort;
 import jssc.SerialPortList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -20,6 +22,7 @@ public class PortWatcher {
         this.configuration = configuration;
     }
 
+    @Scheduled(fixedRate = 1000)
     public void find() {
         String[] portNames = SerialPortList.getPortNames();
 
@@ -46,8 +49,15 @@ public class PortWatcher {
         }
     }
 
+    @PreDestroy
+    public void stop() {
+        for (Streamer streamer : Collections.list(streamers.elements())) {
+            streamer.stop();
+        }
+    }
+
     private void createStreamer(String portName) {
-        Streamer streamer = new Streamer(new SerialPort(portName), new GeophoneListener(new GeophoneWriter(configuration)));
+        Streamer streamer = new Streamer(configuration, new SerialPort(portName), new GeophoneListener(new GeophoneWriter(configuration)));
         if (streamer.start()) {
             streamers.put(portName, streamer);
         }

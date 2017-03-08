@@ -1,7 +1,6 @@
 package org.conservify.geophones.streamer;
 
 import java.io.File;
-import java.nio.channels.FileLock;
 
 public class PendingFile implements Comparable<PendingFile> {
     private final File file;

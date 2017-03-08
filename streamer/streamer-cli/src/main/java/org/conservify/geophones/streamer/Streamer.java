@@ -9,16 +9,13 @@ import org.slf4j.LoggerFactory;
 
 public class Streamer implements SerialPortEventListener {
     private static final Logger logger = LoggerFactory.getLogger(Streamer.class);
+    private final GeophoneStreamerConfiguration configuration;
     private final SerialPort port;
     private final SerialPortTextListener listener;
-    private final int baudRate = 115200;
-
-    private volatile long firstActivityAt = 0;
     private volatile long lastActivityAt = 0;
 
-    private static final long ACTIVITY_TIMEOUT = 1000 * 5;
-
-    public Streamer(SerialPort port, SerialPortTextListener listener) {
+    public Streamer(GeophoneStreamerConfiguration configuration, SerialPort port, SerialPortTextListener listener) {
+        this.configuration = configuration;
         this.port = port;
         this.listener = listener;
     }
@@ -32,17 +29,17 @@ public class Streamer implements SerialPortEventListener {
             port.addEventListener(this);
             port.purgePort(SerialPort.PURGE_RXCLEAR);
             port.purgePort(SerialPort.PURGE_TXCLEAR);
-            port.setParams(baudRate, 8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
+            port.setParams(configuration.getBaudRate(), 8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
             return true;
         }
         catch (SerialPortException e) {
-            logger.error(e.getMessage(), e);
+            logger.error(e.getMessage());
             return false;
         }
     }
 
     public boolean check() {
-        if (System.currentTimeMillis() - lastActivityAt > ACTIVITY_TIMEOUT) {
+        if (System.currentTimeMillis() - lastActivityAt > configuration.getActivityTimeout()) {
             if (lastActivityAt > 0) {
                 logger.info("Re-opening {}", port.getPortName());
             }
@@ -57,6 +54,7 @@ public class Streamer implements SerialPortEventListener {
             this.port.closePort();
         }
         catch (SerialPortException e) {
+            // Ignore
         }
     }
 
@@ -70,13 +68,6 @@ public class Streamer implements SerialPortEventListener {
             }
 
             lastActivityAt = System.currentTimeMillis();
-
-            if (firstActivityAt == 0) {
-                firstActivityAt = System.currentTimeMillis();
-            }
-        }
-        else {
-            System.out.println(serialPortEvent.getEventType());
         }
     }
 }

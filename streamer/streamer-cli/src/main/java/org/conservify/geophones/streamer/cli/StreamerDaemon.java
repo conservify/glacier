@@ -15,7 +15,6 @@ public class StreamerDaemon implements Daemon {
     private static final Logger logger = LoggerFactory.getLogger(StreamerDaemon.class);
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private final StreamerService service = new StreamerService();
 
     public void init(DaemonContext context) throws DaemonInitException {
         logger.debug("Initialized with arguments {}.", String.join(", ", context.getArguments()));
@@ -28,15 +27,11 @@ public class StreamerDaemon implements Daemon {
             CountDownLatch latch = new CountDownLatch(1);
 
             public void run() {
-                service.start();
-
                 try {
                     latch.await();
                 } catch (InterruptedException e) {
                     logger.debug("Thread interrupted, probably means we're shutting down now.");
                 }
-
-                service.stop();
             }
         });
     }

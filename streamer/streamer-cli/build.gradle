@@ -19,7 +19,8 @@ dependencies {
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.22'
     compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.22'
 
-    compile 'com.google.guava:guava:21.0'
+    compile group: 'org.springframework', name: 'spring-context', version: '4.3.7.RELEASE'
+    compile group: 'com.google.guava', name: 'guava', version: '21.0'
 
     compile 'org.scream3r:jssc:2.8.0'
 

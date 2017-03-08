@@ -1,9 +1,9 @@
 package org.conservify.geophones.streamer.cli;
 
 import org.apache.commons.cli.*;
-import org.conservify.geophones.streamer.StreamerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.*;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -24,16 +24,18 @@ public class Main {
             return;
         }
 
-        StreamerService service = new StreamerService();
-        service.start();
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(DefaultConfig.class);
+        applicationContext.start();
 
         CountDownLatch latch = new CountDownLatch(1);
 
         try {
             latch.await();
         } catch (InterruptedException e) {
+            logger.error(e.getMessage(), e);
         }
 
-        service.stop();
+        applicationContext.stop();
+        applicationContext.close();
     }
 }
