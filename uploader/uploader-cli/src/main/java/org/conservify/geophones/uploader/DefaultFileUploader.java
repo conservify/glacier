@@ -1,16 +1,20 @@
 package org.conservify.geophones.uploader;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 
 import javax.annotation.PreDestroy;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
+import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.util.Collections;
 import java.util.List;
@@ -18,10 +22,10 @@ import java.util.concurrent.TimeUnit;
 
 public class DefaultFileUploader implements FileUploader {
     private static final Logger logger = LoggerFactory.getLogger(DefaultFileUploader.class);
-    private final GeophoneStreamerConfiguration configuration;
+    private final GeophoneUploaderConfiguration configuration;
     private volatile boolean running = true;
 
-    public DefaultFileUploader(GeophoneStreamerConfiguration configuration) {
+    public DefaultFileUploader(GeophoneUploaderConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -54,9 +58,34 @@ public class DefaultFileUploader implements FileUploader {
 
     private void upload(Path path) {
         for (PendingFile file : getPendingFiles(path)) {
-            logger.info("Uploading {}...", file.getFile());
-            if (!file.getFile().delete()) {
-                logger.error("Error removing {}...", file.getFile());
+            logger.info("Uploading {}", file.getFile());
+
+            try {
+                Stopwatch timer = Stopwatch.createStarted();
+
+                URL url = new URL(configuration.getUploadUrl());
+                HttpURLConnection httpConnection = (HttpURLConnection)url.openConnection();
+                httpConnection.setRequestProperty("Content-Type", "application/octet-stream");
+                httpConnection.setRequestMethod("POST");
+                httpConnection.setDoOutput(true);
+
+                FileInputStream fileStream = new FileInputStream(file.getFile());
+                try {
+                    IOUtils.copy(fileStream, httpConnection.getOutputStream());
+                    String response = IOUtils.toString(httpConnection.getInputStream(), Charset.defaultCharset());
+                    logger.trace("Response: {}", response);
+                }
+                finally {
+                    IOUtils.closeQuietly(fileStream);
+                    logger.info("Done {} ({})", httpConnection.getResponseCode(), timer.stop());
+                }
+
+                if (!file.getFile().delete()) {
+                    logger.error("Error removing {}...", file.getFile());
+                }
+            }
+            catch (IOException e) {
+                logger.error("Error uploading file", e);
             }
         }
     }
@@ -80,7 +109,7 @@ public class DefaultFileUploader implements FileUploader {
                     }
                 }
             } catch (OverlappingFileLockException e) {
-                // logger.debug("File locked {}", file);
+                logger.trace("File locked {}", file);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

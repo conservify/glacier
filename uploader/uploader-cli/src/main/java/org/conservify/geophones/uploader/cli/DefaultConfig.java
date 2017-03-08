@@ -19,8 +19,8 @@ public class DefaultConfig {
     }
 
     @Bean
-    public GeophoneStreamerConfiguration configuration() {
-        return  new GeophoneStreamerConfiguration();
+    public GeophoneUploaderConfiguration configuration() {
+        return  new GeophoneUploaderConfiguration();
     }
 
     @Bean

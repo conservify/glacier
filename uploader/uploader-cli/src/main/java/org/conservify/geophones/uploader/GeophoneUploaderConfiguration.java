@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.function.Predicate;
 
-public class GeophoneStreamerConfiguration {
+public class GeophoneUploaderConfiguration {
     private final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss");
 
     public int getSamplesPerFile() {
@@ -18,6 +18,10 @@ public class GeophoneStreamerConfiguration {
 
     public long getActivityTimeout() {
         return 5 * 1000;
+    }
+
+    public String getUploadUrl() {
+        return "https://conservify.page5of4.com/geophones";
     }
 
     public String generateFileName() {

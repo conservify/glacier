@@ -16,9 +16,9 @@ import java.util.List;
 public class PortWatcher {
     private static final Logger logger = LoggerFactory.getLogger(PortWatcher.class);
     private final Dictionary<String, Streamer> streamers = new Hashtable<>();
-    private final GeophoneStreamerConfiguration configuration;
+    private final GeophoneUploaderConfiguration configuration;
 
-    public PortWatcher(GeophoneStreamerConfiguration configuration) {
+    public PortWatcher(GeophoneUploaderConfiguration configuration) {
         this.configuration = configuration;
     }
 

@@ -12,12 +12,12 @@ import java.nio.channels.FileLock;
 public class GeophoneWriter {
     private static final Logger logger = LoggerFactory.getLogger(GeophoneWriter.class);
 
-    private final GeophoneStreamerConfiguration configuration;
+    private final GeophoneUploaderConfiguration configuration;
     private DataOutputStream dataStream;
     private FileLock lock;
     private long samplesWritten;
 
-    public GeophoneWriter(GeophoneStreamerConfiguration configuration) {
+    public GeophoneWriter(GeophoneUploaderConfiguration configuration) {
         this.configuration = configuration;
     }
 

@@ -9,12 +9,12 @@ import org.slf4j.LoggerFactory;
 
 public class Streamer implements SerialPortEventListener {
     private static final Logger logger = LoggerFactory.getLogger(Streamer.class);
-    private final GeophoneStreamerConfiguration configuration;
+    private final GeophoneUploaderConfiguration configuration;
     private final SerialPort port;
     private final SerialPortTextListener listener;
     private volatile long lastActivityAt = 0;
 
-    public Streamer(GeophoneStreamerConfiguration configuration, SerialPort port, SerialPortTextListener listener) {
+    public Streamer(GeophoneUploaderConfiguration configuration, SerialPort port, SerialPortTextListener listener) {
         this.configuration = configuration;
         this.port = port;
         this.listener = listener;
