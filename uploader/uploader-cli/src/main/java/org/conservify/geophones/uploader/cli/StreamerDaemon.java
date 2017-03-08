@@ -1,9 +1,8 @@
-package org.conservify.geophones.streamer.cli;
+package org.conservify.geophones.uploader.cli;
 
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.apache.commons.daemon.DaemonInitException;
-import org.conservify.geophones.streamer.StreamerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

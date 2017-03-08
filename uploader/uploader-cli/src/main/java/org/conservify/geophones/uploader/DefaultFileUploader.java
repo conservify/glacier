@@ -1,4 +1,4 @@
-package org.conservify.geophones.streamer;
+package org.conservify.geophones.uploader;
 
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
@@ -15,7 +15,6 @@ import java.nio.file.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 
 public class DefaultFileUploader implements FileUploader {
     private static final Logger logger = LoggerFactory.getLogger(DefaultFileUploader.class);

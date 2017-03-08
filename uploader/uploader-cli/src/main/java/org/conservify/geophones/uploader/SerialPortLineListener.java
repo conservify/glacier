@@ -1,4 +1,4 @@
-package org.conservify.geophones.streamer;
+package org.conservify.geophones.uploader;
 
 public abstract class SerialPortLineListener extends SerialPortTextListener {
     private final StringBuffer data = new StringBuffer();

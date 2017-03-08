@@ -1,4 +1,4 @@
-package org.conservify.geophones.streamer;
+package org.conservify.geophones.uploader;
 
 import com.google.common.collect.Lists;
 import jssc.SerialPort;

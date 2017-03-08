@@ -6,7 +6,7 @@ run {
     }
 }
 
-mainClassName = "org.conservify.geophones.streamer.cli.Main"
+mainClassName = "org.conservify.geophones.uploader.cli.Main"
 
 dependencies {
     compile group: 'com.mashape.unirest', name: 'unirest-java', version: '1.4.9'

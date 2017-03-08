@@ -1,6 +1,6 @@
-package org.conservify.geophones.streamer.cli;
+package org.conservify.geophones.uploader.cli;
 
-import org.conservify.geophones.streamer.*;
+import org.conservify.geophones.uploader.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

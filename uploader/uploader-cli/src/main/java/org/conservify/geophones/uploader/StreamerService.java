@@ -1,4 +1,4 @@
-package org.conservify.geophones.streamer;
+package org.conservify.geophones.uploader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

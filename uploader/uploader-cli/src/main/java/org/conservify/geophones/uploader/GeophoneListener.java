@@ -1,4 +1,4 @@
-package org.conservify.geophones.streamer;
+package org.conservify.geophones.uploader;
 
 public class GeophoneListener extends SerialPortLineListener {
     private final GeophoneWriter writer;
