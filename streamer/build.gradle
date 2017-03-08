@@ -1,0 +1,33 @@
+apply plugin: 'maven'
+
+subprojects {
+    group 'org.conservify'
+    version '1.0-SNAPSHOT'
+
+    apply plugin: 'java'
+    apply plugin: 'maven'
+
+    sourceCompatibility = 1.8
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://conservify.page5of4.com/nexus/content/groups/public"
+        }
+    }
+
+    uploadArchives {
+        repositories {
+            mavenLocal()
+            if (project.hasProperty("mavenUser") && project.hasProperty("mavenPassword")) {
+                mavenDeployer {
+                    repository(url: "https://conservify.page5of4.com/nexus/content/repositories/snapshots") {
+                        authentication(userName: mavenUser, password: mavenPassword)
+                    }
+                    pom.version = "1.0-SNAPSHOT"
+                    pom.groupId = "org.conservify"
+                }
+            }
+        }
+    }
+}

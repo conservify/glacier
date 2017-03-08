@@ -10,7 +10,6 @@
 #define LED_PIN                        13
 
 #define SAMPLE_RATE                    512
-#define NUMBER_OF_BATCHES_PER_FILE     256
 #define NUMBER_OF_GEODATA_SAMPLES      (SAMPLE_RATE * 2)
 
 #define CPU_HZ                         48000000
@@ -26,8 +25,6 @@ typedef struct geodata_t {
 geodata_t geophones[3];
 uint32_t batches_written = 0;
 uint32_t file_written_at = 0;
-uint32_t epoch = 0;
-uint32_t epoch_millis_offset = 0;
 bool buffer_written = false;
 
 void report_blink();
@@ -274,8 +271,6 @@ void loop() {
         short *gd2 = geophones[2].active;
 
         for (uint32_t i = 0; i < NUMBER_OF_GEODATA_SAMPLES; ++i) {
-            Serial.print(epoch);
-            Serial.print(",");
             Serial.print(gd0[i]);
             Serial.print(",");
             Serial.print(gd1[i]);
