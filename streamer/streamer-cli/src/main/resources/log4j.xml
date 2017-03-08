@@ -4,9 +4,17 @@
 
     <!-- Appenders -->
     <appender name="file" class="org.apache.log4j.FileAppender">
-        <param name="file" value="firmwaretool.log"/>
+        <param name="file" value="streamer.log"/>
         <param name="append" value="false"/>
         <param name="threshold" value="debug"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p %c - %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="rolling" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="File" value="streamer.log" />
+        <param name="DatePattern" value="'.'yyyyMMdd" />
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{ISO8601} %-5p %c - %m%n"/>
         </layout>
@@ -29,6 +37,7 @@
         <priority value="warn"/>
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
+        <appender-ref ref="rolling"/>
     </root>
 
 </log4j:configuration>

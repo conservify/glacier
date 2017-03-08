@@ -32,8 +32,7 @@ public class FileUploader implements Runnable {
                 while (true) {
                     final WatchKey wk = watchService.take();
 
-                    for (WatchEvent<?> event : wk.pollEvents()) {
-                        final Path changed = (Path) event.context();
+                    if (wk.pollEvents().size() > 0) {
                         upload(path);
                     }
 
@@ -55,7 +54,9 @@ public class FileUploader implements Runnable {
     private void upload(Path path) {
         for (PendingFile file : getPendingFiles(path)) {
             logger.info("Uploading {}...", file.getFile());
-            file.getFile().delete();
+            if (!file.getFile().delete()) {
+                logger.error("Error removing {}...", file.getFile());
+            }
         }
     }
 
@@ -66,10 +67,13 @@ public class FileUploader implements Runnable {
                 if (fileNameFilter.test(file)) {
                     if (file.isFile()) {
                         FileChannel fileChannel = FileChannel.open(file.toPath(), StandardOpenOption.WRITE, StandardOpenOption.READ);
-                        FileLock lock = fileChannel.lock();
-                        lock.release();
-                        lock.close();
-                        fileChannel.close();
+                        try {
+                            FileLock lock = fileChannel.lock();
+                            lock.release();
+                        }
+                        finally {
+                            fileChannel.close();
+                        }
 
                         files.add(new PendingFile(file));
                     }

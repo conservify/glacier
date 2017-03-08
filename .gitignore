@@ -3,6 +3,8 @@
 build
 firmwaretool.properties
 firmwaretool.log
+streamer.log
+streamer.properties
 gradle.properties
 log.txt
 .idea
