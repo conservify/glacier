@@ -77,7 +77,7 @@ public class DefaultFileUploader implements FileUploader {
                 }
                 finally {
                     IOUtils.closeQuietly(fileStream);
-                    logger.info("Done {} ({})", httpConnection.getResponseCode(), timer.stop());
+                    logger.info("Done uploading {} {} ({})", file.getFile(), httpConnection.getResponseCode(), timer.stop());
                 }
 
                 if (!file.getFile().delete()) {
