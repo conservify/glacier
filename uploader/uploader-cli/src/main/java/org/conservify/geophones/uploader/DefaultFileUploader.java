@@ -32,7 +32,7 @@ public class DefaultFileUploader implements FileUploader {
     @Async
     @Override
     public void run() {
-        Path path = FileSystems.getDefault().getPath(".").toAbsolutePath();
+        Path path = FileSystems.getDefault().getPath(configuration.getDataDirectory()).toAbsolutePath();
 
         logger.info("Watching {}", path);
 

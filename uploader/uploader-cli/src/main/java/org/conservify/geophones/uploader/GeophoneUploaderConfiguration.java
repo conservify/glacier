@@ -1,5 +1,7 @@
 package org.conservify.geophones.uploader;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -7,9 +9,35 @@ import java.util.function.Predicate;
 
 public class GeophoneUploaderConfiguration {
     private final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss");
+    @Value("${samplesPerFile}")
+    private int samplesPerFile;
+    @Value("${dataDirectory}")
+    private String dataDirectory;
+    @Value("${uploadUrl}")
+    private String uploadUrl;
 
     public int getSamplesPerFile() {
-        return 512 * 60;
+        return samplesPerFile;
+    }
+
+    public void setSamplesPerFile(int samplesPerFile) {
+        this.samplesPerFile = samplesPerFile;
+    }
+
+    public String getDataDirectory() {
+        return dataDirectory;
+    }
+
+    public void setDataDirectory(String dataDirectory) {
+        this.dataDirectory = dataDirectory;
+    }
+
+    public void setUploadUrl(String uploadUrl) {
+        this.uploadUrl = uploadUrl;
+    }
+
+    public String getUploadUrl() {
+        return uploadUrl;
     }
 
     public int getBaudRate() {
@@ -18,10 +46,6 @@ public class GeophoneUploaderConfiguration {
 
     public long getActivityTimeout() {
         return 5 * 1000;
-    }
-
-    public String getUploadUrl() {
-        return "https://conservify.page5of4.com/geophones";
     }
 
     public String generateFileName() {

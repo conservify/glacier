@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileLock;
@@ -31,8 +32,9 @@ public class GeophoneWriter {
                 }
 
                 String fileName = configuration.generateFileName();
+                File fileInDirectory = new File(configuration.getDataDirectory(), fileName);
                 logger.info("Opening {}", fileName);
-                FileOutputStream fileStream = new FileOutputStream(fileName);
+                FileOutputStream fileStream = new FileOutputStream(fileInDirectory);
                 dataStream = new DataOutputStream(fileStream);
                 lock = fileStream.getChannel().lock();
                 samplesWritten = 0;

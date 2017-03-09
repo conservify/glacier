@@ -4,6 +4,7 @@ build
 firmwaretool.properties
 firmwaretool.log
 uploader.log
+uploader.log.*
 uploader.properties
 gradle.properties
 log.txt
