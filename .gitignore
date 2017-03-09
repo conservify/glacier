@@ -9,3 +9,4 @@ gradle.properties
 log.txt
 .idea
 geophone_*.bin
+uploader/classes
