@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#define STARTUP_WAIT_TIME              20 * 1000
-
 #define GEODATA_PINX                   A5
 #define GEODATA_PINY                   A4
 #define GEODATA_PINZ                   A3
@@ -245,10 +243,6 @@ void setup() {
 
     while (!Serial) {
         delay(100);
-
-        if (millis() > STARTUP_WAIT_TIME) {
-            NVIC_SystemReset();
-        }
     }
 
     sampling_start();
