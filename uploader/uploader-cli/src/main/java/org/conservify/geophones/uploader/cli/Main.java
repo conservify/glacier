@@ -15,9 +15,9 @@ public class Main {
 
     public static void main(String[] args) throws ParseException {
         Options options = new Options();
-        options.addOption(null, "samples-per-file", false, "samples per file");
-        options.addOption(null, "data", false, "data directory");
-        options.addOption(null, "url", false, "upload url");
+        options.addOption(null, "samples-per-file", true, "samples per file");
+        options.addOption(null, "data", true, "data directory");
+        options.addOption(null, "url", true, "upload url");
         options.addOption(null, "help", false, "display this message");
 
         org.apache.commons.cli.CommandLineParser parser = new DefaultParser();
