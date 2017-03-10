@@ -4,8 +4,6 @@ set -e
 
 ~/gradle-3.4.1/bin/gradle build 
 
-wget http://www.startssl.com/certs/ca.pem
-
 sudo docker build -t conservify/uploader:latest .
 
 sudo docker push conservify/uploader

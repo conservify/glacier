@@ -5,10 +5,9 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-
 RUN ln -s /usr/share/java/bcprov.jar /usr/lib/jvm/java-1.8.0-openjdk-armhf/jre/lib/ext/bcprov.ja
-
 COPY java.security /usr/lib/jvm/java-1.8.0-openjdk-armhf/jre/lib/security/java.security
+
 COPY uploader-cli/build/distributions/uploader-cli-1.0-SNAPSHOT.tar /app/uploader-cli.tar
 
 WORKDIR /app
