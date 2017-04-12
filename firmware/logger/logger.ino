@@ -320,7 +320,9 @@ void setup() {
         while (true);
     }
 
-    while (true) {
+    uint32_t start = millis();
+
+    while (millis() - start < 30 * 1000) {
         while (Serial1.available()) {
             gps.read();
         }
