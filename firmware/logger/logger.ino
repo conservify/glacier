@@ -5,8 +5,6 @@
 #include <Adafruit_GPS.h>
 
 #define STARTUP_WAIT_TIME              20 * 1000
-#define DISABLE_SD
-#define DISABLE_GPS
 
 #define GEODATA_PINX                   A5
 #define GEODATA_PINY                   A4
