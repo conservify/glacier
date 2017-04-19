@@ -6,5 +6,6 @@ WORKDIR /app
 
 RUN tar xf uploader-cli.tar
 RUN mv uploader-cli-* uploader-cli && chmod 755 uploader-cli/bin/uploader-cli && find
+RUN mkdir /app/data
 
-CMD ["/app/uploader-cli/bin/uploader-cli"]
+CMD ["/app/uploader-cli/bin/uploader-cli", "--data", "/app/data"]
