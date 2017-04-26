@@ -11,3 +11,4 @@ log.txt
 .idea
 geophone_*.bin
 uploader/classes
+.ssh

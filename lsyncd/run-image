@@ -1,0 +1,1 @@
+sudo docker run --name sync -v /data:/data --add-host lodge:169.254.128.129 -t --rm conservify/lsyncd
