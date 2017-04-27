@@ -1,0 +1,6 @@
+*.o
+*.swp
+*.a
+data/*.csv
+incoming.*
+AdcDemo

@@ -1,4 +1,5 @@
 *.bak
+*.pyc
 .gradle
 build
 firmwaretool.properties
@@ -11,3 +12,5 @@ log.txt
 .idea
 geophone_*.bin
 uploader/classes
+.ssh
+psn-adc/data/*
