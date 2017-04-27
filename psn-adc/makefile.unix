@@ -1,0 +1,35 @@
+#
+
+#CFLAGS = $(GLOBALFLAGS)
+
+CPPFLAGS=$(GLOBALFLAGS) -D_USE_TERMIOS -O3 -Wall -Wno-write-strings -c
+
+OBJS= PSNADBoard.o AdcBoard.o Adcv1.o Adcv2.o Adcvm.o AdcSdr24.o GpsRef.o GpsRefVco.o PcRef.o WwvRef.o WwvbRef.o
+H= PSNADBoard.h Adcv1.h AdcNew.h
+
+libpsn_ew.a : $(OBJS)
+	rm -f libpsn_ew.a
+	ar -csq libpsn_ew.a $(OBJS)
+	cp libpsn_ew.a ../
+
+.cpp.o:
+	g++ $(CPPFLAGS) $<
+
+PSNADBoard.o : $(H)
+AdcBoard.o : $(H)
+Adcv1.o : $(H)
+Adcv2.o : $(H)
+Adcvm.o : $(H)
+AdcSdr24.o : $(H) 
+GpsRef.o : $(H) 
+GpsRefVco.o : $(H)
+PcRef.o : $(H)
+WwvRef.o : $(H)
+WwvbRef.o : $(H)
+
+clean: FORCE
+	rm -f *.o
+	rm -f libpsn_ew.a
+FORCE:
+
+# end
