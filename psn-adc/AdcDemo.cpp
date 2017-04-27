@@ -230,12 +230,12 @@ void ProcessNewData( DWORD type, void *data, void *data1, DWORD dataLen )
 typedef struct logfile_t {
 	FILE *fp;
 	uint32_t samples;
-	char file_name[36];
+	char file_name[128];
 } logfile_t;
 
 logfile_t lf = { 0 };
 
-#define INCOMING_FILE_NAME   "incoming.data"
+#define INCOMING_FILE_NAME   "/app/data/incoming.data"
 #define FILE_NAME_EXT_ASCII  "csv"
 #define FILE_NAME_EXT_BINARY "bin"
 
@@ -245,14 +245,17 @@ BOOL WriteLogFile(logfile_t *lf, DataHeader *hdr) {
 			fclose(lf->fp);
 			lf->fp = NULL;
 
-			rename(INCOMING_FILE_NAME, lf->file_name);
+			printf("Finished %s\n", lf->file_name); 
+			if (rename(INCOMING_FILE_NAME, lf->file_name) != 0) {
+				fprintf(stderr, "Unable to rename %s to %s\n", INCOMING_FILE_NAME, lf->file_name);
+			}
 		}
 
 		SYSTEMTIME *st = &hdr->packetTime;
 
-		snprintf(lf->file_name, sizeof(lf->file_name), "data/geophones_%04d%02d%02d_%02d%02d%02d.%s", 
-				st->wYear, st->wMonth, st->wDay, st->wHour, st->wMinute, 
-				st->wSecond, (writeAscii ? FILE_NAME_EXT_ASCII : FILE_NAME_EXT_BINARY));
+		snprintf(lf->file_name, sizeof(lf->file_name), "/app/data/geophones_%04d%02d%02d_%02d%02d%02d.%s", 
+				st->wYear, st->wMonth, st->wDay, st->wHour, st->wMinute, st->wSecond,
+				(writeAscii ? FILE_NAME_EXT_ASCII : FILE_NAME_EXT_BINARY));
 
 		lf->fp = fopen(INCOMING_FILE_NAME, "w");
 		lf->samples = 0;
