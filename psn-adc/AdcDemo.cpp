@@ -41,11 +41,6 @@ BYTE newData[ NEW_DATA_LENGTH ], newSampleData[ MAX_ADC_CHANNELS * MAX_SPS_RATE 
 /* Incoming ADC sample data is demuxed into this array. */
 LONG demuxData[MAX_ADC_CHANNELS][ MAX_SPS_RATE ];
 
-/* There are two ways of getting data from the DLL/ADC board. Setting
-   useCallback to TRUE will demonstrate the Callback mode and setting it to FALSE
-   will demonstrate the poll mode */
-BOOL useCallback = TRUE;
-
 HANDLE hBoard = 0;							/* Handle to the DLL/ADC board */
 
 BOOL displayBoardType = TRUE;				/* Used to display the board type */
@@ -53,8 +48,10 @@ BOOL gpsDataMode = 0;						/* Used to enable/disable GPS data */
 DWORD commPort;								/* Windows Comm port number */
 char commPortStr[32];						/* Linux Comm Port string */
 
+BOOL receivedSamples = FALSE;
 int displayInfo = 1;						/* If 1 display data header info */
 int writeAscii = 0;
+int consecutiveErrors = 0;
 
 int ParseCommandLine(int argc, char *argv[])
 {
@@ -76,7 +73,7 @@ int ParseCommandLine(int argc, char *argv[])
 
 int OpenDevice()
 {
-	DWORD type, version, dataLen, sts, done = 0;
+	DWORD version, sts;
 
 	/* Open the board. Function will return 0 if an error has occurred */
 	hBoard = PSNOpenBoard();
@@ -100,10 +97,7 @@ int OpenDevice()
 	   a function pointer to the DDL. This function will be called by the DLL when new data 
 	   needs to be processed by the application. If using the Poll method set the third 
 	   parameter to 0 or NULL */
-	if( useCallback )
-		sts = PSNConfigBoard( hBoard, &config,  ProcessNewData );	
-	else
-		sts = PSNConfigBoard( hBoard, &config, NULL );	
+	sts = PSNConfigBoard( hBoard, &config,  ProcessNewData );	
 	if( !sts )  {
 		printf("PSNConfigBoard Error\n");
 		PSNCloseBoard( hBoard );
@@ -126,47 +120,12 @@ int OpenDevice()
 		return 0;
 	}
 	
-	if( useCallback )  {
-		
-		/* Callback Mode: In this mode new data will be posted to the application by the DLL 
-		   using the Callback function.  */
-		while( !done )  {
-			
-			/* NOTE!!! The user must relinquish cpu time so the DLL and other processes on the computer
-			   can run properly. */
-			_sleep( 100 );			/* sleep for 100 ms */
-			
-			/* Check for user input */
-			if( kbhit() )
-				done = ProcessUserInput();
-		}
-	}
-	else  {	
-		
-		/* Poll Data Mode: In this mode the user must poll the DLL to see if there
-		   is any new data to process. */
-		while( !done )  {
-			sts = PSNGetBoardData( hBoard, &type, newData, newSampleData, &dataLen );
-			switch( sts )  {
-				case ADC_BOARD_ERROR:		/* If an error has occurred exit */
-							printf("ADC Board Error\n");
-							done = TRUE;
-							break;
-				
-				case ADC_GOOD_DATA:			/* New have new data */
-							ProcessNewData( type, (void *)newData, newSampleData, dataLen );
-							break;
-			
-				case ADC_NO_DATA:			/* No new data at this time */
-	/* NOTE!!! The user must relinquish cpu time so the DLL and other processes on the computer
-	   can run properly. */
-							_sleep( 20 );	/* sleep for 20 ms */
-							
-							if( kbhit() )	/* Check for user input */
-								done = ProcessUserInput();
-							break;
-			}
-		}
+	/* Callback Mode: In this mode new data will be posted to the application by the DLL 
+	   using the Callback function.  */
+	while(consecutiveErrors < 3)  {
+		/* NOTE!!! The user must relinquish cpu time so the DLL and other processes on the computer
+		   can run properly. */
+		_sleep( 100 );			/* sleep for 100 ms */
 	}
 	
 	/* Stop the data collection. This will close the Comm port */
@@ -180,7 +139,7 @@ int OpenDevice()
 	if( ! PSNCloseBoard( hBoard ) )
 		printf( "PSNCloseBoard Error\n" );
 
-	return 1;
+	return receivedSamples;
 }
 
 int FindDevice()
@@ -200,6 +159,7 @@ int FindDevice()
 		const char *prefix = "ttyUSB";
 		if (strncmp(entry->d_name, prefix, strlen(prefix)) == 0)
 		{
+			commPortStr[0] = 0;
 			strcat(commPortStr, "/dev/");
 			strcat(commPortStr, entry->d_name);
 			printf("Trying %s...\n\n", commPortStr);
@@ -208,6 +168,7 @@ int FindDevice()
 			{
 				return 1;
 			}
+			consecutiveErrors = 0;
 		}
 	}
 
@@ -228,38 +189,6 @@ int main( int argc, char *argv[] )
 	/* And we are done..... */
 	return 0;
 }
-				
-/* Called when the user presses a key */
-BOOL ProcessUserInput()
-{
-	char chr = getch();
-	switch( chr )  {
-			case ESC:		/* Exit program */
-			case 'q':		return TRUE;	
-			
-			case 's':		/* Send status request */
-							PSNSendBoardCommand( hBoard, ADC_CMD_SEND_STATUS, (void *)0 );
-							return FALSE;
-			
-			case 'g':		/* Toggle raw GPS data mode */
-							if( gpsDataMode )
-								gpsDataMode = FALSE;
-							else
-								gpsDataMode = TRUE;
-							
-							if( gpsDataMode )
-								PSNSendBoardCommand( hBoard, ADC_CMD_GPS_DATA_ON_OFF, (void *)1 );
-							else
-								PSNSendBoardCommand( hBoard, ADC_CMD_GPS_DATA_ON_OFF, (void *)0 );
-							return FALSE;
-			
-			case 'd':		/* Display DLL Information */
-							DisplayDllInfo();
-							return FALSE;
-	};
-	
-	return FALSE;
-}
 
 /* In the Callback mode this function is called by the DLL when new data is 
    available to the application. It is also called by the function above in 
@@ -267,13 +196,16 @@ BOOL ProcessUserInput()
 void ProcessNewData( DWORD type, void *data, void *data1, DWORD dataLen )
 {
 	switch( type )  {
-		case ADC_MSG:		/* Display various text messages sent by the DLL or ADC board */
-		case ADC_ERROR:
+		case ADC_ERROR: 	/* Display various text messages sent by the DLL or ADC board */
+						consecutiveErrors++;
+		case ADC_MSG:		
 		case ADC_AD_MSG:
 						DisplayMsg( type, (char *)data );
 						break;
 						
 		case ADC_AD_DATA:	/* New ADC sample data  */
+						consecutiveErrors = 0;
+						receivedSamples = TRUE;
 						NewADData( type, (DataHeader *)data, data1, dataLen );
 						break;
 		
@@ -399,9 +331,9 @@ void NewADData( DWORD type, DataHeader *hdr, void *adcData, DWORD dataLen )
 		lockStr = "????";
 
 	if( displayInfo )  {
-		printf( "ID=%d Time=%02d/%02d/%02d %02d:%02d:%02d.%03d  Time Ref Status=%s             ", 
+		printf( "ID=%d Time=%02d/%02d/%02d %02d:%02d:%02d.%03d errors=%d Time Ref Status=%s             ", 
 			hdr->packetID, st->wMonth, st->wDay, st->wYear % 100, st->wHour, st->wMinute, 
-			st->wSecond, st->wMilliseconds, lockStr );
+			st->wSecond, st->wMilliseconds, consecutiveErrors, lockStr );
 
 #ifdef WIN32
 		printf("\r");
