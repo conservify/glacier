@@ -1,7 +1,7 @@
 (export (version D)
   (design
     (source D:/Life/conservify/geophones/power-bus/hardware/power-bus.sch)
-    (date "4/27/2017 1:37:39 PM")
+    (date "4/28/2017 12:02:23 PM")
     (tool "Eeschema 4.0.6")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
@@ -203,10 +203,10 @@
   (libraries
     (library (logical conn)
       (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\conn.lib"))
-    (library (logical conservify)
-      (uri D:\Life\conservify\kicad\conservify.lib))
     (library (logical device)
-      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\device.lib")))
+      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\device.lib"))
+    (library (logical conservify)
+      (uri D:\Life\conservify\kicad\conservify.lib)))
   (nets
     (net (code 1) (name GND)
       (node (ref J1) (pin 2))
