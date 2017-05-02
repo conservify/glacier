@@ -1,7 +1,7 @@
 (export (version D)
   (design
     (source D:/Life/conservify/geophones/power-bus/hardware/power-bus.sch)
-    (date "4/28/2017 12:02:23 PM")
+    (date "5/2/2017 4:15:23 PM")
     (tool "Eeschema 4.0.6")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
@@ -107,7 +107,7 @@
       (tstamp 58FE3D5C))
     (comp (ref F1)
       (value Fuse)
-      (footprint Fuse_Holders_and_Fuses:Fuseholder5x20_horiz_open_universal_Type-III)
+      (footprint conservify:Fuseholder6x30_horiz_open_inline_Type-I)
       (libsource (lib device) (part Fuse))
       (sheetpath (names /) (tstamps /))
       (tstamp 58FE4282))

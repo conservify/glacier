@@ -248,10 +248,10 @@ Wire Wire Line
 Wire Wire Line
 	6550 1700 6200 1700
 $Comp
-L GND #PWR1
+L GND #PWR01
 U 1 1 58FA74B4
 P 1050 1800
-F 0 "#PWR1" H 1050 1550 50  0001 C CNN
+F 0 "#PWR01" H 1050 1550 50  0001 C CNN
 F 1 "GND" H 1050 1650 50  0000 C CNN
 F 2 "" H 1050 1800 50  0001 C CNN
 F 3 "" H 1050 1800 50  0001 C CNN
@@ -404,7 +404,7 @@ U 1 1 58FE4282
 P 1750 900
 F 0 "F1" V 1830 900 50  0000 C CNN
 F 1 "Fuse" V 1675 900 50  0000 C CNN
-F 2 "Fuse_Holders_and_Fuses:Fuseholder5x20_horiz_open_universal_Type-III" V 1680 900 50  0001 C CNN
+F 2 "conservify:Fuseholder6x30_horiz_open_inline_Type-I" V 1680 900 50  0001 C CNN
 F 3 "" H 1750 900 50  0001 C CNN
 	1    1750 900 
 	0    1    1    0   
