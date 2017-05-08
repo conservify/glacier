@@ -25,11 +25,6 @@ public class DefaultConfig {
     }
 
     @Bean
-    public PortWatcher portWatcher() {
-        return new PortWatcher(configuration());
-    }
-
-    @Bean
     public FileUploader fileUploader() {
         return new DefaultFileUploader(configuration());
     }

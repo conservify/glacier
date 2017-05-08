@@ -16,6 +16,7 @@ import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.nio.charset.Charset;
 import java.nio.file.*;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -66,6 +67,11 @@ public class DefaultFileUploader implements FileUploader {
                 URL url = new URL(configuration.getUploadUrl());
                 HttpURLConnection httpConnection = (HttpURLConnection)url.openConnection();
                 httpConnection.setRequestProperty("Content-Type", "application/octet-stream");
+                httpConnection.setRequestProperty("x-token", "zddgXMjr_YI2e87G0mch6tXHMupLGZ6PZ58mHOSdqJtQ566PJj8mzQ");
+                httpConnection.setRequestProperty("x-timestamp", Long.toString(file.getTimestamp().getTime()));
+                httpConnection.setRequestProperty("x-frequency", "512");
+                httpConnection.setRequestProperty("x-input-id", "0");
+                httpConnection.setRequestProperty("x-format", "float32,float32,float32");
                 httpConnection.setRequestMethod("POST");
                 httpConnection.setDoOutput(true);
 
@@ -80,14 +86,22 @@ public class DefaultFileUploader implements FileUploader {
                     logger.info("Done uploading {} {} ({})", file.getFile(), httpConnection.getResponseCode(), timer.stop());
                 }
 
-                if (!file.getFile().delete()) {
-                    logger.error("Error removing {}...", file.getFile());
-                }
+                archive(file);
             }
             catch (IOException e) {
                 logger.error("Error uploading file", e);
             }
         }
+    }
+
+    private static final SimpleDateFormat directoryStampFormat = new SimpleDateFormat("yyyyMM/dd_HH");
+
+    private void archive(PendingFile file) {
+        String path = directoryStampFormat.format(file.getTimestamp());
+        File directory = new File(file.getFile().getParentFile(), path);
+        directory.mkdirs();
+        File newFile = new File(directory, file.getFile().getName());
+        file.getFile().renameTo(newFile);
     }
 
     private List<PendingFile> getPendingFiles(Path path) {

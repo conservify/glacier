@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.function.Predicate;
 
 public class GeophoneUploaderConfiguration {
-    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss");
     @Value("${samplesPerFile}")
     private int samplesPerFile;
     @Value("${dataDirectory}")
@@ -48,8 +47,14 @@ public class GeophoneUploaderConfiguration {
         return 5 * 1000;
     }
 
+    private final SimpleDateFormat fileNameTimestampFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+
+    public SimpleDateFormat getFileNameTimestampFormat() {
+        return fileNameTimestampFormat ;
+    }
+
     public String generateFileName() {
-        return "geophone_" + formatter.format(new Date()) + ".bin";
+        return "geophone_" + fileNameTimestampFormat.format(new Date()) + ".bin";
     }
 
     public Predicate<File> getUploadPredicate() {

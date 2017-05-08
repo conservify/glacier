@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+if [ ! -d .ssh ]; then
+	mkdir -p .ssh
+	cp ~/.ssh/id_rsa .ssh/id_rsa
+	ssh-keyscan -t rsa,dsa lodge > .ssh/known_hosts
+fi
+
+sudo docker build -t conservify/lsyncd:latest .
