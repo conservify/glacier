@@ -15,6 +15,7 @@ public class GeophoneUploaderConfiguration {
     private String dataDirectory;
     @Value("${uploadUrl}")
     private String uploadUrl;
+    private String uploadPattern = "(.+)_(\\d{8})_(\\d{6}).bin";
 
     public int getSamplesPerFile() {
         return samplesPerFile;
@@ -40,6 +41,10 @@ public class GeophoneUploaderConfiguration {
         return uploadUrl;
     }
 
+    public String getUploadPattern() {
+        return uploadPattern;
+    }
+
     public int getBaudRate() {
         return 115200;
     }
@@ -58,13 +63,11 @@ public class GeophoneUploaderConfiguration {
         return "geophone_" + fileNameTimestampFormat.format(new Date()) + ".bin";
     }
 
-    private Pattern uploaderPattern = Pattern.compile("(.+)_(\\d{8})_(\\d{6}).bin");
-
     public Predicate<File> getUploadPredicate() {
         return new Predicate<File>() {
             @Override
             public boolean test(File file) {
-                return uploaderPattern.matcher(file.getName()).matches();
+                return Pattern.compile(uploadPattern ).matcher(file.getName()).matches();
             }
         };
     }

@@ -53,6 +53,7 @@ public class Main {
         logger.info("URL: {}", configuration.getUploadUrl());
         logger.info("Data: {}", configuration.getDataDirectory());
         logger.info("SamplesPerFile: {}", configuration.getSamplesPerFile());
+        logger.info("UploadPattern: {}", configuration.getUploadPattern());
         if(portWatcherDisabled) {
             logger.info("Port watcher disabled.");
         }
