@@ -6,6 +6,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public class GeophoneUploaderConfiguration {
     @Value("${samplesPerFile}")
@@ -57,11 +58,13 @@ public class GeophoneUploaderConfiguration {
         return "geophone_" + fileNameTimestampFormat.format(new Date()) + ".bin";
     }
 
+    private Pattern uploaderPattern = Pattern.compile("(.+)_(\\d{8})_(\\d{6}).bin");
+
     public Predicate<File> getUploadPredicate() {
         return new Predicate<File>() {
             @Override
             public boolean test(File file) {
-                return file.getName().contains("geophone_");
+                return uploaderPattern.matcher(file.getName()).matches();
             }
         };
     }
