@@ -14,3 +14,5 @@ geophone_*.bin
 uploader/classes
 .ssh
 psn-adc/data/*
+wrapper.log
+wrapper
