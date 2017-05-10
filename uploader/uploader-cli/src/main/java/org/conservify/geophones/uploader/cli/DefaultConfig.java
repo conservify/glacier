@@ -25,6 +25,11 @@ public class DefaultConfig {
     }
 
     @Bean
+    public Startup startup() {
+        return new Startup(fileUploader());
+    }
+
+    @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
         PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
         return propertySourcesPlaceholderConfigurer;
