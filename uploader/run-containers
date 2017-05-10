@@ -1,0 +1,4 @@
+#!/bin/bash
+
+sudo docker run -d --name upload-geo --restart=always -v /data:/app/data conservify/uploader /app/uploader-cli/bin/uploader-cli --url http://code.conservify.org/geophones --pattern "(.+)_(\d{8})_(\d{6}).bin"  --data /app/data
+sudo docker run -d --name upload-obs --restart=always -v /data:/app/data conservify/uploader /app/uploader-cli/bin/uploader-cli --url http://code.conservify.org/geophones --pattern "(\d{14}).dig1.ch1.KMI.evt" --data /app/data/obsidian
