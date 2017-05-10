@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -e
+
+mount /dev/md0 /data
+
+docker start adc
+
+docker start sync

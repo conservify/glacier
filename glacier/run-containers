@@ -1,0 +1,4 @@
+#!/bin/bash
+
+sudo docker run -d --name sync -v /data:/data --restart=always --add-host lodge:169.254.128.129 conservify/lsyncd
+sudo docker run -d --name adc -v /data:/app/data --restart=always --privileged conservify/psn-adc
