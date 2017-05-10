@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -e
-
-~/gradle-3.4.1/bin/gradle build 
-
-sudo docker build -t conservify/uploader:latest .
-
-sudo docker push conservify/uploader
