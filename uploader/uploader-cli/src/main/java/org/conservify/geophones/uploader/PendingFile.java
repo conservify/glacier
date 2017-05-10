@@ -29,18 +29,36 @@ public class PendingFile implements Comparable<PendingFile> {
         return Long.compare(date, o.date);
     }
 
-    private static final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss");
-    private static final Pattern stampRe  = Pattern.compile(".*(\\d\\d\\d\\d\\d\\d\\d\\d_\\d\\d\\d\\d\\d\\d).*");
+    TimeStampFormat timeStampParser = new TimeStampFormat(new SimpleDateFormat("yyyyMMddHHmmss"), Pattern.compile(".*(\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d\\d).*"));
 
     public Date getTimestamp() {
-        Matcher matcher = stampRe.matcher(file.getName());
-        if (matcher.matches()) {
-            try {
-                return formatter.parse(matcher.group(1));
-            } catch (ParseException e) {
-                logger.error(String.format("Unable to parse timestamp '%s'", matcher.group(0)), e);
-            }
+        // Remove _'s here because some files passing through have them between the date and time.
+        Date parsed = timeStampParser.parse(file.getName().replace("_", ""));
+        if (parsed != null) {
+            return parsed;
         }
         return new Date(this.date);
+    }
+
+    public static class TimeStampFormat {
+        private SimpleDateFormat formatter;
+        private Pattern pattern;
+
+        public TimeStampFormat(SimpleDateFormat formatter, Pattern pattern) {
+            this.formatter = formatter;
+            this.pattern = pattern;
+        }
+
+        public Date parse(String name) {
+            Matcher matcher = pattern.matcher(name);
+            if (matcher.matches()) {
+                try {
+                    return formatter.parse(matcher.group(1));
+                } catch (ParseException e) {
+                    logger.error(String.format("Unable to parse timestamp '%s'", matcher.group(0)), e);
+                }
+            }
+            return null;
+        }
     }
 }
