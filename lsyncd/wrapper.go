@@ -16,7 +16,7 @@ func archive(directory string) {
 	for _, f := range files {
 		matches := re.FindAllStringSubmatch(f.Name(), -1)
 		if len(matches) > 0 {
-			newPath := path.Join(directory, matches[0][2], matches[0][3])
+			newPath := path.Join(directory, "archive", matches[0][2], matches[0][3])
 
 			if os.MkdirAll(newPath, 0777) == nil {
 				err := os.Rename(path.Join(directory, f.Name()), path.Join(newPath, f.Name()))
@@ -44,9 +44,12 @@ func main() {
 
 	args := os.Args[1:]
 
+	log.Printf("Args: %v\n", args)
+
 	cmd := exec.Command("/usr/bin/rsync", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 	cmd.Run()
 
 	waitStatus := cmd.ProcessState.Sys().(syscall.WaitStatus)
