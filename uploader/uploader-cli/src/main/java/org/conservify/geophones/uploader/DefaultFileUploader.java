@@ -98,7 +98,7 @@ public class DefaultFileUploader implements FileUploader {
 
     private void archive(PendingFile file) {
         String path = directoryStampFormat.format(file.getTimestamp());
-        File directory = new File(file.getFile().getParentFile(), path);
+        File directory = new File(new File(file.getFile().getParentFile(), "archive"), path);
         directory.mkdirs();
         File newFile = new File(directory, file.getFile().getName());
         file.getFile().renameTo(newFile);
