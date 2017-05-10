@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# This requires GatewayPorts yes in sshd_config
+
+nohup ssh -nNT -L :2022:169.254.127.129:22 glacier > /data/rock-ssh.log 2> /data/rock-ssh.err < /dev/null &

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -e
+
+mount /dev/md0 /data
