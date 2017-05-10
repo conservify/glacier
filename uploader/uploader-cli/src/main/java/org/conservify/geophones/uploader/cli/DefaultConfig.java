@@ -15,13 +15,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ComponentScan(basePackages = "org.conservify.geophones.streamer", scopedProxy = ScopedProxyMode.INTERFACES)
 public class DefaultConfig {
     @Bean
-    public StreamerService streamerService() {
-        return new StreamerService(fileUploader());
-    }
-
-    @Bean
-    public GeophoneUploaderConfiguration configuration() {
-        return  new GeophoneUploaderConfiguration();
+    public UploaderConfiguration configuration() {
+        return  new UploaderConfiguration();
     }
 
     @Bean

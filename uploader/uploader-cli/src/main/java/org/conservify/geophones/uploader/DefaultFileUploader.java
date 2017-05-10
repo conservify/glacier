@@ -23,10 +23,10 @@ import java.util.concurrent.TimeUnit;
 
 public class DefaultFileUploader implements FileUploader {
     private static final Logger logger = LoggerFactory.getLogger(DefaultFileUploader.class);
-    private final GeophoneUploaderConfiguration configuration;
+    private final UploaderConfiguration configuration;
     private volatile boolean running = true;
 
-    public DefaultFileUploader(GeophoneUploaderConfiguration configuration) {
+    public DefaultFileUploader(UploaderConfiguration configuration) {
         this.configuration = configuration;
     }
 
