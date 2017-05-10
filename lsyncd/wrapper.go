@@ -7,6 +7,7 @@ import (
 	"syscall"
 	"io/ioutil"
 	"regexp"
+	"path"
 )
 
 func archive(directory string) {
@@ -15,16 +16,17 @@ func archive(directory string) {
 	for _, f := range files {
 		matches := re.FindAllStringSubmatch(f.Name(), -1)
 		if len(matches) > 0 {
-			newPath := matches[0][2] + "/" + matches[0][3]
+			newPath := path.Join(directory, matches[0][2], matches[0][3])
 
 			if os.MkdirAll(newPath, 0777) == nil {
-				if os.Rename(directory + "/" + f.Name(), newPath + "/" + f.Name()) == nil {
+				err := os.Rename(path.Join(directory, f.Name()), path.Join(newPath, f.Name()))
+				if err == nil {
 					log.Printf("Archived %s.\n", f.Name())
 				} else {
-					log.Fatalf("Unable to archive %s.\n", f.Name())
+					log.Printf("Unable to archive %s: %s\n", f.Name(), err)
 				}
 			} else {
-				log.Fatalf("Error creating directory %s, failed to archive %s\n", newPath, f.Name())
+				log.Printf("Error creating directory %s, failed to archive %s\n", newPath, f.Name())
 			}
 		}
 	}
@@ -50,8 +52,10 @@ func main() {
 	waitStatus := cmd.ProcessState.Sys().(syscall.WaitStatus)
 
 	if waitStatus.ExitStatus() == 0 {
-		archive("./")
+		archive("/data")
 	}
+
+	log.Printf("Exiting %d", waitStatus.ExitStatus())
 
 	os.Exit(waitStatus.ExitStatus())
 }

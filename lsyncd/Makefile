@@ -5,10 +5,6 @@ DOCKER_IMAGE_TAGNAME=$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
 default: build
 
 build:
-	gradle build
-	
-	go build wrapper.go
-
 	docker build -t $(DOCKER_IMAGE_TAGNAME) .
 
 push:
