@@ -125,7 +125,7 @@ public class DefaultFileUploader implements FileUploader {
         }
 
         try {
-            try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+            try(BufferedReader br = new BufferedReader(new FileReader(archiveFile))) {
                 for(String line; (line = br.readLine()) != null; ) {
                     if (line.trim().equalsIgnoreCase(file.getName())) {
                         return true;
