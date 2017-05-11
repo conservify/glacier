@@ -106,7 +106,7 @@ public class DefaultFileUploader implements FileUploader {
 
     private void remember(PendingFile file) {
         try {
-            FileWriter writer = new FileWriter(new File(configuration.getDataDirectory(),"archive"), true);
+            FileWriter writer = new FileWriter(new File(configuration.getDataDirectory(),"archived.txt"), true);
             try {
                 writer.write(file.getFile().getName() + "\n");
             }
@@ -119,7 +119,7 @@ public class DefaultFileUploader implements FileUploader {
     }
 
     private boolean alreadyDone(File file) {
-        File archiveFile = new File(configuration.getDataDirectory(),"archive");
+        File archiveFile = new File(configuration.getDataDirectory(),"archived.txt");
         if (!archiveFile.exists()) {
             return false;
         }
