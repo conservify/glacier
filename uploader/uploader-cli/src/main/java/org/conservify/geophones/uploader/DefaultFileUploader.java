@@ -46,6 +46,11 @@ public class DefaultFileUploader implements FileUploader {
                 }
             } catch (IOException e) {
                 logger.error(e.getMessage(), e);
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e1) {
+                }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
