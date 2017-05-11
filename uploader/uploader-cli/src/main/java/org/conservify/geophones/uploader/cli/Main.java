@@ -35,7 +35,7 @@ public class Main {
         properties.setProperty("dataDirectory", cmd.getOptionValue("data", "."));
         properties.setProperty("uploadUrl", cmd.getOptionValue("url", "https://code.conservify.org/geophones"));
         properties.setProperty("uploadPattern", cmd.getOptionValue("pattern","(.+)_(\\d{8})_(\\d{6}).bin"));
-        properties.setProperty("disableArchive", cmd.getOptionValue("disable-archive", "false"));
+        properties.setProperty("disableArchive", cmd.hasOption("disable-archive") ? "true" : "false");
 
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
         applicationContext.getEnvironment().getPropertySources().addFirst(new PropertiesPropertySource("commandLine", properties));
@@ -49,6 +49,7 @@ public class Main {
         logger.info("Data: {}", configuration.getDataDirectory());
         logger.info("URL: {}", configuration.getUploadUrl());
         logger.info("Pattern: {}", configuration.getUploadPattern());
+        logger.info("DisableArchive: {}", configuration.isDisableArchive());
 
         CountDownLatch latch = new CountDownLatch(1);
 
