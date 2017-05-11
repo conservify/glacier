@@ -17,6 +17,8 @@ public class UploaderConfiguration {
     private String uploadUrl;
     @Value("${uploadPattern}")
     private String uploadPattern;
+    @Value("${disableArchive}")
+    private boolean disableArchive;
 
     public String getDataDirectory() {
         return dataDirectory;
@@ -40,6 +42,14 @@ public class UploaderConfiguration {
 
     public String getUploadPattern() {
         return uploadPattern;
+    }
+
+    public void setDisableArchive(boolean disableArchive) {
+        this.disableArchive = disableArchive;
+    }
+
+    public boolean isDisableArchive() {
+        return disableArchive;
     }
 
     public Predicate<File> getUploadPredicate() {

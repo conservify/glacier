@@ -18,6 +18,7 @@ public class Main {
         options.addOption(null, "data", true, "data directory");
         options.addOption(null, "url", true, "upload url");
         options.addOption(null, "pattern", true, "upload pattern");
+        options.addOption(null, "disable-archive", false, "disable archiving");
         options.addOption(null, "help", false, "display this message");
 
         org.apache.commons.cli.CommandLineParser parser = new DefaultParser();
@@ -34,6 +35,7 @@ public class Main {
         properties.setProperty("dataDirectory", cmd.getOptionValue("data", "."));
         properties.setProperty("uploadUrl", cmd.getOptionValue("url", "https://code.conservify.org/geophones"));
         properties.setProperty("uploadPattern", cmd.getOptionValue("pattern","(.+)_(\\d{8})_(\\d{6}).bin"));
+        properties.setProperty("disableArchive", cmd.getOptionValue("disable-archive", "false"));
 
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
         applicationContext.getEnvironment().getPropertySources().addFirst(new PropertiesPropertySource("commandLine", properties));

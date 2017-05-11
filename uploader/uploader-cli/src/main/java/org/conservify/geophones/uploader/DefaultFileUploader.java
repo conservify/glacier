@@ -91,12 +91,52 @@ public class DefaultFileUploader implements FileUploader {
                     logger.info("Done uploading {} {} ({})", file.getFile(), httpConnection.getResponseCode(), timer.stop());
                 }
 
-                archive(file);
+                if (configuration.isDisableArchive()) {
+                    remember(file);
+                }
+                else {
+                    archive(file);
+                }
             }
             catch (IOException e) {
                 logger.error("Error uploading file", e);
             }
         }
+    }
+
+    private void remember(PendingFile file) {
+        try {
+            FileWriter writer = new FileWriter(new File(configuration.getDataDirectory(),"archive"), true);
+            try {
+                writer.write(file.getFile().getName() + "\n");
+            }
+            finally {
+                writer.close();
+            }
+        } catch (IOException e) {
+            logger.error("Unable to remember upload", e);
+        }
+    }
+
+    private boolean alreadyDone(File file) {
+        File archiveFile = new File(configuration.getDataDirectory(),"archive");
+        if (!archiveFile.exists()) {
+            return false;
+        }
+
+        try {
+            try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+                for(String line; (line = br.readLine()) != null; ) {
+                    if (line.trim().equalsIgnoreCase(file.getName())) {
+                        return true;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.error("Unable to remember upload", e);
+        }
+
+        return false;
     }
 
     private static final SimpleDateFormat directoryStampFormat = new SimpleDateFormat("yyyyMM/dd_HH");
@@ -124,7 +164,9 @@ public class DefaultFileUploader implements FileUploader {
                             fileChannel.close();
                         }
 
-                        files.add(new PendingFile(file.getAbsoluteFile()));
+                        if (!configuration.isDisableArchive() || !alreadyDone(file)) {
+                            files.add(new PendingFile(file.getAbsoluteFile()));
+                        }
                     }
                 }
             } catch (OverlappingFileLockException e) {
