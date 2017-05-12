@@ -63,6 +63,7 @@ type ProStarMppt struct {
 
 	ChargeState string
 	LoadState   string
+	LedState    string
 
 	LoadCurrentCompensated float32
 	LoadHvdVoltage         float32
@@ -92,7 +93,7 @@ func (controller *ProStarMppt) Connect(address string) (err error) {
 	controller.handler.Parity = "N"
 	controller.handler.StopBits = 1
 	controller.handler.SlaveId = 1
-	controller.handler.Timeout = 5 * time.Second
+	controller.handler.Timeout = 10 * time.Second
 
 	err = controller.handler.Connect()
 	if err != nil {
@@ -187,6 +188,66 @@ func (controller *ProStarMppt) ReadLoadState() (value string, err error) {
 	return
 }
 
+func (controller *ProStarMppt) ReadLedState() (value string, err error) {
+	data, err := controller.mc.ReadHoldingRegisters(0x3B, 1)
+	if err != nil {
+		return
+	}
+
+	switch binary.BigEndian.Uint16(data) {
+	case 0:
+		value = "LedStart"
+	case 1:
+		value = "LedStart2"
+	case 2:
+		value = "LedBranch"
+	case 3:
+		value = "Equalize"
+	case 4:
+		value = "Float"
+	case 5:
+		value = "Absorption"
+	case 6:
+		value = "Green"
+	case 7:
+		value = "GreenYellow"
+	case 8:
+		value = "Yellow"
+	case 9:
+		value = "YellowRed"
+	case 10:
+		value = "BlinkRed"
+	case 11:
+		value = "Red"
+	case 12:
+		value = "RygError1"
+	case 13:
+		value = "RygError2"
+	case 14:
+		value = "RgyError"
+	case 15:
+		value = "RyError"
+	case 16:
+		value = "RgError"
+	case 17:
+		value = "RyGyError"
+	case 18:
+		value = "GyrError"
+	case 19:
+		value = "GyrTimesTwo"
+	case 20:
+		value = "Off"
+	case 21:
+		value = "GyRTimesTwoGreenTimesTwo"
+	case 22:
+		value = "GyrTimesTwoRedTimesTwo"
+	default:
+		value = "Unknown"
+	}
+
+	return
+}
+
 func (controller *ProStarMppt) Refresh() (err error) {
 	controller.ChargeCurrent, err = controller.ReadFloat16(0x10)
 	if err != nil {
@@ -247,6 +308,10 @@ func (controller *ProStarMppt) Refresh() (err error) {
 		return
 	}
 	controller.LoadState, err = controller.ReadLoadState()
+	if err != nil {
+		return
+	}
+	controller.LedState, err = controller.ReadLedState()
 	if err != nil {
 		return
 	}
@@ -336,7 +401,7 @@ func main() {
 	defer proStar.Close()
 
 	worked := false
-	tries := 2
+	tries := 5
 	for tries > 0 {
 		err := proStar.Refresh()
 		if err != nil {
@@ -381,6 +446,7 @@ func main() {
 
 		proStar.ChargeState,
 		proStar.LoadState,
+		proStar.LedState,
 
 		proStar.LoadCurrentCompensated,
 		proStar.LoadHvdVoltage,

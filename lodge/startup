@@ -3,3 +3,5 @@
 set -e
 
 mount /dev/md0 /data
+
+/home/pi/geophones/lodge/routing
