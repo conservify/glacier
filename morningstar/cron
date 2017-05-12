@@ -1,0 +1,1 @@
+0 * * * * pi /home/pi/geophones/morningstar/morningstar --csv /data/morningstar.csv >> /data/morningstar.log

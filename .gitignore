@@ -16,3 +16,6 @@ uploader/classes
 psn-adc/data/*
 wrapper.log
 wrapper
+*.swp
+morningstar/morningstar
+morningstar/morningstar.csv
