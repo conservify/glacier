@@ -1,17 +1,16 @@
 package main
 
 import (
+	"bufio"
+	"encoding/binary"
 	"flag"
-	"log"
 	"fmt"
 	"github.com/goburrow/modbus"
-	"time"
-	"encoding/binary"
+	"log"
 	"math"
 	"os"
-	"bufio"
+	"time"
 )
-
 
 // taken from OGRE 3D rendering engine
 func float16toUint32(yy uint16) (d uint32) {
@@ -44,40 +43,40 @@ func float16toUint32(yy uint16) (d uint32) {
 }
 
 type ProStarMppt struct {
-	handler *modbus.RTUClientHandler 
-	mc modbus.Client
+	handler *modbus.RTUClientHandler
+	mc      modbus.Client
 
-	ChargeCurrent float32
-	ArrayCurrent float32
-	BatteryTerminalVoltage float32
-	ArrayVoltage float32
-	LoadVoltage float32
-	BatteryCurrentNet float32
-	LoadCurrent float32
-	BatterySenseVoltage float32
-	BatteryVoltageSlowFilter float32
+	ChargeCurrent               float32
+	ArrayCurrent                float32
+	BatteryTerminalVoltage      float32
+	ArrayVoltage                float32
+	LoadVoltage                 float32
+	BatteryCurrentNet           float32
+	LoadCurrent                 float32
+	BatterySenseVoltage         float32
+	BatteryVoltageSlowFilter    float32
 	BatteryCurrentNetSlowFIlter float32
 
 	HeatsinkTemperature float32
-	BatteryTemperature float32
-	AmbientTemperature float32
-	
+	BatteryTemperature  float32
+	AmbientTemperature  float32
+
 	ChargeState string
-	LoadState string
+	LoadState   string
 
 	LoadCurrentCompensated float32
-	LoadHvdVoltage float32
+	LoadHvdVoltage         float32
 
-	PowerOut float32
-	ArrayTargetVoltage float32
+	PowerOut              float32
+	ArrayTargetVoltage    float32
 	MaximumBatteryVoltage float32
 	MinimumBatteryVoltage float32
-	AmpHourCharge float32
-	AmpHourLoad float32
+	AmpHourCharge         float32
+	AmpHourLoad           float32
 
-	TimeInAbsorption uint16
+	TimeInAbsorption   uint16
 	TimeInEqualization uint16
-	TimeInFloat uint16
+	TimeInFloat        uint16
 }
 
 func NewProStarMppt() (controller *ProStarMppt) {
@@ -129,21 +128,33 @@ func (controller *ProStarMppt) ReadChargeState() (value string, err error) {
 	}
 
 	switch binary.BigEndian.Uint16(data) {
-	case 0: value = "Start"
-	case 1: value = "NightCheck"
-	case 2: value = "Disconnect"
-	case 3: value = "Night"
-	case 4: value = "Fault"
-	case 5: value = "MPPT"
-	case 6: value = "Absorption"
-	case 7: value = "Float"
-	case 8: value = "Equalize"
-	case 9: value = "Slave"
-	case 10: value = "Fixed"
-	default: value = "Unknown"
+	case 0:
+		value = "Start"
+	case 1:
+		value = "NightCheck"
+	case 2:
+		value = "Disconnect"
+	case 3:
+		value = "Night"
+	case 4:
+		value = "Fault"
+	case 5:
+		value = "MPPT"
+	case 6:
+		value = "Absorption"
+	case 7:
+		value = "Float"
+	case 8:
+		value = "Equalize"
+	case 9:
+		value = "Slave"
+	case 10:
+		value = "Fixed"
+	default:
+		value = "Unknown"
 	}
 
-	return 
+	return
 }
 
 func (controller *ProStarMppt) ReadLoadState() (value string, err error) {
@@ -153,63 +164,152 @@ func (controller *ProStarMppt) ReadLoadState() (value string, err error) {
 	}
 
 	switch binary.BigEndian.Uint16(data) {
-	case 0: value = "Start"
-	case 1: value = "LoadOn"
-	case 2: value = "LowVoltageWarning"
-	case 3: value = "LowVoltage"
-	case 4: value = "Fault"
-	case 5: value = "Disconnect"
-	case 6: value = "LoadOff"
-	case 7: value = "Override"
-	default: value = "Unknown"
+	case 0:
+		value = "Start"
+	case 1:
+		value = "LoadOn"
+	case 2:
+		value = "LowVoltageWarning"
+	case 3:
+		value = "LowVoltage"
+	case 4:
+		value = "Fault"
+	case 5:
+		value = "Disconnect"
+	case 6:
+		value = "LoadOff"
+	case 7:
+		value = "Override"
+	default:
+		value = "Unknown"
 	}
 
-	return 
+	return
 }
 
-func (controller *ProStarMppt) Refresh() {
-	controller.ChargeCurrent, _ = controller.ReadFloat16(0x10)
-	controller.ArrayCurrent, _ = controller.ReadFloat16(0x11)
-	controller.BatteryTerminalVoltage, _ = controller.ReadFloat16(0x12)
-	controller.ArrayVoltage, _ = controller.ReadFloat16(0x13)
-	controller.LoadVoltage, _ = controller.ReadFloat16(0x14)
-	controller.BatteryCurrentNet, _ = controller.ReadFloat16(0x15)
-	controller.LoadCurrent, _ = controller.ReadFloat16(0x16)
-	controller.BatterySenseVoltage, _ = controller.ReadFloat16(0x17)
-	controller.BatteryVoltageSlowFilter, _ = controller.ReadFloat16(0x18)
-	controller.BatteryCurrentNetSlowFIlter, _ = controller.ReadFloat16(0x19)
+func (controller *ProStarMppt) Refresh() (err error) {
+	controller.ChargeCurrent, err = controller.ReadFloat16(0x10)
+	if err != nil {
+		return
+	}
+	controller.ArrayCurrent, err = controller.ReadFloat16(0x11)
+	if err != nil {
+		return
+	}
+	controller.BatteryTerminalVoltage, err = controller.ReadFloat16(0x12)
+	if err != nil {
+		return
+	}
+	controller.ArrayVoltage, err = controller.ReadFloat16(0x13)
+	if err != nil {
+		return
+	}
+	controller.LoadVoltage, err = controller.ReadFloat16(0x14)
+	if err != nil {
+		return
+	}
+	controller.BatteryCurrentNet, err = controller.ReadFloat16(0x15)
+	if err != nil {
+		return
+	}
+	controller.LoadCurrent, err = controller.ReadFloat16(0x16)
+	if err != nil {
+		return
+	}
+	controller.BatterySenseVoltage, err = controller.ReadFloat16(0x17)
+	if err != nil {
+		return
+	}
+	controller.BatteryVoltageSlowFilter, err = controller.ReadFloat16(0x18)
+	if err != nil {
+		return
+	}
+	controller.BatteryCurrentNetSlowFIlter, err = controller.ReadFloat16(0x19)
+	if err != nil {
+		return
+	}
 
-	controller.HeatsinkTemperature, _ = controller.ReadFloat16(0x1A)
-	controller.BatteryTemperature, _ = controller.ReadFloat16(0x1B)
-	controller.AmbientTemperature, _ = controller.ReadFloat16(0x1C)
-	
-	controller.ChargeState, _ = controller.ReadChargeState()
-	controller.LoadState, _ = controller.ReadLoadState()
+	controller.HeatsinkTemperature, err = controller.ReadFloat16(0x1A)
+	if err != nil {
+		return
+	}
+	controller.BatteryTemperature, err = controller.ReadFloat16(0x1B)
+	if err != nil {
+		return
+	}
+	controller.AmbientTemperature, err = controller.ReadFloat16(0x1C)
+	if err != nil {
+		return
+	}
 
-	controller.LoadCurrentCompensated, _ = controller.ReadFloat16(0x30)
-	controller.LoadHvdVoltage, _ = controller.ReadFloat16(0x31)
+	controller.ChargeState, err = controller.ReadChargeState()
+	if err != nil {
+		return
+	}
+	controller.LoadState, err = controller.ReadLoadState()
+	if err != nil {
+		return
+	}
 
-	controller.PowerOut, _ = controller.ReadFloat16(0x3C)
-	controller.ArrayTargetVoltage, _ = controller.ReadFloat16(0x40)
-	controller.MaximumBatteryVoltage, _ = controller.ReadFloat16(0x41)
-	controller.MinimumBatteryVoltage, _ = controller.ReadFloat16(0x42)
+	controller.LoadCurrentCompensated, err = controller.ReadFloat16(0x30)
+	if err != nil {
+		return
+	}
+	controller.LoadHvdVoltage, err = controller.ReadFloat16(0x31)
+	if err != nil {
+		return
+	}
+
+	controller.PowerOut, err = controller.ReadFloat16(0x3C)
+	if err != nil {
+		return
+	}
+	controller.ArrayTargetVoltage, err = controller.ReadFloat16(0x40)
+	if err != nil {
+		return
+	}
+	controller.MaximumBatteryVoltage, err = controller.ReadFloat16(0x41)
+	if err != nil {
+		return
+	}
+	controller.MinimumBatteryVoltage, err = controller.ReadFloat16(0x42)
+	if err != nil {
+		return
+	}
 
 	var data []byte
 
-	data, _ = controller.mc.ReadHoldingRegisters(0x43, 1)
+	data, err = controller.mc.ReadHoldingRegisters(0x43, 1)
+	if err != nil {
+		return
+	}
 	controller.AmpHourCharge = float32(binary.BigEndian.Uint16(data)) * 0.1
 
-	data, _ = controller.mc.ReadHoldingRegisters(0x44, 1)
+	data, err = controller.mc.ReadHoldingRegisters(0x44, 1)
+	if err != nil {
+		return
+	}
 	controller.AmpHourLoad = float32(binary.BigEndian.Uint16(data)) * 0.1
 
-	data, _ = controller.mc.ReadHoldingRegisters(0x49, 1)
+	data, err = controller.mc.ReadHoldingRegisters(0x49, 1)
+	if err != nil {
+		return
+	}
 	controller.TimeInAbsorption = binary.BigEndian.Uint16(data)
 
-	data, _ = controller.mc.ReadHoldingRegisters(0x4E, 1)
+	data, err = controller.mc.ReadHoldingRegisters(0x4E, 1)
+	if err != nil {
+		return
+	}
 	controller.TimeInEqualization = binary.BigEndian.Uint16(data)
 
-	data, _ = controller.mc.ReadHoldingRegisters(0x4F, 1)
+	data, err = controller.mc.ReadHoldingRegisters(0x4F, 1)
+	if err != nil {
+		return
+	}
 	controller.TimeInFloat = binary.BigEndian.Uint16(data)
+
+	return
 }
 
 func FindDevice() (device *string) {
@@ -218,14 +318,14 @@ func FindDevice() (device *string) {
 
 func main() {
 	device := flag.String("device", "/dev/ttyUSB0", "USB device")
-	search := flag.Bool("search", false, "search all USB devices") 
+	search := flag.Bool("search", false, "search all USB devices")
 	csvFile := flag.String("csv", "morningstar.csv", "CSV file")
 
 	flag.Parse()
 
 	if *search {
 		device = FindDevice()
-	} 
+	}
 
 	proStar := NewProStarMppt()
 	err := proStar.Connect(*device)
@@ -235,9 +335,24 @@ func main() {
 
 	defer proStar.Close()
 
-	proStar.Refresh()
+	worked := false
+	tries := 2
+	for tries > 0 {
+		err := proStar.Refresh()
+		if err == nil {
+			worked = true
+			break
+		}
 
-	file, err := os.OpenFile(*csvFile, os.O_CREATE | os.O_APPEND | os.O_WRONLY, 0600)
+		tries--
+	}
+
+	if !worked {
+		log.Fatal("Unable to get data")
+	}
+
+	log.Printf("Opening %v", *csvFile)
+	file, err := os.OpenFile(*csvFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -246,7 +361,7 @@ func main() {
 
 	defer file.Close()
 
-	values := []interface{} {
+	values := []interface{}{
 		proStar.ChargeCurrent,
 		proStar.ArrayCurrent,
 		proStar.BatteryTerminalVoltage,
