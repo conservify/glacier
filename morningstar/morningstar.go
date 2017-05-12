@@ -339,7 +339,9 @@ func main() {
 	tries := 2
 	for tries > 0 {
 		err := proStar.Refresh()
-		if err == nil {
+		if err != nil {
+			log.Printf("Error getting data", err)
+		} else {
 			worked = true
 			break
 		}
