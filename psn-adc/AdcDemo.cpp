@@ -34,13 +34,9 @@
 
 AdcBoardConfig2 config;						/* Configuration information sent to the DLL and ADC board */
 
-/* Data buffers */
-#define NEW_DATA_LENGTH		1024
-BYTE newData[ NEW_DATA_LENGTH ];
-
 /* Incoming ADC sample data is demuxed into this array. */
-LONG demuxData[MAX_ADC_CHANNELS][MAX_SPS_RATE];
-float floatData[MAX_ADC_CHANNELS * MAX_SPS_RATE];
+LONG demuxData[DEF_NUMBER_CHANNELS][MAX_SPS_RATE];
+float floatData[DEF_NUMBER_CHANNELS * MAX_SPS_RATE];
 
 HANDLE hBoard = 0;							/* Handle to the DLL/ADC board */
 
@@ -264,10 +260,9 @@ BOOL WriteLogFile(logfile_t *lf, DataHeader *hdr) {
 
 	if (writeAscii)
 	{
-		// LONG demuxData[MAX_ADC_CHANNELS][ MAX_SPS_RATE ];
 		for (size_t i = 0; i < MAX_SPS_RATE; ++i)
 		{
-			for (size_t j = 0; j < MAX_ADC_CHANNELS; ++j)
+			for (size_t j = 0; j < DEF_NUMBER_CHANNELS; ++j)
 			{
 				if (j > 0)
 					fprintf(lf->fp, ",");
@@ -278,16 +273,21 @@ BOOL WriteLogFile(logfile_t *lf, DataHeader *hdr) {
 	}
 	else
 	{
-		size_t idx = 0;
+		FILE *tempAsciiFp = fopen("/app/data/incoming.csv", "w");
 		for (size_t i = 0; i < MAX_SPS_RATE; ++i)
 		{
-			for (size_t j = 0; j < MAX_ADC_CHANNELS; ++j)
+			for (size_t j = 0; j < DEF_NUMBER_CHANNELS; ++j)
 			{
-				floatData[idx++] = demuxData[j][i];
+				floatData[(i * DEF_NUMBER_CHANNELS) + j] = demuxData[j][i];
+				if (j > 0)
+					fprintf(tempAsciiFp, ",");
+				fprintf(tempAsciiFp, "%d", demuxData[j][i]);
 			}
+			fprintf(tempAsciiFp, "\n");
 		}
-		uint32_t written = fwrite(floatData, 1, sizeof(floatData), lf->fp);
-		if (written != sizeof(floatData))
+		fclose(tempAsciiFp);
+		uint32_t written = fwrite(floatData, sizeof(floatData), 1, lf->fp);
+		if (written != 1)
 		{
 			fprintf(stderr, "Unable to write full buffer to disk.\n");
 		}
@@ -328,11 +328,6 @@ void NewADData( DWORD type, DataHeader *hdr, void *adcData, DWORD dataLen )
 				boardStr = "Sdr24 Board";
 			printf("\nADC Board Type = %s\n\n", boardStr );
 		}
-
-		printf("Sample Information:\n");
-		printf("  %d\n", MAX_SPS_RATE);
-		printf("  %d\n", MAX_ADC_CHANNELS);
-		printf("  %d\n", sizeof(floatData));
 	}
 	if( hdr->timeRefStatus == TIME_REF_NOT_LOCKED )
 		lockStr = "Not Locked";
