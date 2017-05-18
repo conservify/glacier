@@ -19,6 +19,8 @@ public class UploaderConfiguration {
     private String uploadPattern;
     @Value("${disableArchive}")
     private boolean disableArchive;
+    @Value("${token")
+    private String token;
 
     public String getDataDirectory() {
         return dataDirectory;
@@ -46,6 +48,14 @@ public class UploaderConfiguration {
 
     public void setDisableArchive(boolean disableArchive) {
         this.disableArchive = disableArchive;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public boolean isDisableArchive() {

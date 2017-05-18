@@ -71,8 +71,8 @@ public class DefaultFileUploader implements FileUploader {
 
                 URL url = new URL(configuration.getUploadUrl());
                 HttpURLConnection httpConnection = (HttpURLConnection)url.openConnection();
-                httpConnection.setRequestProperty("Content-Type", "application/octet-stream");
-                httpConnection.setRequestProperty("x-token", "zddgXMjr_YI2e87G0mch6tXHMupLGZ6PZ58mHOSdqJtQ566PJj8mzQ");
+                httpConnection.setRequestProperty("content-type", "application/octet-stream");
+                httpConnection.setRequestProperty("x-token", configuration.getToken());
                 httpConnection.setRequestProperty("x-timestamp", Long.toString(file.getTimestamp().getTime()));
                 httpConnection.setRequestProperty("x-frequency", "512");
                 httpConnection.setRequestProperty("x-input-id", "0");
