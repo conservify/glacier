@@ -19,7 +19,7 @@ public class UploaderConfiguration {
     private String uploadPattern;
     @Value("${disableArchive}")
     private boolean disableArchive;
-    @Value("${token")
+    @Value("${token}")
     private String token;
 
     public String getDataDirectory() {
