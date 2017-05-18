@@ -36,10 +36,11 @@ AdcBoardConfig2 config;						/* Configuration information sent to the DLL and AD
 
 /* Data buffers */
 #define NEW_DATA_LENGTH		1024
-BYTE newData[ NEW_DATA_LENGTH ], newSampleData[ MAX_ADC_CHANNELS * MAX_SPS_RATE * sizeof( LONG ) ];
+BYTE newData[ NEW_DATA_LENGTH ];
 
 /* Incoming ADC sample data is demuxed into this array. */
-LONG demuxData[MAX_ADC_CHANNELS][ MAX_SPS_RATE ];
+LONG demuxData[MAX_ADC_CHANNELS][MAX_SPS_RATE];
+float floatData[MAX_ADC_CHANNELS * MAX_SPS_RATE];
 
 HANDLE hBoard = 0;							/* Handle to the DLL/ADC board */
 
@@ -277,8 +278,17 @@ BOOL WriteLogFile(logfile_t *lf, DataHeader *hdr) {
 	}
 	else
 	{
-		uint32_t written = fwrite(newSampleData, 1, sizeof(newSampleData), lf->fp);
-		if (written != sizeof(newSampleData)) {
+		size_t idx = 0;
+		for (size_t i = 0; i < MAX_SPS_RATE; ++i)
+		{
+			for (size_t j = 0; j < MAX_ADC_CHANNELS; ++j)
+			{
+				floatData[idx++] = demuxData[j][i];
+			}
+		}
+		uint32_t written = fwrite(floatData, 1, sizeof(floatData), lf->fp);
+		if (written != sizeof(floatData))
+		{
 			fprintf(stderr, "Unable to write full buffer to disk.\n");
 		}
 	}
@@ -322,7 +332,7 @@ void NewADData( DWORD type, DataHeader *hdr, void *adcData, DWORD dataLen )
 		printf("Sample Information:\n");
 		printf("  %d\n", MAX_SPS_RATE);
 		printf("  %d\n", MAX_ADC_CHANNELS);
-		printf("  %d\n", sizeof(newSampleData));
+		printf("  %d\n", sizeof(floatData));
 	}
 	if( hdr->timeRefStatus == TIME_REF_NOT_LOCKED )
 		lockStr = "Not Locked";
