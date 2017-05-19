@@ -1,22 +1,22 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
-	"syscall"
-	"io/ioutil"
-	"regexp"
 	"path"
+	"regexp"
+	"syscall"
 )
 
-func archive(directory string) {
-	re := regexp.MustCompile("(?i)(.+)_(\\d{6})(\\d{2}_\\d{2})(\\d{4}).bin")
+func Archive(directory string) {
+	re := regexp.MustCompile("(?i)(.+)_(\\d{6})(\\d{2})_(\\d{2})(\\d{4}).bin")
 	files, _ := ioutil.ReadDir(directory)
 	for _, f := range files {
 		matches := re.FindAllStringSubmatch(f.Name(), -1)
 		if len(matches) > 0 {
-			newPath := path.Join(directory, "archive", matches[0][2], matches[0][3])
+			newPath := path.Join(directory, "archive", matches[0][2], matches[0][3], matches[0][4])
 
 			if os.MkdirAll(newPath, 0777) == nil {
 				err := os.Rename(path.Join(directory, f.Name()), path.Join(newPath, f.Name()))
@@ -33,7 +33,7 @@ func archive(directory string) {
 }
 
 func main() {
-	f, err := os.OpenFile("wrapper.log", os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	f, err := os.OpenFile("wrapper.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.SetFlags(0)
 		log.SetOutput(ioutil.Discard)
@@ -55,7 +55,7 @@ func main() {
 	waitStatus := cmd.ProcessState.Sys().(syscall.WaitStatus)
 
 	if waitStatus.ExitStatus() == 0 {
-		archive("/data")
+		Archive("/data")
 	}
 
 	log.Printf("Exiting %d", waitStatus.ExitStatus())
