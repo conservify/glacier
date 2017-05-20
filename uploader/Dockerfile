@@ -1,11 +1,15 @@
-FROM conservify/arm-jdk8-oracle
+FROM armv7/armhf-ubuntu
 
-COPY uploader-cli/build/distributions/uploader-cli-1.0-SNAPSHOT.tar /app/uploader-cli.tar
-
+RUN apt-get update && apt-get install -y golang git
 WORKDIR /app
 
-RUN tar xf uploader-cli.tar
-RUN mv uploader-cli-* uploader-cli && chmod 755 uploader-cli/bin/uploader-cli && find
+ADD *.go /app/
 RUN mkdir /app/data
+ENV GOROOT=/usr/lib/go
+ENV GOPATH=/app
 
-CMD ["/app/uploader-cli/bin/uploader-cli", "--data", "/app/data"]
+RUN go get -u github.com/fsnotify/fsnotify
+RUN go get -u golang.org/x/sys/...
+RUN go build -o uploader *.go
+
+CMD ["/app/uploader"]
