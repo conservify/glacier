@@ -1,0 +1,4 @@
+#!/bin/bash
+
+tmux new -d -s startup-session 'ping lodge' \; \
+	new-window -d 'ping obsidian' \;

@@ -7,3 +7,15 @@ mount /dev/md0 /data
 docker start adc
 
 docker start sync
+
+/home/pi/geophones/glacier/routing
+
+route add default gw 169.254.128.129 eth0
+
+ifconfig wlan0 10.0.0.1
+
+nohup ssh -nNT -L :8070:169.254.128.132:80 glacier > /dev/null 2> /dev/null < /dev/null &
+nohup ssh -nNT -L :8080:169.254.128.131:80 glacier > /dev/null 2> /dev/null < /dev/null &
+nohup ssh -nNT -L :8090:169.254.127.129:80 glacier > /dev/null 2> /dev/null < /dev/null &
+
+/home/pi/geophones/glacier/start-tmux
