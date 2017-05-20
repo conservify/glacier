@@ -1,4 +1,13 @@
 #!/bin/bash
 
-sudo docker run -d --name sync -v /data:/data --restart=always --add-host lodge:169.254.128.129 conservify/lsyncd
-sudo docker run -d --name adc -v /data:/app/data --restart=always --privileged conservify/psn-adc
+sudo docker run -d --name sync \
+	-v /data:/data \
+	--restart=always \
+	--log-opt max-size=10m \
+	--add-host lodge:169.254.128.129 conservify/lsyncd
+
+sudo docker run -d --name adc \
+	-v /data:/app/data \
+	--restart=always \
+	--log-opt max-size=10m \
+	--privileged conservify/psn-adc
