@@ -14,6 +14,8 @@ route add default gw 169.254.128.129 eth0
 
 ifconfig wlan0 10.0.0.1
 
+service isc-dhcp-server restart
+
 echo 8.8.8.8 >> /etc/resolv.conf # Hack
 
 nohup ssh -nNT -L :8070:169.254.128.132:80 glacier > /dev/null 2> /dev/null < /dev/null &
