@@ -1,4 +1,6 @@
 #!/bin/bash
 
 tmux new -d -s startup-session 'ping lodge' \; \
-	new-window -d 'ping obsidian' \;
+	new-window -d 'ping obsidian' \; \
+	new-window -d 'sudo docker logs --tail 10 -f adc' \; \
+	new-window -d 'sudo docker logs --tail 10 -f sync' \;
