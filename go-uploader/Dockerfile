@@ -1,11 +1,15 @@
 FROM armv7/armhf-ubuntu
 
-RUN apt-get update && apt-get install -y golang
+RUN apt-get update && apt-get install -y golang git
 WORKDIR /app
 
-ADD *.go /app
+ADD *.go /app/
 RUN mkdir /app/data
-RUN GOROOT=/app go get -u
-RUN GOROOT=/app go build -o uploader *.go
+ENV GOROOT=/usr/lib/go
+ENV GOPATH=/app
 
-CMD ["/app/main", "--data", "/app/data"]
+RUN go get -u github.com/fsnotify/fsnotify
+RUN go get -u golang.org/x/sys/...
+RUN go build -o uploader *.go
+
+CMD ["/app/uploader"]

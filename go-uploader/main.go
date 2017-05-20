@@ -12,6 +12,7 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"strconv"
 	"time"
 )
 
@@ -68,16 +69,14 @@ func NewKinemetricsBinary(file *KinemetricsFile) (binary *WaveformBinary) {
 }
 
 func NewGeophoneBinary(filePath string) (binary *WaveformBinary) {
-	re := regexp.MustCompile("(\\d{6}\\d{2}\\d{2}\\d{4})")
+	re := regexp.MustCompile(".*(\\d{14}).*")
 
-	matches := re.FindAllStringSubmatch(path.Base(filePath), -1)
+	matches := re.FindAllStringSubmatch(strings.Replace(path.Base(filePath), "_", "", -1), -1)
 	if len(matches) == 0 {
 		return nil
 	}
 
-	log.Printf("%v\n", matches)
-
-	startTime, err := time.Parse("20060102150405", matches[0][2])
+	startTime, err := time.Parse("20060102150405", matches[0][1])
 	if err != nil {
 		return nil
 	}
@@ -105,9 +104,9 @@ func UploadBinary(file *WaveformBinary, filePath string, config *Config) (err er
 
 	req.Header.Set("content-type", "application/octet-stream")
 	req.Header.Set("x-token", config.Token)
-	req.Header.Set("x-timestamp", string(file.StartTime.Unix()))
-	req.Header.Set("x-frequency", string(file.SamplesPerSecond))
-	req.Header.Set("x-input-id", string(file.InputId))
+	req.Header.Set("x-timestamp", strconv.FormatInt(file.StartTime.Unix(), 10))
+	req.Header.Set("x-frequency", strconv.Itoa(file.SamplesPerSecond))
+	req.Header.Set("x-input-id", strconv.Itoa(file.InputId))
 	req.Header.Set("x-format", "float32,float32,float32")
 	req.Header.Set("x-filename", path.Base(filePath))
 
@@ -179,18 +178,24 @@ func ScanDirectories(paths []string, config *Config) {
 								}
 
 								binary := NewKinemetricsBinary(parsed)
+								if binary != nil {
+									if err := UploadBinary(binary, binaryPath, config); err != nil {
+										log.Printf("Error uploading %s", err)
+									}
+								}
+							}
+						} else if config.Archive {
+							binary := NewGeophoneBinary(childPath)
+							if binary != nil {
 								if err := UploadBinary(binary, childPath, config); err != nil {
 									log.Printf("Error uploading %s", err)
 								}
-							}
-						} else {
-							binary := NewGeophoneBinary(childPath)
-							if err := UploadBinary(binary, childPath, config); err != nil {
-								log.Printf("Error uploading %s", err)
-							}
 
-							if err := ArchiveBinary(binary, childPath, config); err != nil {
-								log.Printf("Error archiving %s", err)
+								if err := ArchiveBinary(binary, childPath, config); err != nil {
+									log.Printf("Error archiving %s", err)
+								}
+							} else {
+								log.Printf("Unable to parse Geophone file name: %s\n", childPath)
 							}
 						}
 					}
@@ -215,6 +220,8 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
+
+	log.Printf("Starting up... doing initial scan...\n")
 
 	ScanDirectories(flag.Args(), &config)
 
