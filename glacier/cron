@@ -1,2 +1,2 @@
 */5 * * * * pi /home/pi/mirror-obsidian >> /data/obsidian.log
-0 * * * * root /home/pi/geophones/resilience/resilience lodge >> /data/resilience.log
+0 * * * * root /home/pi/geophones/resilience/resilience lodge >> /data/resilience.log 2>&1
