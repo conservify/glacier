@@ -2,6 +2,11 @@
 
 mount /dev/md0 /data
 
+/etc/init.d/logmein-hamachi start
+
 /home/pi/geophones/lodge/routing
 /home/pi/geophones/lodge/forward-rock-http
 /home/pi/geophones/lodge/forward-rock-ssh
+
+ifdown eth1
+ifup eth1

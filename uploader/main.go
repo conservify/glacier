@@ -95,7 +95,7 @@ func UploadBinary(file *WaveformBinary, filePath string, config *Config) (err er
 		return err
 	}
 
-	log.Printf("Uploading %s to %s", filePath, config.Url)
+	log.Printf("Uploading %s to %s (%d)", filePath, config.Url, file.InputId)
 
 	req, err := http.NewRequest("POST", config.Url, bytes.NewBuffer(data))
 	if err != nil {
