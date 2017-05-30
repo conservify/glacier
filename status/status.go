@@ -259,6 +259,18 @@ func CombineHealthStatus(statuses []*StatusCheck) HealthStatus {
 	return combined
 }
 
+func HealthStatusToColor(health HealthStatus) string {
+	switch health {
+	case Good:
+		return "good"
+	case Warning:
+		return "warning"
+	case Fatal:
+		return "danger"
+	}
+	return "warning"
+}
+
 func main() {
 	var server bool
 	var test bool
@@ -295,9 +307,9 @@ func main() {
 		if slackMessage {
 			api := slack.New(slackToken)
 			params := slack.PostMessageParameters{}
-			attachment := slack.Attachment{}
+			attachment := slack.Attachment{Color: HealthStatusToColor(globalStatus), Text: slackBody}
 			params.Attachments = []slack.Attachment{attachment}
-			_, _, err := api.PostMessage("testing", slackBody, params)
+			_, _, err := api.PostMessage("testing", "", params)
 			if err != nil {
 				panic(err)
 			}
