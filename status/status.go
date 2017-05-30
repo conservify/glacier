@@ -258,7 +258,7 @@ func main() {
 	if server {
 		fmt.Printf("Serving!\n")
 		http.HandleFunc("/status.json", StatusHandler)
-		http.ListenAndServe(":8080", nil)
+		http.ListenAndServe(":8000", nil)
 	} else {
 		statuses := make([]*StatusCheck, 0)
 		for _, arg := range flag.Args() {
