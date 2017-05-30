@@ -10,3 +10,7 @@ mount /dev/md0 /data
 
 ifdown eth1
 ifup eth1
+
+export DOCKER_API_VERSION=1.22
+
+nohup /home/pi/geophones/status/status --server &

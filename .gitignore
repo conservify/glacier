@@ -20,3 +20,5 @@ wrapper
 morningstar/morningstar
 morningstar/morningstar.csv
 secrets.go
+nohup.out
+status/status
