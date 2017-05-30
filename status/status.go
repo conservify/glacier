@@ -191,9 +191,9 @@ type StatusCheck struct {
 	GlobalStatus HealthStatus
 }
 
-func StatusHandler(w http.ResponseWriter, r *http.Request) {
+func Check() (check *StatusCheck) {
 	name, _ := os.Hostname()
-	check := new(StatusCheck)
+	check = new(StatusCheck)
 	check.Name = name
 	check.Healths = make([]*HealthCheck, 0)
 	check.Healths = append(check.Healths, CheckDiskHealth()...)
@@ -207,8 +207,11 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 			check.GlobalStatus = Fatal
 		}
 	}
+	return
+}
 
-	b, _ := json.Marshal(check)
+func StatusHandler(w http.ResponseWriter, r *http.Request) {
+	b, _ := json.Marshal(Check())
 	w.Write(b)
 }
 
@@ -251,9 +254,18 @@ func CombineHealthStatus(statuses []*StatusCheck) HealthStatus {
 
 func main() {
 	var server bool
+	var test bool
+
 	flag.BoolVar(&server, "server", false, "run a server")
+	flag.BoolVar(&test, "test", false, "run a test check")
 
 	flag.Parse()
+
+	if test {
+		b, _ := json.Marshal(Check())
+		os.Stdout.Write(b)
+		fmt.Printf("\n")
+	}
 
 	if server {
 		fmt.Printf("Serving!\n")
