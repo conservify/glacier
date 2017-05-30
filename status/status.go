@@ -94,7 +94,7 @@ func CheckDiskHealth() (healths []*HealthCheck) {
 
 func StripNonPrintable(str string) string {
 	return strings.Map(func(r rune) rune {
-		if r >= 32 && r < 127 {
+		if r >= 32 && r < 127 || r == '\n' {
 			return r
 		}
 		return -1
