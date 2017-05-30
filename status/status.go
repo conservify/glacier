@@ -307,7 +307,7 @@ func main() {
 		if slackMessage {
 			api := slack.New(slackToken)
 			params := slack.PostMessageParameters{}
-			attachment := slack.Attachment{Color: HealthStatusToColor(globalStatus), Text: slackBody}
+			attachment := slack.Attachment{Color: HealthStatusToColor(globalStatus), Text: slackBody, MarkdownIn: []string{"text"}}
 			params.Attachments = []slack.Attachment{attachment}
 			_, _, err := api.PostMessage("testing", "", params)
 			if err != nil {
