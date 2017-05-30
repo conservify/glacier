@@ -79,6 +79,7 @@ func CheckDisk(path string) (health *HealthCheck) {
 	health.Name = fmt.Sprintf("Disk: %s", path)
 	health.Notes = fmt.Sprintf("%.2f%% used (%.2f GB free)", percentage, freeGb)
 	health.Status = DiskPercentageToStatus(percentage)
+
 	return
 }
 
@@ -265,9 +266,7 @@ func main() {
 		b, _ := json.Marshal(Check())
 		os.Stdout.Write(b)
 		fmt.Printf("\n")
-	}
-
-	if server {
+	} else if server {
 		fmt.Printf("Serving!\n")
 		http.HandleFunc("/status.json", StatusHandler)
 		http.ListenAndServe(":8000", nil)
