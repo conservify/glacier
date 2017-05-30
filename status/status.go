@@ -15,6 +15,7 @@ import (
 	"net/smtp"
 	"net/url"
 	"os"
+	"path"
 	"strconv"
 	"strings"
 	"syscall"
@@ -271,6 +272,15 @@ func HealthStatusToColor(health HealthStatus) string {
 	return "warning"
 }
 
+func ChdirToWorkingDirectory() {
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	executablePath := path.Dir(ex)
+	os.Chdir(executablePath)
+}
+
 func main() {
 	var server bool
 	var test bool
@@ -283,6 +293,8 @@ func main() {
 	flag.BoolVar(&email, "email", false, "send an email")
 
 	flag.Parse()
+
+	ChdirToWorkingDirectory()
 
 	if test {
 		b, _ := json.Marshal(Check())
