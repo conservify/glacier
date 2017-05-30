@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+</head>
+
+<body>
+    <h1>Glacier Health: {{.GlobalStatus}}</h1>
+
+    {{range .Checks}}
+        <h2>{{.Name}}</h2>
+
+        {{range .Healths}}
+            <h3>{{.Name}}</h3>
+            <b>{{.Status}}</b>
+
+            {{if .Notes}}
+                {{.Notes}}<br/>
+            {{end}}
+        {{end}}
+    {{end}}
+</body>
+
+</html>

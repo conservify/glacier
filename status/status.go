@@ -1,12 +1,22 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"bytes"
-	"syscall"
+	"context"
+	"encoding/json"
+	"flag"
+	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"html/template"
+	"log"
+	"net/http"
+	"net/smtp"
+	"os"
+	"strconv"
+	"strings"
+	"syscall"
+	"time"
 )
 
 type DiskStatus struct {
@@ -38,15 +48,15 @@ const (
 type HealthStatus string
 
 const (
-	Good HealthStatus = "Good"
+	Good    HealthStatus = "Good"
 	Warning HealthStatus = "Warning"
-	Fatal HealthStatus = "Fatal"
+	Fatal   HealthStatus = "Fatal"
 )
 
 type HealthCheck struct {
-	Name string
+	Name   string
 	Status HealthStatus
-	Notes string
+	Notes  string
 }
 
 func DiskPercentageToStatus(percentage float64) HealthStatus {
@@ -62,24 +72,32 @@ func DiskPercentageToStatus(percentage float64) HealthStatus {
 func CheckDisk(path string) (health *HealthCheck) {
 	disk := DiskUsage(path)
 
-	// fmt.Printf("All: %.2f GB\n", float64(disk.All)/float64(GB))
-	// freeGb := float64(disk.Free)/float64(GB)
-	// usedGb := float64(disk.Used)/float64(GB)
-
-	percentaage := float64(disk.Used)/float64(disk.All)*100.0
+	freeGb := float64(disk.Free) / float64(GB)
+	percentage := float64(disk.Used) / float64(disk.All) * 100.0
 
 	health = new(HealthCheck)
 	health.Name = fmt.Sprintf("Disk: %s", path)
-	health.Notes = fmt.Sprintf("%.2f % used", percentaage)
-	health.Status = DiskPercentageToStatus(percentaage)
+	health.Notes = fmt.Sprintf("%.2f%% used (%.2f GB free)", percentage, freeGb)
+	health.Status = DiskPercentageToStatus(percentage)
 	return
 }
 
-func CheckDiskHealth() (health []*HealthCheck) {
-	health = make([]*HealthCheck, 2)
-	health = append(health, CheckDisk("/"))
-	health = append(health, CheckDisk("/data"))
+func CheckDiskHealth() (healths []*HealthCheck) {
+	healths = make([]*HealthCheck, 0)
+	healths = append(healths, CheckDisk("/"))
+	if _, err := os.Stat("/data"); !os.IsNotExist(err) {
+		healths = append(healths, CheckDisk("/data"))
+	}
 	return
+}
+
+func StripNonPrintable(str string) string {
+	return strings.Map(func(r rune) rune {
+		if r >= 32 && r < 127 {
+			return r
+		}
+		return -1
+	}, str)
 }
 
 func CheckDockerHealth() (healths []*HealthCheck) {
@@ -106,24 +124,151 @@ func CheckDockerHealth() (healths []*HealthCheck) {
 			panic(err)
 		}
 
-		health := new(HealthCheck)
-		health.Name = fmt.Sprintf("Container: %s", container.Names)
-
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(logs)
-		health.Notes = buf.String() 
+
+		health := new(HealthCheck)
+		health.Name = fmt.Sprintf("Container: %s", container.Names[0])
+		health.Notes = fmt.Sprintf("%s\n%s", container.Status, StripNonPrintable(buf.String()))
 
 		if details.State.Running {
 			health.Status = Good
 		} else {
 			health.Status = Fatal
 		}
+
+		healths = append(healths, health)
 	}
 	return
 }
 
+func Combine(statuses []*StatusCheck, globalStatus HealthStatus) (combined string) {
+	data := &TemplateData{statuses, globalStatus}
+
+	t, err := template.ParseFiles("status.html")
+	if err != nil {
+		panic(err)
+	}
+	buf := new(bytes.Buffer)
+	if err = t.Execute(buf, data); err != nil {
+		panic(err)
+	}
+	return buf.String()
+}
+
+type EmailUser struct {
+	Username    string
+	Password    string
+	EmailServer string
+	Port        int
+}
+
+type TemplateData struct {
+	Checks       []*StatusCheck
+	GlobalStatus HealthStatus
+}
+
+func SendEmail(globalStatus HealthStatus, to string, body string) {
+	var err error
+
+	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	subject := fmt.Sprintf("Subject: Glacier Health: %s\n", globalStatus)
+	msg := []byte(subject + mime + "\n" + body)
+
+	emailUser := &EmailUser{smtpUsername, smtpPassword, "smtp.gmail.com", 587}
+	auth := smtp.PlainAuth("", emailUser.Username, emailUser.Password, emailUser.EmailServer)
+	server := emailUser.EmailServer + ":" + strconv.Itoa(emailUser.Port)
+
+	err = smtp.SendMail(server, auth, emailUser.Username, []string{"jlewalle@gmail.com"}, msg)
+	if err != nil {
+		log.Print("ERROR: Unable to send email", err)
+	}
+}
+
+type StatusCheck struct {
+	Name         string
+	Healths      []*HealthCheck
+	GlobalStatus HealthStatus
+}
+
+func StatusHandler(w http.ResponseWriter, r *http.Request) {
+	name, _ := os.Hostname()
+	check := new(StatusCheck)
+	check.Name = name
+	check.Healths = make([]*HealthCheck, 0)
+	check.Healths = append(check.Healths, CheckDiskHealth()...)
+	check.Healths = append(check.Healths, CheckDockerHealth()...)
+	check.GlobalStatus = Good
+	for _, health := range check.Healths {
+		if health.Status == Warning && check.GlobalStatus == Good {
+			check.GlobalStatus = Warning
+		}
+		if health.Status == Fatal {
+			check.GlobalStatus = Fatal
+		}
+	}
+
+	b, _ := json.Marshal(check)
+	w.Write(b)
+}
+
+func QueryStatus(url string) (target *StatusCheck) {
+	client := http.Client{Timeout: 10 * time.Second}
+	r, err := client.Get(url)
+	if err != nil {
+		failure := new(HealthCheck)
+		failure.Notes = fmt.Sprintf("Server unavailable.")
+		failure.Name = url
+		failure.Status = Fatal
+
+		target = new(StatusCheck)
+		target.GlobalStatus = Fatal
+		target.Healths = append(target.Healths, failure)
+	} else {
+		defer r.Body.Close()
+
+		target = new(StatusCheck)
+		err = json.NewDecoder(r.Body).Decode(target)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return
+}
+
+func CombineHealthStatus(statuses []*StatusCheck) HealthStatus {
+	combined := Good
+	for _, s := range statuses {
+		if s.GlobalStatus == Warning && combined == Good {
+			combined = Warning
+		}
+		if s.GlobalStatus == Fatal {
+			combined = Fatal
+		}
+	}
+	return combined
+}
+
 func main() {
-	healths := make([]*HealthCheck, 0)
-	healths = append(healths, CheckDiskHealth()...)
-	healths = append(healths, CheckDockerHealth()...)
+	var server bool
+	flag.BoolVar(&server, "server", false, "run a server")
+
+	flag.Parse()
+
+	if server {
+		fmt.Printf("Serving!\n")
+		http.HandleFunc("/status.json", StatusHandler)
+		http.ListenAndServe(":8080", nil)
+	} else {
+		statuses := make([]*StatusCheck, 0)
+		for _, arg := range flag.Args() {
+			fmt.Printf("Querying %s...\n", arg)
+			status := QueryStatus(arg)
+			statuses = append(statuses, status)
+		}
+
+		globalStatus := CombineHealthStatus(statuses)
+		SendEmail(globalStatus, "jlewalle@gmail.com", Combine(statuses, globalStatus))
+	}
+
 }

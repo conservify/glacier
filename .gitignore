@@ -19,3 +19,4 @@ wrapper
 *.swp
 morningstar/morningstar
 morningstar/morningstar.csv
+secrets.go

@@ -42,10 +42,7 @@ func float16toUint32(yy uint16) (d uint32) {
 	return (s << 31) | (e << 23) | m
 }
 
-type ProStarMppt struct {
-	handler *modbus.RTUClientHandler
-	mc      modbus.Client
-
+type ProStarMpptData struct {
 	ChargeCurrent               float32
 	ArrayCurrent                float32
 	BatteryTerminalVoltage      float32
@@ -78,6 +75,12 @@ type ProStarMppt struct {
 	TimeInAbsorption   uint16
 	TimeInEqualization uint16
 	TimeInFloat        uint16
+}
+
+type ProStarMppt struct {
+	handler *modbus.RTUClientHandler
+	mc      modbus.Client
+	data    ProStarMpptData
 }
 
 func NewProStarMppt() (controller *ProStarMppt) {
@@ -249,95 +252,97 @@ func (controller *ProStarMppt) ReadLedState() (value string, err error) {
 }
 
 func (controller *ProStarMppt) Refresh() (err error) {
-	controller.ChargeCurrent, err = controller.ReadFloat16(0x10)
+	var chargeData *ProStarMpptData
+
+	chargeData.ChargeCurrent, err = controller.ReadFloat16(0x10)
 	if err != nil {
 		return
 	}
-	controller.ArrayCurrent, err = controller.ReadFloat16(0x11)
+	chargeData.ArrayCurrent, err = controller.ReadFloat16(0x11)
 	if err != nil {
 		return
 	}
-	controller.BatteryTerminalVoltage, err = controller.ReadFloat16(0x12)
+	chargeData.BatteryTerminalVoltage, err = controller.ReadFloat16(0x12)
 	if err != nil {
 		return
 	}
-	controller.ArrayVoltage, err = controller.ReadFloat16(0x13)
+	chargeData.ArrayVoltage, err = controller.ReadFloat16(0x13)
 	if err != nil {
 		return
 	}
-	controller.LoadVoltage, err = controller.ReadFloat16(0x14)
+	chargeData.LoadVoltage, err = controller.ReadFloat16(0x14)
 	if err != nil {
 		return
 	}
-	controller.BatteryCurrentNet, err = controller.ReadFloat16(0x15)
+	chargeData.BatteryCurrentNet, err = controller.ReadFloat16(0x15)
 	if err != nil {
 		return
 	}
-	controller.LoadCurrent, err = controller.ReadFloat16(0x16)
+	chargeData.LoadCurrent, err = controller.ReadFloat16(0x16)
 	if err != nil {
 		return
 	}
-	controller.BatterySenseVoltage, err = controller.ReadFloat16(0x17)
+	chargeData.BatterySenseVoltage, err = controller.ReadFloat16(0x17)
 	if err != nil {
 		return
 	}
-	controller.BatteryVoltageSlowFilter, err = controller.ReadFloat16(0x18)
+	chargeData.BatteryVoltageSlowFilter, err = controller.ReadFloat16(0x18)
 	if err != nil {
 		return
 	}
-	controller.BatteryCurrentNetSlowFIlter, err = controller.ReadFloat16(0x19)
+	chargeData.BatteryCurrentNetSlowFIlter, err = controller.ReadFloat16(0x19)
 	if err != nil {
 		return
 	}
 
-	controller.HeatsinkTemperature, err = controller.ReadFloat16(0x1A)
+	chargeData.HeatsinkTemperature, err = controller.ReadFloat16(0x1A)
 	if err != nil {
 		return
 	}
-	controller.BatteryTemperature, err = controller.ReadFloat16(0x1B)
+	chargeData.BatteryTemperature, err = controller.ReadFloat16(0x1B)
 	if err != nil {
 		return
 	}
-	controller.AmbientTemperature, err = controller.ReadFloat16(0x1C)
-	if err != nil {
-		return
-	}
-
-	controller.ChargeState, err = controller.ReadChargeState()
-	if err != nil {
-		return
-	}
-	controller.LoadState, err = controller.ReadLoadState()
-	if err != nil {
-		return
-	}
-	controller.LedState, err = controller.ReadLedState()
+	chargeData.AmbientTemperature, err = controller.ReadFloat16(0x1C)
 	if err != nil {
 		return
 	}
 
-	controller.LoadCurrentCompensated, err = controller.ReadFloat16(0x30)
+	chargeData.ChargeState, err = controller.ReadChargeState()
 	if err != nil {
 		return
 	}
-	controller.LoadHvdVoltage, err = controller.ReadFloat16(0x31)
+	chargeData.LoadState, err = controller.ReadLoadState()
+	if err != nil {
+		return
+	}
+	chargeData.LedState, err = controller.ReadLedState()
 	if err != nil {
 		return
 	}
 
-	controller.PowerOut, err = controller.ReadFloat16(0x3C)
+	chargeData.LoadCurrentCompensated, err = controller.ReadFloat16(0x30)
 	if err != nil {
 		return
 	}
-	controller.ArrayTargetVoltage, err = controller.ReadFloat16(0x40)
+	chargeData.LoadHvdVoltage, err = controller.ReadFloat16(0x31)
 	if err != nil {
 		return
 	}
-	controller.MaximumBatteryVoltage, err = controller.ReadFloat16(0x41)
+
+	chargeData.PowerOut, err = controller.ReadFloat16(0x3C)
 	if err != nil {
 		return
 	}
-	controller.MinimumBatteryVoltage, err = controller.ReadFloat16(0x42)
+	chargeData.ArrayTargetVoltage, err = controller.ReadFloat16(0x40)
+	if err != nil {
+		return
+	}
+	chargeData.MaximumBatteryVoltage, err = controller.ReadFloat16(0x41)
+	if err != nil {
+		return
+	}
+	chargeData.MinimumBatteryVoltage, err = controller.ReadFloat16(0x42)
 	if err != nil {
 		return
 	}
@@ -348,31 +353,31 @@ func (controller *ProStarMppt) Refresh() (err error) {
 	if err != nil {
 		return
 	}
-	controller.AmpHourCharge = float32(binary.BigEndian.Uint16(data)) * 0.1
+	chargeData.AmpHourCharge = float32(binary.BigEndian.Uint16(data)) * 0.1
 
 	data, err = controller.mc.ReadHoldingRegisters(0x44, 1)
 	if err != nil {
 		return
 	}
-	controller.AmpHourLoad = float32(binary.BigEndian.Uint16(data)) * 0.1
+	chargeData.AmpHourLoad = float32(binary.BigEndian.Uint16(data)) * 0.1
 
 	data, err = controller.mc.ReadHoldingRegisters(0x49, 1)
 	if err != nil {
 		return
 	}
-	controller.TimeInAbsorption = binary.BigEndian.Uint16(data)
+	chargeData.TimeInAbsorption = binary.BigEndian.Uint16(data)
 
 	data, err = controller.mc.ReadHoldingRegisters(0x4E, 1)
 	if err != nil {
 		return
 	}
-	controller.TimeInEqualization = binary.BigEndian.Uint16(data)
+	chargeData.TimeInEqualization = binary.BigEndian.Uint16(data)
 
 	data, err = controller.mc.ReadHoldingRegisters(0x4F, 1)
 	if err != nil {
 		return
 	}
-	controller.TimeInFloat = binary.BigEndian.Uint16(data)
+	chargeData.TimeInFloat = binary.BigEndian.Uint16(data)
 
 	return
 }
@@ -429,39 +434,39 @@ func main() {
 	defer file.Close()
 
 	values := []interface{}{
-		proStar.ChargeCurrent,
-		proStar.ArrayCurrent,
-		proStar.BatteryTerminalVoltage,
-		proStar.ArrayVoltage,
-		proStar.LoadVoltage,
-		proStar.BatteryCurrentNet,
-		proStar.LoadCurrent,
-		proStar.BatterySenseVoltage,
-		proStar.BatteryVoltageSlowFilter,
-		proStar.BatteryCurrentNetSlowFIlter,
+		proStar.data.ChargeCurrent,
+		proStar.data.ArrayCurrent,
+		proStar.data.BatteryTerminalVoltage,
+		proStar.data.ArrayVoltage,
+		proStar.data.LoadVoltage,
+		proStar.data.BatteryCurrentNet,
+		proStar.data.LoadCurrent,
+		proStar.data.BatterySenseVoltage,
+		proStar.data.BatteryVoltageSlowFilter,
+		proStar.data.BatteryCurrentNetSlowFIlter,
 
-		proStar.HeatsinkTemperature,
-		proStar.BatteryTemperature,
-		proStar.AmbientTemperature,
+		proStar.data.HeatsinkTemperature,
+		proStar.data.BatteryTemperature,
+		proStar.data.AmbientTemperature,
 
-		proStar.ChargeState,
-		proStar.LoadState,
-		proStar.LedState,
+		proStar.data.ChargeState,
+		proStar.data.LoadState,
+		proStar.data.LedState,
 
-		proStar.LoadCurrentCompensated,
-		proStar.LoadHvdVoltage,
+		proStar.data.LoadCurrentCompensated,
+		proStar.data.LoadHvdVoltage,
 
-		proStar.PowerOut,
-		proStar.ArrayTargetVoltage,
-		proStar.MaximumBatteryVoltage,
-		proStar.MinimumBatteryVoltage,
+		proStar.data.PowerOut,
+		proStar.data.ArrayTargetVoltage,
+		proStar.data.MaximumBatteryVoltage,
+		proStar.data.MinimumBatteryVoltage,
 
-		proStar.AmpHourCharge,
-		proStar.AmpHourLoad,
+		proStar.data.AmpHourCharge,
+		proStar.data.AmpHourLoad,
 
-		proStar.TimeInAbsorption,
-		proStar.TimeInEqualization,
-		proStar.TimeInFloat,
+		proStar.data.TimeInAbsorption,
+		proStar.data.TimeInEqualization,
+		proStar.data.TimeInFloat,
 	}
 
 	fmt.Fprintf(w, "%v", time.Now())
