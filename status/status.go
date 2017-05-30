@@ -73,7 +73,7 @@ func CheckDisk(path string) (health *HealthCheck) {
 	disk := DiskUsage(path)
 
 	freeGb := float64(disk.Free) / float64(GB)
-	percentage := float64(disk.Used) / float64(disk.All) * 100.0
+	percentage := float64(disk.Free) / float64(disk.All) * 100.0
 
 	health = new(HealthCheck)
 	health.Name = fmt.Sprintf("Disk: %s", path)
