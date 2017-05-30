@@ -5,9 +5,7 @@ Glacier Health: {{.GlobalStatus}}
 
 {{range .Healths}}
 *{{.Name}}* {{.Status}}
-
-{{if .Notes}}
 {{.Notes}}
-{{end}}
+
 {{end}}
 {{end}}

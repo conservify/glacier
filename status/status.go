@@ -59,6 +59,7 @@ type HealthCheck struct {
 	Name   string
 	Status HealthStatus
 	Notes  string
+	Logs   string
 }
 
 func DiskPercentageToStatus(percentage float64) HealthStatus {
@@ -132,7 +133,8 @@ func CheckDockerHealth() (healths []*HealthCheck) {
 
 		health := new(HealthCheck)
 		health.Name = fmt.Sprintf("Container: %s", container.Names[0])
-		health.Notes = fmt.Sprintf("%s\n%s", container.Status, StripNonPrintable(buf.String()))
+		health.Notes = fmt.Sprintf("%s", container.Status)
+		health.Logs = fmt.Sprintf("%s", StripNonPrintable(buf.String()))
 
 		if details.State.Running {
 			health.Status = Good
