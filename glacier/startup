@@ -21,3 +21,7 @@ nohup ssh -nNT -L :8080:169.254.128.131:80 glacier > /dev/null 2> /dev/null < /d
 nohup ssh -nNT -L :8090:169.254.127.129:80 glacier > /dev/null 2> /dev/null < /dev/null &
 
 # /home/pi/geophones/glacier/start-tmux
+
+export DOCKER_API_VERSION=1.22
+
+nohup /home/geophones/status/status --server &
