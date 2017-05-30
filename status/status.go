@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/nlopes/slack"
 	"html/template"
 	"log"
 	"net/http"
 	"net/smtp"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -57,6 +59,7 @@ type HealthCheck struct {
 	Name   string
 	Status HealthStatus
 	Notes  string
+	Logs   string
 }
 
 func DiskPercentageToStatus(percentage float64) HealthStatus {
@@ -73,12 +76,13 @@ func CheckDisk(path string) (health *HealthCheck) {
 	disk := DiskUsage(path)
 
 	freeGb := float64(disk.Free) / float64(GB)
-	percentage := float64(disk.Used) / float64(disk.All) * 100.0
+	percentage := float64(disk.Free) / float64(disk.All) * 100.0
 
 	health = new(HealthCheck)
 	health.Name = fmt.Sprintf("Disk: %s", path)
 	health.Notes = fmt.Sprintf("%.2f%% used (%.2f GB free)", percentage, freeGb)
 	health.Status = DiskPercentageToStatus(percentage)
+
 	return
 }
 
@@ -93,7 +97,7 @@ func CheckDiskHealth() (healths []*HealthCheck) {
 
 func StripNonPrintable(str string) string {
 	return strings.Map(func(r rune) rune {
-		if r >= 32 && r < 127 {
+		if r >= 32 && r < 127 || r == '\n' {
 			return r
 		}
 		return -1
@@ -129,7 +133,8 @@ func CheckDockerHealth() (healths []*HealthCheck) {
 
 		health := new(HealthCheck)
 		health.Name = fmt.Sprintf("Container: %s", container.Names[0])
-		health.Notes = fmt.Sprintf("%s\n%s", container.Status, StripNonPrintable(buf.String()))
+		health.Notes = fmt.Sprintf("%s", container.Status)
+		health.Logs = fmt.Sprintf("%s", StripNonPrintable(buf.String()))
 
 		if details.State.Running {
 			health.Status = Good
@@ -142,10 +147,10 @@ func CheckDockerHealth() (healths []*HealthCheck) {
 	return
 }
 
-func Combine(statuses []*StatusCheck, globalStatus HealthStatus) (combined string) {
+func ApplyTemplate(templateName string, statuses []*StatusCheck, globalStatus HealthStatus) (combined string) {
 	data := &TemplateData{statuses, globalStatus}
 
-	t, err := template.ParseFiles("status.html")
+	t, err := template.ParseFiles(templateName)
 	if err != nil {
 		panic(err)
 	}
@@ -191,9 +196,9 @@ type StatusCheck struct {
 	GlobalStatus HealthStatus
 }
 
-func StatusHandler(w http.ResponseWriter, r *http.Request) {
+func Check() (check *StatusCheck) {
 	name, _ := os.Hostname()
-	check := new(StatusCheck)
+	check = new(StatusCheck)
 	check.Name = name
 	check.Healths = make([]*HealthCheck, 0)
 	check.Healths = append(check.Healths, CheckDiskHealth()...)
@@ -207,22 +212,27 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 			check.GlobalStatus = Fatal
 		}
 	}
+	return
+}
 
-	b, _ := json.Marshal(check)
+func StatusHandler(w http.ResponseWriter, r *http.Request) {
+	b, _ := json.Marshal(Check())
 	w.Write(b)
 }
 
-func QueryStatus(url string) (target *StatusCheck) {
+func QueryStatus(serverUrl string) (target *StatusCheck) {
+	parsed, _ := url.Parse(serverUrl)
 	client := http.Client{Timeout: 10 * time.Second}
-	r, err := client.Get(url)
+	r, err := client.Get(serverUrl)
 	if err != nil {
 		failure := new(HealthCheck)
 		failure.Notes = fmt.Sprintf("Server unavailable.")
-		failure.Name = url
+		failure.Name = parsed.Hostname()
 		failure.Status = Fatal
 
 		target = new(StatusCheck)
 		target.GlobalStatus = Fatal
+		target.Name = parsed.Hostname()
 		target.Healths = append(target.Healths, failure)
 	} else {
 		defer r.Body.Close()
@@ -249,13 +259,36 @@ func CombineHealthStatus(statuses []*StatusCheck) HealthStatus {
 	return combined
 }
 
+func HealthStatusToColor(health HealthStatus) string {
+	switch health {
+	case Good:
+		return "good"
+	case Warning:
+		return "warning"
+	case Fatal:
+		return "danger"
+	}
+	return "warning"
+}
+
 func main() {
 	var server bool
+	var test bool
+	var slackMessage bool
+	var email bool
+
 	flag.BoolVar(&server, "server", false, "run a server")
+	flag.BoolVar(&test, "test", false, "run a test check")
+	flag.BoolVar(&slackMessage, "slack", false, "send message to slack")
+	flag.BoolVar(&email, "email", false, "send an email")
 
 	flag.Parse()
 
-	if server {
+	if test {
+		b, _ := json.Marshal(Check())
+		os.Stdout.Write(b)
+		fmt.Printf("\n")
+	} else if server {
 		fmt.Printf("Serving!\n")
 		http.HandleFunc("/status.json", StatusHandler)
 		http.ListenAndServe(":8000", nil)
@@ -268,7 +301,22 @@ func main() {
 		}
 
 		globalStatus := CombineHealthStatus(statuses)
-		SendEmail(globalStatus, "jlewalle@gmail.com", Combine(statuses, globalStatus))
-	}
+		htmlBody := ApplyTemplate("status.html.template", statuses, globalStatus)
+		slackBody := ApplyTemplate("status.slack.template", statuses, globalStatus)
 
+		if slackMessage {
+			api := slack.New(slackToken)
+			params := slack.PostMessageParameters{}
+			attachment := slack.Attachment{Color: HealthStatusToColor(globalStatus), Text: slackBody}
+			params.Attachments = []slack.Attachment{attachment}
+			_, _, err := api.PostMessage("testing", "", params)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		if email {
+			SendEmail(globalStatus, emailAddress, htmlBody)
+		}
+	}
 }

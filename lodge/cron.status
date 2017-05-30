@@ -1,0 +1,1 @@
+0 0 * * * root /home/geophones/status/status --slack http://lodge:8000/status.json http://glacier:8000/status.json
