@@ -8,10 +8,12 @@ import (
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/nlopes/slack"
 	"html/template"
 	"log"
 	"net/http"
 	"net/smtp"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -143,10 +145,10 @@ func CheckDockerHealth() (healths []*HealthCheck) {
 	return
 }
 
-func Combine(statuses []*StatusCheck, globalStatus HealthStatus) (combined string) {
+func ApplyTemplate(templateName string, statuses []*StatusCheck, globalStatus HealthStatus) (combined string) {
 	data := &TemplateData{statuses, globalStatus}
 
-	t, err := template.ParseFiles("status.html")
+	t, err := template.ParseFiles(templateName)
 	if err != nil {
 		panic(err)
 	}
@@ -216,17 +218,19 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
-func QueryStatus(url string) (target *StatusCheck) {
+func QueryStatus(serverUrl string) (target *StatusCheck) {
+	parsed, _ := url.Parse(serverUrl)
 	client := http.Client{Timeout: 10 * time.Second}
-	r, err := client.Get(url)
+	r, err := client.Get(serverUrl)
 	if err != nil {
 		failure := new(HealthCheck)
 		failure.Notes = fmt.Sprintf("Server unavailable.")
-		failure.Name = url
+		failure.Name = parsed.Hostname()
 		failure.Status = Fatal
 
 		target = new(StatusCheck)
 		target.GlobalStatus = Fatal
+		target.Name = parsed.Hostname()
 		target.Healths = append(target.Healths, failure)
 	} else {
 		defer r.Body.Close()
@@ -256,9 +260,13 @@ func CombineHealthStatus(statuses []*StatusCheck) HealthStatus {
 func main() {
 	var server bool
 	var test bool
+	var slackMessage bool
+	var email bool
 
 	flag.BoolVar(&server, "server", false, "run a server")
 	flag.BoolVar(&test, "test", false, "run a test check")
+	flag.BoolVar(&slackMessage, "slack", false, "send message to slack")
+	flag.BoolVar(&email, "email", false, "send an email")
 
 	flag.Parse()
 
@@ -279,7 +287,22 @@ func main() {
 		}
 
 		globalStatus := CombineHealthStatus(statuses)
-		SendEmail(globalStatus, "jlewalle@gmail.com", Combine(statuses, globalStatus))
-	}
+		htmlBody := ApplyTemplate("status.html.template", statuses, globalStatus)
+		slackBody := ApplyTemplate("status.slack.template", statuses, globalStatus)
 
+		if slackMessage {
+			api := slack.New(slackToken)
+			params := slack.PostMessageParameters{}
+			attachment := slack.Attachment{}
+			params.Attachments = []slack.Attachment{attachment}
+			_, _, err := api.PostMessage("testing", slackBody, params)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		if email {
+			SendEmail(globalStatus, emailAddress, htmlBody)
+		}
+	}
 }
