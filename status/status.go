@@ -132,7 +132,7 @@ func CheckDockerHealth() (healths []*HealthCheck) {
 
 		health := new(HealthCheck)
 		health.Name = fmt.Sprintf("Container: %s", container.Names[0])
-		health.Notes = fmt.Sprintf("%s\n%s", container.Status, buf.String())
+		health.Notes = fmt.Sprintf("%s\n%s", container.Status, StripNonPrintable(buf.String()))
 
 		if details.State.Running {
 			health.Status = Good
