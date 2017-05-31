@@ -225,76 +225,79 @@ void ProcessNewData( DWORD type, void *data, void *data1, DWORD dataLen )
 #include <stdint.h>
 
 typedef struct logfile_t {
-	FILE *fp;
 	uint32_t samples;
-	char file_name[128];
+
+	FILE *bin_fp;
+	char bin_file_name[128];
+
+	FILE *csv_fp;
+	char csv_file_name[128];
 } logfile_t;
 
 logfile_t lf = { 0 };
 
-#define INCOMING_FILE_NAME   "/app/data/incoming.data"
-#define FILE_NAME_EXT_ASCII  "csv"
-#define FILE_NAME_EXT_BINARY "bin"
+#define INCOMING_FILE_NAME_CSV     "/app/data/incoming.csv"
+#define INCOMING_FILE_NAME_BIN     "/app/data/incoming.bin"
+#define FILE_NAME_EXT_CSV          "csv"
+#define FILE_NAME_EXT_BIN          "bin"
 
 BOOL WriteLogFile(logfile_t *lf, DataHeader *hdr) {
-	if (lf->fp == NULL || lf->samples == MAX_SPS_RATE * 60) {
-		if (lf->fp != NULL) {
-			fclose(lf->fp);
-			lf->fp = NULL;
+	if (lf->bin_fp == NULL || lf->samples == MAX_SPS_RATE * 60) {
+		if (lf->bin_fp != NULL) {
+			fclose(lf->bin_fp);
+			lf->bin_fp = NULL;
 
-			printf("Finished %s\n", lf->file_name); 
-			if (rename(INCOMING_FILE_NAME, lf->file_name) != 0) {
-				fprintf(stderr, "Unable to rename %s to %s\n", INCOMING_FILE_NAME, lf->file_name);
+			printf("Finished %s\n", lf->bin_file_name); 
+			if (rename(INCOMING_FILE_NAME_BIN, lf->bin_file_name) != 0) {
+				fprintf(stderr, "Unable to rename %s to %s\n", INCOMING_FILE_NAME_BIN, lf->bin_file_name);
+			}
+		}
+
+		if (lf->csv_fp != NULL) {
+			fclose(lf->csv_fp);
+			lf->csv_fp = NULL;
+
+			printf("Finished %s\n", lf->csv_file_name); 
+			if (rename(INCOMING_FILE_NAME_CSV, lf->csv_file_name) != 0) {
+				fprintf(stderr, "Unable to rename %s to %s\n", INCOMING_FILE_NAME_CSV, lf->csv_file_name);
 			}
 		}
 
 		SYSTEMTIME *st = &hdr->packetTime;
 
-		snprintf(lf->file_name, sizeof(lf->file_name), "/app/data/geophones_%04d%02d%02d_%02d%02d%02d.%s", 
-				st->wYear, st->wMonth, st->wDay, st->wHour, st->wMinute, st->wSecond,
-				(writeAscii ? FILE_NAME_EXT_ASCII : FILE_NAME_EXT_BINARY));
+		snprintf(lf->bin_file_name, sizeof(lf->bin_file_name), "/app/data/geophones_%04d%02d%02d_%02d%02d%02d.%s", 
+				st->wYear, st->wMonth, st->wDay, st->wHour, st->wMinute, st->wSecond, FILE_NAME_EXT_BIN);
 
-		lf->fp = fopen(INCOMING_FILE_NAME, "w");
+		lf->bin_fp = fopen(INCOMING_FILE_NAME_BIN, "w");
+
+		snprintf(lf->csv_file_name, sizeof(lf->csv_file_name), "/app/data/geophones_%04d%02d%02d_%02d%02d%02d.%s", 
+				st->wYear, st->wMonth, st->wDay, st->wHour, st->wMinute, st->wSecond, FILE_NAME_EXT_CSV);
+
+		lf->csv_fp = fopen(INCOMING_FILE_NAME_CSV, "w");
+
 		lf->samples = 0;
 	}
 
-	if (writeAscii)
+	for (size_t i = 0; i < MAX_SPS_RATE; ++i)
 	{
-		for (size_t i = 0; i < MAX_SPS_RATE; ++i)
+		for (size_t j = 0; j < DEF_NUMBER_CHANNELS; ++j)
 		{
-			for (size_t j = 0; j < DEF_NUMBER_CHANNELS; ++j)
-			{
-				if (j > 0)
-					fprintf(lf->fp, ",");
-				fprintf(lf->fp, "%d", demuxData[j][i]);
-			}
-			fprintf(lf->fp, "\n");
+			floatData[(i * DEF_NUMBER_CHANNELS) + j] = demuxData[j][i];
+			if (j > 0)
+				fprintf(lf->csv_fp, ",");
+			fprintf(lf->csv_fp, "%d", demuxData[j][i]);
 		}
+		fprintf(lf->csv_fp, "\n");
 	}
-	else
+
+	uint32_t written = fwrite(floatData, sizeof(floatData), 1, lf->bin_fp);
+	if (written != 1)
 	{
-		FILE *tempAsciiFp = fopen("/app/data/incoming.csv", "w");
-		for (size_t i = 0; i < MAX_SPS_RATE; ++i)
-		{
-			for (size_t j = 0; j < DEF_NUMBER_CHANNELS; ++j)
-			{
-				floatData[(i * DEF_NUMBER_CHANNELS) + j] = demuxData[j][i];
-				if (j > 0)
-					fprintf(tempAsciiFp, ",");
-				fprintf(tempAsciiFp, "%d", demuxData[j][i]);
-			}
-			fprintf(tempAsciiFp, "\n");
-		}
-		fclose(tempAsciiFp);
-		uint32_t written = fwrite(floatData, sizeof(floatData), 1, lf->fp);
-		if (written != 1)
-		{
-			fprintf(stderr, "Unable to write full buffer to disk.\n");
-		}
+		fprintf(stderr, "Unable to write full buffer to disk.\n");
 	}
 	lf->samples += MAX_SPS_RATE;
 
-	return lf->fp != NULL;
+	return lf->bin_fp != NULL;
 }
 
 /* This function is called once per second with new ADC sample data. The header has the time
