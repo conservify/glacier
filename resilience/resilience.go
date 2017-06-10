@@ -98,7 +98,9 @@ func Execute(l []string, dryRun bool) error {
 
 func main() {
 	var dryRun bool
+	var disableReboot bool
 	flag.BoolVar(&dryRun, "dry", false, "dry run")
+	flag.BoolVar(&disableReboot, "disable-reboot", false, "disable reboot")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage:\n  %s [options] hostname [source]\n\nOptions:\n", os.Args[0])
@@ -130,8 +132,10 @@ func main() {
 
 		good, stopped := testNetworking(hostname)
 		if !stopped && !good {
-			log.Printf("Unreachable, restarting computer...")
-			Execute([]string{"/sbin/reboot"}, dryRun)
+			if !disableReboot {
+				log.Printf("Unreachable, restarting computer...")
+				Execute([]string{"/sbin/reboot"}, dryRun)
+			}
 		}
 	} else if good {
 		log.Printf("Network is good.")
