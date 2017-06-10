@@ -122,11 +122,11 @@ func main() {
 	if !stopped && !good {
 		log.Printf("Unreachable, restarting networking...")
 
-		Execute([]string{"service", "networking", "restart"}, dryRun)
+		Execute([]string{"/usr/sbin/service", "networking", "restart"}, dryRun)
 
 		time.Sleep(2 * time.Second)
 
-		Execute([]string{"service", "logmein-hamachi", "restart"}, dryRun)
+		Execute([]string{"/usr/sbin/service", "logmein-hamachi", "restart"}, dryRun)
 
 		time.Sleep(2 * time.Second)
 
