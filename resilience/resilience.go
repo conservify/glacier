@@ -84,6 +84,18 @@ func testNetworking(hostname string) (anySuccess bool, stopped bool) {
 	return
 }
 
+func Execute(l []string, dryRun bool) error {
+	log.Printf("Exec: %v", l)
+	if !dryRun {
+		c := exec.Command(l[0], l[1:]...)
+		err := c.Run()
+		if err != nil {
+			log.Printf("Error: ",err)
+		}
+	}
+	return nil
+}
+
 func main() {
 	var dryRun bool
 	flag.BoolVar(&dryRun, "dry", false, "dry run")
@@ -108,21 +120,18 @@ func main() {
 	if !stopped && !good {
 		log.Printf("Unreachable, restarting networking...")
 
-		restartNetworking := "/etc/init.d/networking restart"
-		log.Printf(restartNetworking)
-		if !dryRun {
-			exec.Command(restartNetworking)
-		}
+		Execute([]string{"service", "networking", "restart"}, dryRun)
+
+		time.Sleep(2 * time.Second)
+
+		Execute([]string{"service", "logmein-hamachi", "restart"}, dryRun)
+
+		time.Sleep(2 * time.Second)
 
 		good, stopped := testNetworking(hostname)
 		if !stopped && !good {
 			log.Printf("Unreachable, restarting computer...")
-
-			restartComputer := "/sbin/reboot"
-			log.Printf(restartComputer)
-			if !dryRun {
-				exec.Command(restartComputer)
-			}
+			Execute([]string{"/sbin/reboot"}, dryRun)
 		}
 	} else if good {
 		log.Printf("Network is good.")
