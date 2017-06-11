@@ -1,0 +1,12 @@
+[Unit]
+Description=Tunneller
+After=network.target auditd.service
+
+[Service]
+ExecStart=/home/pi/geophones/tunneller/tunneller --log /data/tunneller.log --key /home/pi/.ssh/id_rsa --server ec2-34-201-197-136.compute-1.amazonaws.com
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
