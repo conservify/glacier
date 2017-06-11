@@ -50,20 +50,20 @@ func handleConnection(connection net.Conn, remote net.Conn) {
 func publicKeyFile(file string) ssh.AuthMethod {
 	buffer, err := ioutil.ReadFile(file)
 	if err != nil {
-		log.Fatalln("Error reading key: %s", file)
+		log.Fatalf("Error reading key: %s", file)
 		return nil
 	}
 
 	key, err := ssh.ParsePrivateKey(buffer)
 	if err != nil {
-		log.Fatalln("Error reading key: %s", file)
+		log.Fatalf("Error reading key: %s", file)
 		return nil
 	}
 	return ssh.PublicKeys(key)
 }
 
 func main() {
-    var keyFile string
+	var keyFile string
 	var localEndpoint = Endpoint{
 		Host: "localhost",
 		Port: 22,
@@ -84,7 +84,7 @@ func main() {
 	flag.Parse()
 
 	if keyFile == "" || remoteEndpoint.Host == "" {
-        flag.PrintDefaults()
+		flag.PrintDefaults()
 		os.Exit(2)
 	}
 
@@ -99,33 +99,33 @@ func main() {
 	for {
 		serverConnection, err := ssh.Dial("tcp", serverEndpoint.String(), sshConfig)
 		if err != nil {
-			log.Fatal("Unable to connect to remote server: %s", err)
-		}
+			log.Printf("Unable to connect to remote server: %s", err)
+		} else {
+			log.Printf("Connected")
 
-		log.Printf("Connected")
-
-		listener, err := serverConnection.Listen("tcp", remoteEndpoint.String())
-		if err != nil {
-			log.Fatalln("Unable to listen on %s: %s", remoteEndpoint, err)
-		}
-
-		defer listener.Close()
-
-		for {
-			local, err := net.Dial("tcp", localEndpoint.String())
+			listener, err := serverConnection.Listen("tcp", remoteEndpoint.String())
 			if err != nil {
-				log.Fatalln("Unable to connect to local server: %s", err)
+				log.Printf("Unable to listen on %s: %s", remoteEndpoint, err)
+			} else {
+				defer listener.Close()
+
+				for {
+					local, err := net.Dial("tcp", localEndpoint.String())
+					if err != nil {
+						log.Printf("Unable to connect to local server: %s", err)
+					} else {
+						clientConnection, err := listener.Accept()
+						if err != nil {
+							log.Printf("Error %s", err)
+							break
+						}
+
+						handleConnection(clientConnection, local)
+					}
+				}
 			}
 
-			clientConnection, err := listener.Accept()
-			if err != nil {
-				log.Printf("Error %s", err)
-				break
-			}
-
-			handleConnection(clientConnection, local)
+			time.Sleep(1 * time.Second)
 		}
-
-		time.Sleep(1 * time.Second)
 	}
 }
