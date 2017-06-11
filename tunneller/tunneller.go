@@ -64,6 +64,7 @@ func publicKeyFile(file string) ssh.AuthMethod {
 
 func main() {
 	var keyFile string
+	var logFile string
 	var localEndpoint = Endpoint{
 		Host: "localhost",
 		Port: 22,
@@ -78,6 +79,7 @@ func main() {
 	}
 
 	flag.StringVar(&keyFile, "key", "", "private key file")
+	flag.StringVar(&logFile, "log", "tunneller.log", "log file")
 	flag.StringVar(&serverEndpoint.Host, "server", "", "server to expose the local service")
 	flag.IntVar(&remoteEndpoint.Port, "remote-port", 7000, "port that will forward to local port")
 	flag.IntVar(&localEndpoint.Port, "local-port", 22, "port to accept incoming connections")
@@ -87,6 +89,14 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(2)
 	}
+
+	f, err := os.OpenFile(logFile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("Error opening file: %v", err)
+	}
+	defer f.Close()
+
+	log.SetOutput(f)
 
 	sshConfig := &ssh.ClientConfig{
 		User: "ubuntu",
