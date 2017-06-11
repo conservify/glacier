@@ -10,6 +10,4 @@ su pi -c "/home/pi/geophones/lodge/forward-rock-ssh"
 
 export DOCKER_API_VERSION=1.22
 
-nohup /home/pi/geophones/status/status --server &
-
 /home/pi/geophones/resilience/resilience --disable-reboot 8.8.8.8 >> /data/resilience.log 2>&1
