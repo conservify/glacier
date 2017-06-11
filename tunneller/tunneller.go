@@ -134,8 +134,8 @@ func main() {
 					}
 				}
 			}
-
-			time.Sleep(1 * time.Second)
 		}
+
+		time.Sleep(1 * time.Second)
 	}
 }
