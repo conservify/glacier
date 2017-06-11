@@ -387,9 +387,10 @@ func FindDevice() (device *string) {
 }
 
 func main() {
-	device := flag.String("device", "/dev/ttyUSB0", "USB device")
-	search := flag.Bool("search", false, "search all USB devices")
-	csvFile := flag.String("csv", "morningstar.csv", "CSV file")
+	device := flag.String("device", "/dev/ttyUSB0", "usb device")
+	search := flag.Bool("search", false, "search all usb devices")
+	csvFile := flag.String("csv", "morningstar.csv", "csv file")
+	echo := flag.Bool("echo", false, "echo to te user")
 
 	flag.Parse()
 
@@ -422,16 +423,6 @@ func main() {
 	if !worked {
 		log.Fatal("Unable to get data")
 	}
-
-	log.Printf("Opening %v", *csvFile)
-	file, err := os.OpenFile(*csvFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	w := bufio.NewWriter(file)
-
-	defer file.Close()
 
 	values := []interface{}{
 		proStar.data.ChargeCurrent,
@@ -467,6 +458,20 @@ func main() {
 		proStar.data.TimeInAbsorption,
 		proStar.data.TimeInEqualization,
 		proStar.data.TimeInFloat,
+	}
+
+	w := bufio.NewWriter(os.Stdout)
+
+	if !*echo {
+		log.Printf("Opening %v", *csvFile)
+		file, err := os.OpenFile(*csvFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		w = bufio.NewWriter(file)
+
+		defer file.Close()
 	}
 
 	fmt.Fprintf(w, "%v", time.Now())
