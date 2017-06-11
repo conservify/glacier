@@ -16,12 +16,10 @@ service isc-dhcp-server restart
 
 echo 8.8.8.8 >> /etc/resolv.conf # Hack
 
-nohup ssh -nNT -L :8070:169.254.128.132:80 glacier > /dev/null 2> /dev/null < /dev/null &
-nohup ssh -nNT -L :8080:169.254.128.131:80 glacier > /dev/null 2> /dev/null < /dev/null &
-nohup ssh -nNT -L :8090:169.254.127.129:80 glacier > /dev/null 2> /dev/null < /dev/null &
-
-# /home/pi/geophones/glacier/start-tmux
+#nohup ssh -nNT -L :8070:169.254.128.132:80 glacier > /dev/null 2> /dev/null < /dev/null &
+#nohup ssh -nNT -L :8080:169.254.128.131:80 glacier > /dev/null 2> /dev/null < /dev/null &
+#nohup ssh -nNT -L :8090:169.254.127.129:80 glacier > /dev/null 2> /dev/null < /dev/null &
 
 export DOCKER_API_VERSION=1.22
 
-nohup /home/pi/geophones/status/status --server &
+/home/pi/geophones/resilience/resilience --disable-reboot lodge >> /data/resilience.log 2>&1
