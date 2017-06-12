@@ -1,0 +1,225 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#
+# ac-mains-charger
+#
+DEF ac-mains-charger U 0 40 Y Y 1 F N
+F0 "U" 0 -100 60 H V C CNN
+F1 "ac-mains-charger" 0 0 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -650 250 550 -300 0 1 0 N
+X load ~ -850 100 200 R 50 50 1 1 I
+X mains ~ -850 -150 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# accelerometer
+#
+DEF accelerometer U 0 40 Y Y 1 F N
+F0 "U" 300 150 60 H V C CNN
+F1 "accelerometer" 0 0 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -750 250 500 -300 0 1 0 N
+X eth ~ -950 150 200 R 50 50 1 1 I
+X gps ~ -950 50 200 R 50 50 1 1 I
+X power_(12v) ~ -950 -200 200 R 50 50 1 1 I
+X usb_(serial) ~ -950 -100 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# batteries
+#
+DEF batteries U 0 40 Y Y 1 F N
+F0 "U" 0 -50 60 H V C CNN
+F1 "batteries" 0 50 60 H V C CNN
+F2 "" 0 50 60 H I C CNN
+F3 "" 0 50 60 H I C CNN
+DRAW
+S -550 150 450 -150 0 1 0 N
+X battery ~ -750 0 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# charge-controller
+#
+DEF charge-controller U 0 40 Y Y 1 F N
+F0 "U" 150 100 60 H V C CNN
+F1 "charge-controller" -200 200 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -1050 300 300 -200 0 1 0 N
+X battery ~ -1250 200 200 R 50 50 1 1 I
+X load ~ -1250 0 200 R 50 50 1 1 I
+X solar ~ -1250 100 200 R 50 50 1 1 I
+X usb_(modbus) ~ -1250 -100 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# geophone
+#
+DEF geophone U 0 40 Y Y 1 F N
+F0 "U" -50 -100 60 H V C CNN
+F1 "geophone" 0 0 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -750 300 550 -350 0 1 0 N
+X geophone ~ -950 200 200 R 50 50 1 1 I
+X gps ~ -950 -100 200 R 50 50 1 1 I
+X power_(15v) ~ -950 -200 200 R 50 50 1 1 I
+X usb_(serial) ~ -950 100 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# geophone-sensor
+#
+DEF geophone-sensor U 0 40 Y Y 1 F N
+F0 "U" 0 -50 60 H V C CNN
+F1 "geophone-sensor" 0 50 60 H V C CNN
+F2 "" 0 50 60 H I C CNN
+F3 "" 0 50 60 H I C CNN
+DRAW
+S 500 -150 -450 150 0 1 0 N
+X ~ ~ -650 0 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# gps
+#
+DEF gps U 0 40 Y Y 1 F N
+F0 "U" 0 -50 60 H V C CNN
+F1 "gps" 0 50 60 H V C CNN
+F2 "" 0 50 60 H I C CNN
+F3 "" 0 50 60 H I C CNN
+DRAW
+S -200 -150 200 150 0 1 0 N
+X ~ ~ -400 0 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# hard-drive
+#
+DEF hard-drive U 0 40 Y Y 1 F N
+F0 "U" 0 -100 60 H V C CNN
+F1 "hard-drive" 0 0 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -500 200 450 -200 0 1 0 N
+X power ~ -700 -100 200 R 50 50 1 1 I
+X usb ~ -700 100 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# inverter
+#
+DEF inverter U 0 40 Y Y 1 F N
+F0 "U" 0 -50 60 H V C CNN
+F1 "inverter" 0 50 60 H V C CNN
+F2 "" 0 50 60 H I C CNN
+F3 "" 0 50 60 H I C CNN
+DRAW
+S -400 200 350 -200 0 1 0 N
+X ac ~ -600 -100 200 R 50 50 1 1 I
+X dc ~ -600 100 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# power-bus
+#
+DEF power-bus U 0 40 Y Y 1 F N
+F0 "U" -50 -100 60 H V C CNN
+F1 "power-bus" 0 0 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -550 250 300 -350 0 1 0 N
+X 12v ~ -750 -50 200 R 50 50 1 1 I
+X 12v ~ -750 50 200 R 50 50 1 1 I
+X 15v ~ -750 -150 200 R 50 50 1 1 I
+X 5v ~ -750 -250 200 R 50 50 1 1 I
+X vin ~ -750 150 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# raspberry-pi
+#
+DEF raspberry-pi U 0 40 Y Y 1 F N
+F0 "U" 0 -100 60 H V C CNN
+F1 "raspberry-pi" 0 0 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -550 300 400 -400 0 1 0 N
+X eth0 ~ -750 -300 200 R 50 50 1 1 I
+X power ~ -750 200 200 R 50 50 1 1 I
+X usb ~ -750 -200 200 R 50 50 1 1 I
+X usb ~ -750 -100 200 R 50 50 1 1 I
+X usb ~ -750 0 200 R 50 50 1 1 I
+X usb ~ -750 100 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# router
+#
+DEF router U 0 40 Y Y 1 F N
+F0 "U" 0 -50 60 H V C CNN
+F1 "router" 0 50 60 H V C CNN
+F2 "" 0 50 60 H I C CNN
+F3 "" 0 50 60 H I C CNN
+DRAW
+S -450 150 350 -150 0 1 0 N
+X eth ~ -650 -50 200 R 50 50 1 1 I
+X power ~ -650 50 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# solar-panels
+#
+DEF solar-panels U 0 40 Y Y 1 F N
+F0 "U" 0 -50 60 H V C CNN
+F1 "solar-panels" 0 50 60 H V C CNN
+F2 "" 0 50 60 H I C CNN
+F3 "" 0 50 60 H I C CNN
+DRAW
+S -550 150 450 -150 0 1 0 N
+X ~ ~ -750 0 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# usb-eth-adapter
+#
+DEF usb-eth-adapter U 0 40 Y Y 1 F N
+F0 "U" 0 -100 60 H V C CNN
+F1 "usb-eth-adapter" 0 0 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -600 200 450 -250 0 1 0 N
+X eth1 ~ -800 -150 200 R 50 50 1 1 I
+X usb ~ -800 -50 200 R 50 50 1 1 I
+X usb ~ -800 50 200 R 50 50 1 1 I
+X usb_(in) ~ 650 150 200 L 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# wireless-bridge
+#
+DEF wireless-bridge U 0 40 Y Y 1 F N
+F0 "U" 0 -100 60 H V C CNN
+F1 "wireless-bridge" 0 0 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -650 300 600 -250 0 1 0 N
+X eth ~ -850 100 200 R 50 50 1 1 I
+X power_(12v) ~ -850 200 200 R 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+#End Library
