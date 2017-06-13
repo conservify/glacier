@@ -29,6 +29,7 @@ LIBS:atmel
 LIBS:contrib
 LIBS:valves
 LIBS:high-level
+LIBS:design-cache
 EELAYER 25 0
 EELAYER END
 $Descr A4 11693 8268
@@ -44,10 +45,10 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L accelerometer U?
+L accelerometer U13
 U 1 1 593F1348
 P 7450 4350
-F 0 "U?" H 7750 4500 60  0000 C CNN
+F 0 "U13" H 7750 4500 60  0001 C CNN
 F 1 "accelerometer" H 7450 4350 60  0000 C CNN
 F 2 "" H 7450 4350 60  0001 C CNN
 F 3 "" H 7450 4350 60  0001 C CNN
@@ -55,10 +56,10 @@ F 3 "" H 7450 4350 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L charge-controller U?
+L charge-controller U12
 U 1 1 593F135F
 P 7200 2450
-F 0 "U?" H 7350 2550 60  0000 C CNN
+F 0 "U12" H 7350 2550 60  0001 C CNN
 F 1 "charge-controller" H 7000 2650 60  0000 C CNN
 F 2 "" H 7200 2450 60  0001 C CNN
 F 3 "" H 7200 2450 60  0001 C CNN
@@ -66,10 +67,10 @@ F 3 "" H 7200 2450 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L geophone U?
+L geophone U14
 U 1 1 593F1378
 P 7450 5700
-F 0 "U?" H 7400 5600 60  0000 C CNN
+F 0 "U14" H 7400 5600 60  0001 C CNN
 F 1 "geophone" H 7450 5700 60  0000 C CNN
 F 2 "" H 7450 5700 60  0001 C CNN
 F 3 "" H 7450 5700 60  0001 C CNN
@@ -77,10 +78,10 @@ F 3 "" H 7450 5700 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power-bus U?
+L power-bus U1
 U 1 1 593F13B3
 P 4200 2300
-F 0 "U?" H 4150 2200 60  0000 C CNN
+F 0 "U1" H 4150 2200 60  0001 C CNN
 F 1 "power-bus" H 4200 2300 60  0000 C CNN
 F 2 "" H 4200 2300 60  0001 C CNN
 F 3 "" H 4200 2300 60  0001 C CNN
@@ -88,10 +89,10 @@ F 3 "" H 4200 2300 60  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L raspberry-pi U?
+L raspberry-pi U5
 U 1 1 593F13FA
 P 4450 4950
-F 0 "U?" H 4450 4850 60  0000 C CNN
+F 0 "U5" H 4450 4850 60  0001 C CNN
 F 1 "raspberry-pi" H 4450 4950 60  0000 C CNN
 F 2 "" H 4450 4950 60  0001 C CNN
 F 3 "" H 4450 4950 60  0001 C CNN
@@ -99,10 +100,10 @@ F 3 "" H 4450 4950 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L usb-eth-adapter U?
+L usb-eth-adapter U2
 U 1 1 593F1495
 P 4350 4350
-F 0 "U?" H 4350 4250 60  0000 C CNN
+F 0 "U2" H 4350 4250 60  0001 C CNN
 F 1 "usb-eth-adapter" H 4350 4350 60  0000 C CNN
 F 2 "" H 4350 4350 60  0001 C CNN
 F 3 "" H 4350 4350 60  0001 C CNN
@@ -110,10 +111,10 @@ F 3 "" H 4350 4350 60  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L wireless-bridge U?
+L wireless-bridge U6
 U 1 1 593F1504
 P 4550 5750
-F 0 "U?" H 4550 5650 60  0000 C CNN
+F 0 "U6" H 4550 5650 60  0001 C CNN
 F 1 "wireless-bridge" H 4550 5750 60  0000 C CNN
 F 2 "" H 4550 5750 60  0001 C CNN
 F 3 "" H 4550 5750 60  0001 C CNN
@@ -121,10 +122,10 @@ F 3 "" H 4550 5750 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L hard-drive U?
+L hard-drive U4
 U 1 1 593F15BD
 P 4400 3800
-F 0 "U?" H 4400 3700 60  0000 C CNN
+F 0 "U4" H 4400 3700 60  0001 C CNN
 F 1 "hard-drive" H 4400 3800 60  0000 C CNN
 F 2 "" H 4400 3800 60  0001 C CNN
 F 3 "" H 4400 3800 60  0001 C CNN
@@ -132,10 +133,10 @@ F 3 "" H 4400 3800 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L hard-drive U?
+L hard-drive U3
 U 1 1 593F16E0
 P 4400 3350
-F 0 "U?" H 4400 3250 60  0000 C CNN
+F 0 "U3" H 4400 3250 60  0001 C CNN
 F 1 "hard-drive" H 4400 3350 60  0000 C CNN
 F 2 "" H 4400 3350 60  0001 C CNN
 F 3 "" H 4400 3350 60  0001 C CNN
@@ -153,10 +154,10 @@ Text Label 5000 2350 0    60   ~ 0
 Text Label 6150 4550 0    60   ~ 0
 12v#1
 $Comp
-L batteries U?
+L batteries U10
 U 1 1 593F2508
 P 6700 1800
-F 0 "U?" H 6700 1700 60  0000 C CNN
+F 0 "U10" H 6700 1700 60  0001 C CNN
 F 1 "batteries" H 6700 1800 60  0000 C CNN
 F 2 "" H 6700 1800 60  0001 C CNN
 F 3 "" H 6700 1800 60  0001 C CNN
@@ -250,10 +251,10 @@ Wire Wire Line
 Wire Wire Line
 	5800 4300 6500 4300
 $Comp
-L gps U?
+L gps U7
 U 1 1 593F4001
 P 5600 5800
-F 0 "U?" H 5600 5750 60  0000 C CNN
+F 0 "U7" H 5600 5750 60  0001 C CNN
 F 1 "gps" H 5600 5850 60  0000 C CNN
 F 2 "" H 5600 5850 60  0001 C CNN
 F 3 "" H 5600 5850 60  0001 C CNN
@@ -261,10 +262,10 @@ F 3 "" H 5600 5850 60  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L gps U?
+L gps U8
 U 1 1 593F40B7
 P 5800 4800
-F 0 "U?" H 5800 4750 60  0000 C CNN
+F 0 "U8" H 5800 4750 60  0001 C CNN
 F 1 "gps" H 5800 4850 60  0000 C CNN
 F 2 "" H 5800 4850 60  0001 C CNN
 F 3 "" H 5800 4850 60  0001 C CNN
@@ -272,10 +273,10 @@ F 3 "" H 5800 4850 60  0001 C CNN
 	0    1    1    0   
 $EndComp
 $Comp
-L geophone-sensor U?
+L geophone-sensor U11
 U 1 1 593F420B
 P 7150 5150
-F 0 "U?" H 7150 5100 60  0000 C CNN
+F 0 "U11" H 7150 5100 60  0001 C CNN
 F 1 "geophone-sensor" H 7150 5200 60  0000 C CNN
 F 2 "" H 7150 5200 60  0001 C CNN
 F 3 "" H 7150 5200 60  0001 C CNN
@@ -305,10 +306,10 @@ usb6
 Wire Wire Line
 	5700 2550 5950 2550
 $Comp
-L solar-panels U?
+L solar-panels U9
 U 1 1 593F50F1
 P 6700 1350
-F 0 "U?" H 6700 1300 60  0000 C CNN
+F 0 "U9" H 6700 1300 60  0001 C CNN
 F 1 "solar-panels" H 6700 1400 60  0000 C CNN
 F 2 "" H 6700 1400 60  0001 C CNN
 F 3 "" H 6700 1400 60  0001 C CNN

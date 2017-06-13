@@ -29,6 +29,7 @@ LIBS:atmel
 LIBS:contrib
 LIBS:valves
 LIBS:high-level
+LIBS:design-cache
 EELAYER 25 0
 EELAYER END
 $Descr A4 11693 8268
@@ -44,10 +45,10 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L charge-controller U?
+L charge-controller U23
 U 1 1 593F5FDD
 P 6750 2600
-F 0 "U?" H 6900 2700 60  0000 C CNN
+F 0 "U23" H 6900 2700 60  0001 C CNN
 F 1 "charge-controller" H 6550 2800 60  0000 C CNN
 F 2 "" H 6750 2600 60  0001 C CNN
 F 3 "" H 6750 2600 60  0001 C CNN
@@ -55,10 +56,10 @@ F 3 "" H 6750 2600 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power-bus U?
+L power-bus U15
 U 1 1 593F5FEB
 P 3750 2450
-F 0 "U?" H 3700 2350 60  0000 C CNN
+F 0 "U15" H 3700 2350 60  0001 C CNN
 F 1 "power-bus" H 3750 2450 60  0000 C CNN
 F 2 "" H 3750 2450 60  0001 C CNN
 F 3 "" H 3750 2450 60  0001 C CNN
@@ -66,10 +67,10 @@ F 3 "" H 3750 2450 60  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L raspberry-pi U?
+L raspberry-pi U19
 U 1 1 593F5FF2
 P 4000 5100
-F 0 "U?" H 4000 5000 60  0000 C CNN
+F 0 "U19" H 4000 5000 60  0001 C CNN
 F 1 "raspberry-pi" H 4000 5100 60  0000 C CNN
 F 2 "" H 4000 5100 60  0001 C CNN
 F 3 "" H 4000 5100 60  0001 C CNN
@@ -77,10 +78,10 @@ F 3 "" H 4000 5100 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L usb-eth-adapter U?
+L usb-eth-adapter U16
 U 1 1 593F5FF9
 P 3900 4500
-F 0 "U?" H 3900 4400 60  0000 C CNN
+F 0 "U16" H 3900 4400 60  0001 C CNN
 F 1 "usb-eth-adapter" H 3900 4500 60  0000 C CNN
 F 2 "" H 3900 4500 60  0001 C CNN
 F 3 "" H 3900 4500 60  0001 C CNN
@@ -88,10 +89,10 @@ F 3 "" H 3900 4500 60  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L wireless-bridge U?
+L wireless-bridge U20
 U 1 1 593F6000
 P 4100 5900
-F 0 "U?" H 4100 5800 60  0000 C CNN
+F 0 "U20" H 4100 5800 60  0001 C CNN
 F 1 "wireless-bridge" H 4100 5900 60  0000 C CNN
 F 2 "" H 4100 5900 60  0001 C CNN
 F 3 "" H 4100 5900 60  0001 C CNN
@@ -99,10 +100,10 @@ F 3 "" H 4100 5900 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L hard-drive U?
+L hard-drive U18
 U 1 1 593F6007
 P 3950 3950
-F 0 "U?" H 3950 3850 60  0000 C CNN
+F 0 "U18" H 3950 3850 60  0001 C CNN
 F 1 "hard-drive" H 3950 3950 60  0000 C CNN
 F 2 "" H 3950 3950 60  0001 C CNN
 F 3 "" H 3950 3950 60  0001 C CNN
@@ -110,10 +111,10 @@ F 3 "" H 3950 3950 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L hard-drive U?
+L hard-drive U17
 U 1 1 593F600E
 P 3950 3500
-F 0 "U?" H 3950 3400 60  0000 C CNN
+F 0 "U17" H 3950 3400 60  0001 C CNN
 F 1 "hard-drive" H 3950 3500 60  0000 C CNN
 F 2 "" H 3950 3500 60  0001 C CNN
 F 3 "" H 3950 3500 60  0001 C CNN
@@ -129,10 +130,10 @@ Text Label 4550 2400 0    60   ~ 0
 Text Label 4550 2500 0    60   ~ 0
 12v#2
 $Comp
-L batteries U?
+L batteries U22
 U 1 1 593F601A
 P 6250 1950
-F 0 "U?" H 6250 1850 60  0000 C CNN
+F 0 "U22" H 6250 1850 60  0001 C CNN
 F 1 "batteries" H 6250 1950 60  0000 C CNN
 F 2 "" H 6250 1950 60  0001 C CNN
 F 3 "" H 6250 1950 60  0001 C CNN
@@ -158,9 +159,7 @@ Wire Wire Line
 Wire Wire Line
 	5350 2400 5500 2400
 Wire Wire Line
-	5350 1950 5350 2200
-Wire Wire Line
-	5350 2200 5350 2400
+	5350 1950 5350 2400
 Wire Wire Line
 	5350 1950 5500 1950
 Wire Wire Line
@@ -224,10 +223,10 @@ usb6
 Wire Wire Line
 	5250 2700 5500 2700
 $Comp
-L solar-panels U?
+L solar-panels U21
 U 1 1 593F606C
 P 6250 1500
-F 0 "U?" H 6250 1450 60  0000 C CNN
+F 0 "U21" H 6250 1450 60  0001 C CNN
 F 1 "solar-panels" H 6250 1550 60  0000 C CNN
 F 2 "" H 6250 1550 60  0001 C CNN
 F 3 "" H 6250 1550 60  0001 C CNN
@@ -241,10 +240,10 @@ Wire Wire Line
 Wire Wire Line
 	5200 1500 5500 1500
 $Comp
-L ac-mains-charger U?
+L ac-mains-charger U26
 U 1 1 593F63BD
 P 8900 2300
-F 0 "U?" H 8900 2200 60  0000 C CNN
+F 0 "U26" H 8900 2200 60  0001 C CNN
 F 1 "ac-mains-charger" H 8900 2300 60  0000 C CNN
 F 2 "" H 8900 2300 60  0001 C CNN
 F 3 "" H 8900 2300 60  0001 C CNN
@@ -252,10 +251,10 @@ F 3 "" H 8900 2300 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L inverter U?
+L inverter U24
 U 1 1 593F6430
 P 7950 3150
-F 0 "U?" H 7950 3100 60  0000 C CNN
+F 0 "U24" H 7950 3100 60  0001 C CNN
 F 1 "inverter" H 7950 3200 60  0000 C CNN
 F 2 "" H 7950 3200 60  0001 C CNN
 F 3 "" H 7950 3200 60  0001 C CNN
@@ -263,10 +262,10 @@ F 3 "" H 7950 3200 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L router U?
+L router U25
 U 1 1 593F66CA
 P 8000 4300
-F 0 "U?" H 8000 4250 60  0000 C CNN
+F 0 "U25" H 8000 4250 60  0001 C CNN
 F 1 "router" H 8000 4350 60  0000 C CNN
 F 2 "" H 8000 4350 60  0001 C CNN
 F 3 "" H 8000 4350 60  0001 C CNN
@@ -274,9 +273,7 @@ F 3 "" H 8000 4350 60  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5350 2200 7350 2200
-Wire Wire Line
-	7350 2200 8050 2200
+	5350 2200 8050 2200
 Wire Wire Line
 	7350 2200 7350 3050
 Connection ~ 5350 2200
