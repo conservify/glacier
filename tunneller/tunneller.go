@@ -136,7 +136,11 @@ func main() {
 						} else {
 							log.Printf("Tunnelling!")
 
+							s := time.Now()
+
 							handleConnection(clientConnection, local)
+
+							log.Printf("Done after %v", time.Since(s))
 						}
 					}
 				}
