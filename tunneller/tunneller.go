@@ -67,7 +67,7 @@ func main() {
 	var keyFile string
 	var logFile string
 	var localEndpoint = Endpoint{
-		Host: "localhost",
+		Host: "127.0.0.1",
 		Port: 22,
 	}
 	var serverEndpoint = Endpoint{
@@ -75,7 +75,7 @@ func main() {
 		Port: 22,
 	}
 	var remoteEndpoint = Endpoint{
-		Host: "localhost",
+		Host: "127.0.0.1",
 		Port: 7000,
 	}
 
@@ -115,7 +115,7 @@ func main() {
 		if err != nil {
 			log.Printf("Unable to connect to remote server: %s", err)
 		} else {
-			log.Printf("Connected, listening on %v...", remoteEndpoint.String())
+			log.Printf("Done, listening on %v...", remoteEndpoint.String())
 
 			listener, err := serverConnection.Listen("tcp", remoteEndpoint.String())
 			if err != nil {
@@ -124,19 +124,20 @@ func main() {
 				defer listener.Close()
 
 				for {
-					log.Printf("Connecting to %s...", localEndpoint.String())
-
-					local, err := net.Dial("tcp", localEndpoint.String())
+					clientConnection, err := listener.Accept()
 					if err != nil {
-						log.Printf("Unable to connect to local server: %s", err)
+						log.Printf("Error %s", err)
 					} else {
-						clientConnection, err := listener.Accept()
-						if err != nil {
-							log.Printf("Error %s", err)
-							break
-						}
+						log.Printf("New connection, opening %s...", localEndpoint.String())
 
-						handleConnection(clientConnection, local)
+						local, err := net.Dial("tcp", localEndpoint.String())
+						if err != nil {
+							log.Printf("Unable to connect to local server: %s", err)
+						} else {
+							log.Printf("Tunnelling!")
+
+							handleConnection(clientConnection, local)
+						}
 					}
 				}
 			}
