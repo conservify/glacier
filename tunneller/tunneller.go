@@ -31,7 +31,7 @@ func handleConnection(connection net.Conn, remote net.Conn) {
 	go func() {
 		_, err := io.Copy(connection, remote)
 		if err != nil {
-			log.Println("Error copying remote->local: %s", err)
+			log.Printf("Error copying remote->local: %s", err)
 		}
 		chDone <- true
 	}()
@@ -39,7 +39,7 @@ func handleConnection(connection net.Conn, remote net.Conn) {
 	go func() {
 		_, err := io.Copy(remote, connection)
 		if err != nil {
-			log.Println("Error copying local->remote: %s", err)
+			log.Printf("Error copying local->remote: %s", err)
 		}
 		chDone <- true
 	}()
@@ -63,6 +63,7 @@ func publicKeyFile(file string) ssh.AuthMethod {
 }
 
 func main() {
+	var user string
 	var keyFile string
 	var logFile string
 	var localEndpoint = Endpoint{
@@ -78,6 +79,7 @@ func main() {
 		Port: 7000,
 	}
 
+	flag.StringVar(&user, "user", "ubuntu", "user name")
 	flag.StringVar(&keyFile, "key", "", "private key file")
 	flag.StringVar(&logFile, "log", "tunneller.log", "log file")
 	flag.StringVar(&serverEndpoint.Host, "server", "", "server to expose the local service")
@@ -99,7 +101,7 @@ func main() {
 	log.SetOutput(f)
 
 	sshConfig := &ssh.ClientConfig{
-		User: "ubuntu",
+		User: user,
 		Auth: []ssh.AuthMethod{
 			publicKeyFile(keyFile),
 		},
@@ -107,19 +109,23 @@ func main() {
 	}
 
 	for {
+		log.Printf("Connecting to %v...", serverEndpoint.String())
+
 		serverConnection, err := ssh.Dial("tcp", serverEndpoint.String(), sshConfig)
 		if err != nil {
 			log.Printf("Unable to connect to remote server: %s", err)
 		} else {
-			log.Printf("Connected")
+			log.Printf("Connected, listening on %v...", remoteEndpoint.String())
 
 			listener, err := serverConnection.Listen("tcp", remoteEndpoint.String())
 			if err != nil {
-				log.Printf("Unable to listen on %s: %s", remoteEndpoint, err)
+				log.Printf("Unable to listen on %v: %s", remoteEndpoint, err)
 			} else {
 				defer listener.Close()
 
 				for {
+					log.Printf("Connecting to %s...", localEndpoint.String())
+
 					local, err := net.Dial("tcp", localEndpoint.String())
 					if err != nil {
 						log.Printf("Unable to connect to local server: %s", err)
