@@ -127,6 +127,7 @@ func main() {
 					clientConnection, err := listener.Accept()
 					if err != nil {
 						log.Printf("Error %s", err)
+						break
 					} else {
 						log.Printf("New connection, opening %s...", localEndpoint.String())
 
@@ -143,6 +144,8 @@ func main() {
 							log.Printf("Done after %v", time.Since(s))
 						}
 					}
+
+					time.Sleep(1 * time.Second)
 				}
 			}
 		}
