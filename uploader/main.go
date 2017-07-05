@@ -154,8 +154,6 @@ func ScanDirectories(paths []string, config *Config) {
 		}
 		switch mode := fi.Mode(); {
 		case mode.IsDir():
-			log.Debugf("Scanning %s..", filePath)
-
 			files, err := ioutil.ReadDir(filePath)
 			if err != nil {
 				log.Fatal(err)
