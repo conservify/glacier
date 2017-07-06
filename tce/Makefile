@@ -1,6 +1,6 @@
 BUILD=build
 
-all:
+all: image
 	mkdir -p $(BUILD)/app
 	mkdir -p $(BUILD)/app/data
 	go build -o $(BUILD)/app/tunneller ../tunneller/*.go
@@ -14,6 +14,15 @@ all:
 	cp uploader-wrapper $(BUILD)/app/uploader-wrapper
 	cp conservify-glacier-tools $(BUILD)/app
 	mksquashfs $(BUILD) conservify-glacier-tools.tcz -b 4k -no-xattrs 
+
+piCore-9.0.3.img:
+	wget http://tinycorelinux.net/9.x/armv7/releases/RPi/piCore-9.0.3.zip
+	unzip piCore-9.0.3.zip
+
+piCore-9.0.3-larger.img: piCore-9.0.3.img
+	bash create-image.sh
+
+image: piCore-9.0.3-larger.img
 
 deps:
 	go get golang.org/x/crypto/ssh
