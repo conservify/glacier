@@ -1,0 +1,15 @@
+opt
+home
+etc/passwd
+etc/shadow
+etc/group
+etc/gshadow
+usr/local/etc/ssh/ssh_host_dsa_key
+usr/local/etc/ssh/ssh_host_dsa_key.pub
+usr/local/etc/ssh/ssh_host_ecdsa_key
+usr/local/etc/ssh/ssh_host_ecdsa_key.pub
+usr/local/etc/ssh/ssh_host_ed25519_key
+usr/local/etc/ssh/ssh_host_ed25519_key.pub
+usr/local/etc/ssh/ssh_host_rsa_key
+usr/local/etc/ssh/ssh_host_rsa_key.pub
+var/spool/cron/crontabs
