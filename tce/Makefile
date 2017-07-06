@@ -2,13 +2,17 @@ BUILD=build
 
 all:
 	mkdir -p $(BUILD)/app
+	mkdir -p $(BUILD)/app/data
 	go build -o $(BUILD)/app/tunneller ../tunneller/*.go
 	go build -o $(BUILD)/app/resilience ../resilience/*.go
 	go build -o $(BUILD)/app/status ../status/*.go
 	go build -o $(BUILD)/app/uploader ../uploader/*.go
 	go build -o $(BUILD)/app/morningstar ../morningstar/*.go
 	cd ../psn-adc && make
-	cp ../psn-adc/AdcDemo $(BUILD)/app
+	cp ../psn-adc/AdcDemo $(BUILD)/app/adc
+	cp adc-wrapper $(BUILD)/app/adc-wrapper
+	cp uploader-wrapper $(BUILD)/app/uploader-wrapper
+	cp conservify-glacier-tools $(BUILD)/app
 	mksquashfs $(BUILD) conservify-glacier-tools.tcz -b 4k -no-xattrs 
 
 deps:

@@ -1,0 +1,7 @@
+#!/bin/sh
+
+while /bin/true; do
+        /app/adc
+        sleep 1
+done
+
