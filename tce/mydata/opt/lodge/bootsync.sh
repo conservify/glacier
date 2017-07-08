@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# ifconfig eth0 192.168.1.139 netmask 255.255.255.0 broadcast 192.168.1.255 up
-# route add default gw 192.168.1.1 eth0
-
 ifconfig eth1 169.254.128.129 netmask 255.255.255.0 broadcast 169.254.128.255 up
 
 /etc/init.d/dhcp.sh

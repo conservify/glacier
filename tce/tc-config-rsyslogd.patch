@@ -1,0 +1,21 @@
+*** tc-config.orig	2017-07-07 12:29:15.916696648 -0700
+--- tc-config	2017-07-07 17:39:39.197579998 -0700
+***************
+*** 185,192 ****
+  fi
+  
+  if [ -n "$SYSLOG" ]; then
+! 	 [ -z "$RSYSLOG" ] || SOPTS=" -R $RSYSLOG -L "
+! 	 /sbin/syslogd ${SOPTS} && echo "${GREEN}syslog started.${NORMAL}"
+  	 /sbin/klogd && echo "${GREEN}klog started."
+  fi
+  
+--- 185,192 ----
+  fi
+  
+  if [ -n "$SYSLOG" ]; then
+!      /sbin/ldconfig 2>/dev/null
+! 	 /usr/local/sbin/rsyslogd && echo "${GREEN}rsyslog started.${NORMAL}"
+  	 /sbin/klogd && echo "${GREEN}klog started."
+  fi
+  

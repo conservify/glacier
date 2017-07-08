@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"log/syslog"
 	"net"
 	"os"
 	"time"
@@ -62,92 +63,164 @@ func publicKeyFile(file string) ssh.AuthMethod {
 	return ssh.PublicKeys(key)
 }
 
+type Options struct {
+	User           string
+	KeyFile        string
+	LogFile        string
+	LocalEndpoint  Endpoint
+	ServerEndpoint Endpoint
+	RemoteEndpoint Endpoint
+	Reverse        bool
+	Syslog         string
+}
+
+func forwardLocalPortToRemotePort(o *Options, sshConfig *ssh.ClientConfig) {
+	log.Printf("Listening on %v...", o.LocalEndpoint.String())
+
+	listener, err := net.Listen("tcp", o.LocalEndpoint.String())
+	if err != nil {
+		log.Printf("Unable to listen on %v: %s", o.LocalEndpoint, err)
+	} else {
+		for {
+			log.Printf("New connection, opening %s...", o.LocalEndpoint.String())
+
+			clientConnection, err := listener.Accept()
+			if err != nil {
+				log.Printf("Error %s", err)
+				break
+			} else {
+				log.Printf("Connecting to %v...", o.ServerEndpoint.String())
+
+				serverConnection, err := ssh.Dial("tcp", o.ServerEndpoint.String(), sshConfig)
+				if err != nil {
+					log.Printf("Unable to connect to remote server: %s", err)
+				} else {
+					local, err := serverConnection.Dial("tcp", o.RemoteEndpoint.String())
+					if err != nil {
+						log.Printf("Unable to connect to local server: %s", err)
+					} else {
+						log.Printf("Tunnelling!")
+
+						s := time.Now()
+
+						handleConnection(clientConnection, local)
+
+						log.Printf("Done after %v", time.Since(s))
+					}
+				}
+			}
+
+			time.Sleep(1 * time.Second)
+		}
+
+		listener.Close()
+	}
+}
+
+func forwardRemotePortToLocalPort(o *Options, sshConfig *ssh.ClientConfig) {
+	log.Printf("Connecting to %v...", o.ServerEndpoint.String())
+
+	serverConnection, err := ssh.Dial("tcp", o.ServerEndpoint.String(), sshConfig)
+	if err != nil {
+		log.Printf("Unable to connect to remote server: %s", err)
+	} else {
+		log.Printf("Done, listening on %v...", o.RemoteEndpoint.String())
+
+		listener, err := serverConnection.Listen("tcp", o.RemoteEndpoint.String())
+		if err != nil {
+			log.Printf("Unable to listen on %v: %s", o.RemoteEndpoint, err)
+		} else {
+			for {
+				clientConnection, err := listener.Accept()
+				if err != nil {
+					log.Printf("Error %s", err)
+					break
+				} else {
+					log.Printf("New connection, opening %s...", o.LocalEndpoint.String())
+
+					local, err := net.Dial("tcp", o.LocalEndpoint.String())
+					if err != nil {
+						log.Printf("Unable to connect to local server: %s", err)
+					} else {
+						log.Printf("Tunnelling!")
+
+						s := time.Now()
+
+						handleConnection(clientConnection, local)
+
+						log.Printf("Done after %v", time.Since(s))
+					}
+				}
+
+				time.Sleep(1 * time.Second)
+			}
+
+			listener.Close()
+		}
+	}
+}
+
 func main() {
-	var user string
-	var keyFile string
-	var logFile string
-	var localEndpoint = Endpoint{
-		Host: "127.0.0.1",
-		Port: 22,
-	}
-	var serverEndpoint = Endpoint{
-		Host: "",
-		Port: 22,
-	}
-	var remoteEndpoint = Endpoint{
-		Host: "127.0.0.1",
-		Port: 7000,
+	o := Options{
+		LocalEndpoint: Endpoint{
+			Host: "127.0.0.1",
+			Port: 22,
+		},
+		ServerEndpoint: Endpoint{
+			Host: "",
+			Port: 22,
+		},
+		RemoteEndpoint: Endpoint{
+			Host: "127.0.0.1",
+			Port: 7000,
+		},
+		Reverse: false,
 	}
 
-	flag.StringVar(&user, "user", "ubuntu", "user name")
-	flag.StringVar(&keyFile, "key", "", "private key file")
-	flag.StringVar(&logFile, "log", "tunneller.log", "log file")
-	flag.StringVar(&serverEndpoint.Host, "server", "", "server to expose the local service")
-	flag.IntVar(&remoteEndpoint.Port, "remote-port", 7000, "port that will forward to local port")
-	flag.IntVar(&localEndpoint.Port, "local-port", 22, "port to accept incoming connections")
+	flag.StringVar(&o.User, "user", "ubuntu", "user name")
+	flag.StringVar(&o.KeyFile, "key", "", "private key file")
+	flag.StringVar(&o.LogFile, "log", "tunneller.log", "log file")
+	flag.StringVar(&o.ServerEndpoint.Host, "server", "", "server to expose the local service")
+	flag.StringVar(&o.Syslog, "syslog", "", "enable syslog and name the ap")
+	flag.IntVar(&o.RemoteEndpoint.Port, "remote-port", 7000, "port that will forward to local port")
+	flag.IntVar(&o.LocalEndpoint.Port, "local-port", 22, "port to accept incoming connections")
+	flag.BoolVar(&o.Reverse, "reverse", false, "reverse the direction, listen locally")
+
 	flag.Parse()
 
-	if keyFile == "" || remoteEndpoint.Host == "" {
+	if o.KeyFile == "" || o.RemoteEndpoint.Host == "" {
 		flag.PrintDefaults()
 		os.Exit(2)
 	}
 
-	f, err := os.OpenFile(logFile, os.O_RDWR | os.O_CREATE | os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("Error opening file: %v", err)
-	}
-	defer f.Close()
+	if o.Syslog == "" {
+		f, err := os.OpenFile(o.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatalf("Error opening file: %v", err)
+		}
+		defer f.Close()
 
-	log.SetOutput(f)
+		log.SetOutput(f)
+	} else {
+		syslog, err := syslog.New(syslog.LOG_NOTICE, o.Syslog)
+		if err == nil {
+			log.SetOutput(syslog)
+		}
+	}
 
 	sshConfig := &ssh.ClientConfig{
-		User: user,
+		User: o.User,
 		Auth: []ssh.AuthMethod{
-			publicKeyFile(keyFile),
+			publicKeyFile(o.KeyFile),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 
 	for {
-		log.Printf("Connecting to %v...", serverEndpoint.String())
-
-		serverConnection, err := ssh.Dial("tcp", serverEndpoint.String(), sshConfig)
-		if err != nil {
-			log.Printf("Unable to connect to remote server: %s", err)
+		if o.Reverse {
+			forwardLocalPortToRemotePort(&o, sshConfig)
 		} else {
-			log.Printf("Done, listening on %v...", remoteEndpoint.String())
-
-			listener, err := serverConnection.Listen("tcp", remoteEndpoint.String())
-			if err != nil {
-				log.Printf("Unable to listen on %v: %s", remoteEndpoint, err)
-			} else {
-				defer listener.Close()
-
-				for {
-					clientConnection, err := listener.Accept()
-					if err != nil {
-						log.Printf("Error %s", err)
-						break
-					} else {
-						log.Printf("New connection, opening %s...", localEndpoint.String())
-
-						local, err := net.Dial("tcp", localEndpoint.String())
-						if err != nil {
-							log.Printf("Unable to connect to local server: %s", err)
-						} else {
-							log.Printf("Tunnelling!")
-
-							s := time.Now()
-
-							handleConnection(clientConnection, local)
-
-							log.Printf("Done after %v", time.Since(s))
-						}
-					}
-
-					time.Sleep(1 * time.Second)
-				}
-			}
+			forwardRemotePortToLocalPort(&o, sshConfig)
 		}
 
 		time.Sleep(1 * time.Second)

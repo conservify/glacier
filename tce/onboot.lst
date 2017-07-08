@@ -7,3 +7,7 @@ rsync.tcz
 conservify-glacier-tools.tcz
 r8152.tcz
 usbserial.tcz
+libelf.tcz
+iptables.tcz
+libacl.tcz
+netfilter-4.9.22-piCore-v7.tcz

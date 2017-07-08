@@ -7,12 +7,13 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"io/ioutil"
 	"log"
+	"log/syslog"
 	"net/http"
 	"os"
 	"path"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -20,6 +21,8 @@ type Config struct {
 	Url     string
 	Token   string
 	Pattern string
+	LogFile string
+	Syslog  string
 	Watch   bool
 	Archive bool
 }
@@ -34,7 +37,7 @@ func WriteSimplifiedBinary(filePath string, binaryPath string) (parsed *Kinemetr
 
 	parsed, err = ParseKinemetricsFile(fp)
 	if err != nil {
-		log.Fatal("Error parsing Kinemetrics file", err)
+		log.Fatalf("Error parsing Kinemetrics file %v", err)
 	}
 
 	binFile, err := os.OpenFile(binaryPath, os.O_CREATE|os.O_WRONLY, 0600)
@@ -133,12 +136,12 @@ func ArchiveBinary(file *WaveformBinary, filePath string, config *Config) (err e
 	if os.MkdirAll(newPath, 0777) == nil {
 		err := os.Rename(filePath, path.Join(newPath, path.Base(filePath)))
 		if err == nil {
-			log.Printf("Archived %s.\n", filePath)
+			log.Printf("Archived %s.", filePath)
 		} else {
-			log.Printf("Unable to archive %s: %s\n", filePath, err)
+			log.Printf("Unable to archive %s: %s", filePath, err)
 		}
 	} else {
-		log.Printf("Error creating directory %s, failed to archive %s\n", newPath, filePath)
+		log.Printf("Error creating directory %s, failed to archive %s", newPath, filePath)
 	}
 
 	return
@@ -150,13 +153,13 @@ func ScanDirectories(paths []string, config *Config) {
 	for _, filePath := range paths {
 		fi, err := os.Stat(filePath)
 		if err != nil {
-			log.Fatal("Error", err)
+			log.Fatalf("Error %v", err)
 		}
 		switch mode := fi.Mode(); {
 		case mode.IsDir():
 			files, err := ioutil.ReadDir(filePath)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("Error listing directory %v", err)
 			}
 
 			for _, child := range files {
@@ -193,7 +196,7 @@ func ScanDirectories(paths []string, config *Config) {
 									log.Printf("Error archiving %s", err)
 								}
 							} else {
-								log.Printf("Unable to parse Geophone file name: %s\n", childPath)
+								log.Printf("Unable to parse Geophone file name: %s", childPath)
 							}
 						}
 					}
@@ -209,6 +212,9 @@ func main() {
 	flag.StringVar(&config.Url, "url", "", "url to upload data to")
 	flag.StringVar(&config.Token, "token", "", "upload token")
 	flag.StringVar(&config.Pattern, "pattern", "", "upload pattern")
+	flag.StringVar(&config.LogFile, "log", "uploader.log", "log file")
+	flag.StringVar(&config.Syslog, "syslog", "", "enable syslog and name the ap")
+
 	flag.BoolVar(&config.Watch, "watch", false, "watch directory for changes")
 	flag.BoolVar(&config.Archive, "archive", false, "archive files after upload")
 
@@ -219,14 +225,29 @@ func main() {
 		os.Exit(1)
 	}
 
-	log.Printf("Starting up... doing initial scan...\n")
+	if config.Syslog == "" {
+		f, err := os.OpenFile(config.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatalf("Error opening file: %v", err)
+		}
+		defer f.Close()
+
+		log.SetOutput(f)
+	} else {
+		syslog, err := syslog.New(syslog.LOG_NOTICE, config.Syslog)
+		if err == nil {
+			log.SetOutput(syslog)
+		}
+	}
+
+	log.Printf("Starting up... doing initial scan...")
 
 	ScanDirectories(flag.Args(), &config)
 
 	if config.Watch {
 		watcher, err := fsnotify.NewWatcher()
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error creating watcher %v", err)
 		}
 		defer watcher.Close()
 
@@ -245,7 +266,7 @@ func main() {
 		for _, filePath := range flag.Args() {
 			fi, err := os.Stat(filePath)
 			if err != nil {
-				log.Fatal("Error", err)
+				log.Fatalf("Error %v", err)
 			}
 			switch mode := fi.Mode(); {
 			case mode.IsDir():
@@ -253,7 +274,7 @@ func main() {
 			}
 		}
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Error %v", err)
 		}
 
 		<-done

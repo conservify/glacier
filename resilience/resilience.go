@@ -5,6 +5,7 @@ import (
 	"fmt"
 	fastping "github.com/tatsushid/go-fastping"
 	"log"
+	"log/syslog"
 	"net"
 	"os"
 	"os/exec"
@@ -90,17 +91,26 @@ func Execute(l []string, dryRun bool) error {
 		c := exec.Command(l[0], l[1:]...)
 		err := c.Run()
 		if err != nil {
-			log.Printf("Error: ",err)
+			log.Printf("Error: %v", err)
 		}
 	}
 	return nil
 }
 
+type Options struct {
+	DryRun        bool
+	DisableReboot bool
+	LogFile       string
+	Syslog        string
+}
+
 func main() {
-	var dryRun bool
-	var disableReboot bool
-	flag.BoolVar(&dryRun, "dry", false, "dry run")
-	flag.BoolVar(&disableReboot, "disable-reboot", false, "disable reboot")
+	var o Options
+
+	flag.BoolVar(&o.DryRun, "dry", false, "dry run")
+	flag.BoolVar(&o.DisableReboot, "disable-reboot", false, "disable reboot")
+	flag.StringVar(&o.LogFile, "log", "resilience.log", "log file")
+	flag.StringVar(&o.Syslog, "syslog", "", "enable syslog and name the ap")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage:\n  %s [options] hostname [source]\n\nOptions:\n", os.Args[0])
@@ -108,13 +118,28 @@ func main() {
 	}
 	flag.Parse()
 
+	if o.Syslog == "" {
+		f, err := os.OpenFile(o.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatalf("Error opening file: %v", err)
+		}
+		defer f.Close()
+
+		log.SetOutput(f)
+	} else {
+		syslog, err := syslog.New(syslog.LOG_NOTICE, o.Syslog)
+		if err == nil {
+			log.SetOutput(syslog)
+		}
+	}
+
 	hostname := flag.Arg(0)
 	if len(hostname) == 0 {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	if dryRun {
+	if o.DryRun {
 		log.Printf("Dry run enabled.")
 	}
 
@@ -122,19 +147,19 @@ func main() {
 	if !stopped && !good {
 		log.Printf("Unreachable, restarting networking...")
 
-		Execute([]string{"/usr/sbin/service", "networking", "restart"}, dryRun)
+		Execute([]string{"/usr/sbin/service", "networking", "restart"}, o.DryRun)
 
 		time.Sleep(2 * time.Second)
 
-		Execute([]string{"/usr/sbin/service", "logmein-hamachi", "restart"}, dryRun)
+		Execute([]string{"/usr/sbin/service", "logmein-hamachi", "restart"}, o.DryRun)
 
 		time.Sleep(2 * time.Second)
 
 		good, stopped := testNetworking(hostname)
 		if !stopped && !good {
-			if !disableReboot {
+			if !o.DisableReboot {
 				log.Printf("Unreachable, restarting computer...")
-				Execute([]string{"/sbin/reboot"}, dryRun)
+				Execute([]string{"/sbin/reboot"}, o.DryRun)
 			}
 		}
 	} else if good {
