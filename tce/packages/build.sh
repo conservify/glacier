@@ -1,7 +1,7 @@
 set -ex
 
 # sudo apt-get install libgcrypt-dev
-BUILD=/home/jlewallen/packages/build
+BUILD=`pwd`/build
 
 mkdir -p $BUILD
 
@@ -21,6 +21,7 @@ if [ ! -f v1.0.6.tar.gz ]; then
 	wget https://github.com/rsyslog/liblogging/archive/v1.0.6.tar.gz
 fi
 
+: <<'EOC'
 pushd $BUILD
 tar zxf ../rsyslog-8.28.0.tar.gz
 tar zxf ../v0.1.10.tar.gz
@@ -53,6 +54,15 @@ env LDFLAGS="-L$BUILD/libfastjson-install/usr/local/lib -L$BUILD/libestr-install
 make
 make install DESTDIR=$BUILD/rsyslog-install
 popd
+EOC
+
+pushd $BUILD/rsyslog-install
+mkdir -p etc
+cp -ar ../../rsyslogd/* etc
+mkdir -p var/spool/rsyslog
+popd
+
+rm -rf $BUILD/*.tcz
 
 mksquashfs $BUILD/libestr-install $BUILD/libestr.tcz -b 4k -no-xattrs
 mksquashfs $BUILD/libfastjson-install $BUILD/libfastjson.tcz -b 4k -no-xattrs
