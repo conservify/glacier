@@ -30,11 +30,11 @@ function archive_partitions {
         set -- $line
         offs=$(($2*512))
 
-        losetup -o $offs /dev/loop0 $SOURCE
-        mount /dev/loop0 $TEMP
+        losetup -o $offs /dev/loop1 $SOURCE
+        mount /dev/loop1 $TEMP
         archive_directory $TEMP $BUILD/card$number.gz
         umount $TEMP
-        losetup -d /dev/loop0
+        losetup -d /dev/loop1
         number=$((number+1))
     done
 }
@@ -51,19 +51,20 @@ function fill_partition {
         set -- $line
         offs=$(($2*512))
 
-        losetup -o $offs /dev/loop0 $IMAGE
-        eval "$FORMAT /dev/loop0"
+        losetup -o $offs /dev/loop1 $IMAGE
+        eval "$FORMAT /dev/loop1"
         mkdir -p card-temp
-        mount /dev/loop0 card-temp
+        mount /dev/loop1 card-temp
         unarchive_directory $FILE card-temp
         umount card-temp
-        losetup -d /dev/loop0
+        losetup -d /dev/loop1
         rmdir card-temp
     done
 }
 
 function download_extensions {
     mkdir -p .extensions-cache
+    cp packages/*.tcz .extensions-cache
     pushd .extensions-cache
     for name in `cat ../extensions`; do
         if [ ! -f $name ]; then
@@ -81,6 +82,7 @@ function build_mydata {
     mkdir home/tc/.ssh -p
     cp ~/.ssh/id_rsa* home/tc/.ssh
     cp ~/.ssh/id_rsa.pub home/tc/.ssh/authorized_keys
+    chmod 755 home/tc
     chmod 700 home/tc/.ssh
     chmod 600 home/tc/.ssh/id_rsa
     chmod 644 home/tc/.ssh/id_rsa.pub
@@ -144,11 +146,17 @@ find | cpio -o -H newc | gzip -9 > $WORK/9.0.3v7.gz
 popd
 
 for a in $WORK/cmdline*; do
-    sed -i -e 's/quiet/nodhcp cron syslog host=glacier logo.nologo/g' $a
+    sed -i -e 's/quiet/nodhcp cron syslog host=lodge logo.nologo/g' $a
     sed -i -e 's/loglevel=3/loglevel=6/g' $a
 done
 
-archive_directory $WORK $BUILD/card0.gz
+archive_directory $WORK $BUILD/card0-lodge.gz
+
+for a in $WORK/cmdline*; do
+    sed -i -e 's/lodge/glacier/g' $a
+done
+
+archive_directory $WORK $BUILD/card0-glacier.gz
 
 WORK=$BUILD/card1
 rm -rf $WORK
@@ -160,9 +168,14 @@ cp $PROJECT/onboot.lst $WORK/tce
 cp $BUILD/mydata.tgz $WORK/tce
 archive_directory $WORK $BUILD/card1.gz
 
-IMAGE="$BUILD/test.img"
+IMAGE="$BUILD/piCore-9.0.3-lodge.img"
 partition_image $IMAGE
-fill_partition $IMAGE "W95" $BUILD/card0.gz "sudo mkfs.vfat"
+fill_partition $IMAGE "W95" $BUILD/card0-lodge.gz "sudo mkfs.vfat"
+fill_partition $IMAGE "Linux" $BUILD/card1.gz "sudo mkfs.ext4"
+
+IMAGE="$BUILD/piCore-9.0.3-glacier.img"
+partition_image $IMAGE
+fill_partition $IMAGE "W95" $BUILD/card0-glacier.gz "sudo mkfs.vfat"
 fill_partition $IMAGE "Linux" $BUILD/card1.gz "sudo mkfs.ext4"
 
 cleanup

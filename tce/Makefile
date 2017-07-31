@@ -40,16 +40,17 @@ conservify-glacier-tools.tcz: gotools $(BUILD)/app/adc
 	cp conservify-glacier-tools $(BUILD)/app
 	rm -f conservify-glacier-tools.tcz
 	mksquashfs $(BUILD) conservify-glacier-tools.tcz -b 4k -no-xattrs
+	mkdir -p .extensions-cache
 	mv conservify-glacier-tools.tcz .extensions-cache
 
 piCore-9.0.3.img:
 	wget http://tinycorelinux.net/9.x/armv7/releases/RPi/piCore-9.0.3.zip
 	unzip piCore-9.0.3.zip
 
-piCore-9.0.3-lodge.img: piCore-9.0.3.img conservify-glacier-tools.tcz
+build/piCore-9.0.3-lodge.img: piCore-9.0.3.img conservify-glacier-tools.tcz
 	bash create-image.sh
 
-image: piCore-9.0.3-lodge.img
+image: build/piCore-9.0.3-lodge.img
 
 clean:
 	rm -rf $(BUILD)
