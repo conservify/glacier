@@ -105,9 +105,15 @@ func forwardLocalPortToRemotePort(o *Options, sshConfig *ssh.ClientConfig) {
 
 						handleConnection(clientConnection, local)
 
+						local.Close()
+
 						log.Printf("Done after %v", time.Since(s))
 					}
+
+					serverConnection.Close()
 				}
+
+				clientConnection.Close()
 			}
 
 			time.Sleep(1 * time.Second)
@@ -148,8 +154,12 @@ func forwardRemotePortToLocalPort(o *Options, sshConfig *ssh.ClientConfig) {
 
 						handleConnection(clientConnection, local)
 
+						local.Close()
+
 						log.Printf("Done after %v", time.Since(s))
 					}
+
+					clientConnection.Close()
 				}
 
 				time.Sleep(1 * time.Second)
@@ -157,6 +167,8 @@ func forwardRemotePortToLocalPort(o *Options, sshConfig *ssh.ClientConfig) {
 
 			listener.Close()
 		}
+
+		serverConnection.Close()
 	}
 }
 
