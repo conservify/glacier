@@ -145,23 +145,8 @@ func main() {
 
 	good, stopped := testNetworking(hostname)
 	if !stopped && !good {
-		log.Printf("Unreachable, restarting networking...")
-
-		Execute([]string{"/usr/sbin/service", "networking", "restart"}, o.DryRun)
-
-		time.Sleep(2 * time.Second)
-
-		Execute([]string{"/usr/sbin/service", "logmein-hamachi", "restart"}, o.DryRun)
-
-		time.Sleep(2 * time.Second)
-
-		good, stopped := testNetworking(hostname)
-		if !stopped && !good {
-			if !o.DisableReboot {
-				log.Printf("Unreachable, restarting computer...")
-				Execute([]string{"/sbin/reboot"}, o.DryRun)
-			}
-		}
+		log.Printf("Unreachable, restarting computer...")
+		Execute([]string{"/sbin/reboot"}, o.DryRun)
 	} else if good {
 		log.Printf("Network is good.")
 	}

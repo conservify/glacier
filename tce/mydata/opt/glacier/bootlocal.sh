@@ -2,8 +2,6 @@
 
 /app/tunneller-wrapper --syslog tunneller-ssh --remote-port 7002 --log /var/log/tunneller.log --key /home/tc/.ssh/id_rsa --server 34.201.197.136 &
 
-/app/tunneller-wrapper --syslog tunneller-syslog --remote-port 514 --local-port 1514 --log /var/log/tunneller-rsyslog.log --key /home/tc/.ssh/id_rsa --server 34.201.197.136 --reverse &
-
 /app/uploader-wrapper --url https://code.conservify.org/geophone \
                       --syslog uploader-geophone \
                       --log /var/log/uploader-geophone.log \

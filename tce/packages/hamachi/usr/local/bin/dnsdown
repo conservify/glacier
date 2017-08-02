@@ -1,0 +1,25 @@
+#!/bin/sh
+
+# work based on the file /var/lib/logmein-hamachi/resolv.conf
+[ -f /var/lib/logmein-hamachi/resolv.conf ] || exit 0
+
+# first argument id domain, second is nameserver address
+DOMAIN=`sed -n -e "s/^domain \(.*\)/\1/p" /var/lib/logmein-hamachi/resolv.conf`
+NAMESERVER=`sed -n -e "s/nameserver \(.*\)/\1/p" /var/lib/logmein-hamachi/resolv.conf`
+
+[ -z "$DOMAIN" ] && exit 1
+[ -z "$NAMESERVER" ] && exit 1
+
+# remove comment and nameserver added by dnsup
+sed -e "/# Added by LogMeIn Hamachi/ d" \
+    -e "/^nameserver $NAMESERVER$/ d" \
+    -e "s/^\(search\) $DOMAIN\(.*\)/\1\2/g" /etc/resolv.conf >/var/lib/logmein-hamachi/resolv.conf.tmp
+
+# overwrite /etc/resolv.conf
+cat /var/lib/logmein-hamachi/resolv.conf.tmp >/etc/resolv.conf
+
+# remove info
+rm -f /var/lib/logmein-hamachi/resolv.conf
+
+# cleanup
+rm -f /var/lib/logmein-hamachi/resolv.conf.tmp

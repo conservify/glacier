@@ -21,12 +21,16 @@ if [ ! -f v1.0.6.tar.gz ]; then
 	wget https://github.com/rsyslog/liblogging/archive/v1.0.6.tar.gz
 fi
 
-: <<'EOC'
+if [ ! -f logrotate-3.12.3.tar.xz ]; then
+    wget https://github.com/logrotate/logrotate/releases/download/3.12.3/logrotate-3.12.3.tar.xz
+fi
+
 pushd $BUILD
 tar zxf ../rsyslog-8.28.0.tar.gz
 tar zxf ../v0.1.10.tar.gz
 tar zxf ../v0.99.6.tar.gz
 tar zxf ../v1.0.6.tar.gz
+tar zxf ../logrotate-3.12.3.tar.xz
 popd
 
 pushd $BUILD/libestr-0.1.10
@@ -54,7 +58,12 @@ env LDFLAGS="-L$BUILD/libfastjson-install/usr/local/lib -L$BUILD/libestr-install
 make
 make install DESTDIR=$BUILD/rsyslog-install
 popd
-EOC
+
+pushd $BUILD/logrotate-3.12.3.
+./configure
+make
+make install DESTDIR=$BUILD/logrotate-install
+popd
 
 pushd $BUILD/rsyslog-install
 mkdir -p etc
@@ -68,3 +77,4 @@ mksquashfs $BUILD/libestr-install $BUILD/libestr.tcz -b 4k -no-xattrs
 mksquashfs $BUILD/libfastjson-install $BUILD/libfastjson.tcz -b 4k -no-xattrs
 mksquashfs $BUILD/liblogging-install $BUILD/liblogging.tcz -b 4k -no-xattrs
 mksquashfs $BUILD/rsyslog-install $BUILD/rsyslog.tcz -b 4k -no-xattrs
+mksquashfs $BUILD/logrotate-install $BUILD/logrotate.tcz -b 4k -no-xattrs

@@ -1,2 +1,3 @@
 */30 * * * * /app/resilience 8.8.8.8 >> /var/log/resilience.log 2>&1
 0 * * * * /app/morningstar --csv /app/data/morningstar-glacier.csv >> /var/log/morningstar.log 2>&1
+0 * * * * /usr/local/sbin/logrotate /etc/logrotate.conf 2>&1

@@ -26,7 +26,6 @@ func (endpoint *Endpoint) String() string {
 // Handle local client connections and tunnel data to the remote server
 // Will use io.Copy - http://golang.org/pkg/io/#Copy
 func handleConnection(connection net.Conn, remote net.Conn) {
-	defer connection.Close()
 	chDone := make(chan bool)
 
 	go func() {

@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# first argument is domain, second is nameserver address
+DOMAIN=$1
+NAMESERVER=$2
+
+[ -z "$DOMAIN" ] && exit 1
+[ -z "$NAMESERVER" ] && exit 1
+
+# clean up any remnant first
+/opt/logmein-hamachi/bin/dnsdown
+
+[ -n "`grep -e "^search[[:space:]]\(.*[[:space:]]\)\?$DOMAIN\([[:space:]].*\)\?$" /etc/resolv.conf`" ] && exit 2
+
+# insert nameserver at the begining of resolv.conf
+cat >/var/lib/logmein-hamachi/resolv.conf.tmp <<EOF
+# Added by LogMeIn Hamachi
+nameserver $NAMESERVER
+EOF
+
+# merge domain into search list
+SEARCH=`sed -n -e "/^search/ p" /etc/resolv.conf`
+if [ -n "$SEARCH" ]; then
+	sed -e "s/^\(search\)\(.*\)/\1 $DOMAIN\2/g" /etc/resolv.conf >>/var/lib/logmein-hamachi/resolv.conf.tmp
+else
+	cat /etc/resolv.conf  >>/var/lib/logmein-hamachi/resolv.conf.tmp
+	echo "search $DOMAIN" >>/var/lib/logmein-hamachi/resolv.conf.tmp
+fi
+
+# overwrite /etc/resolv.conf
+cat /var/lib/logmein-hamachi/resolv.conf.tmp >/etc/resolv.conf
+
+# save info
+cat >/var/lib/logmein-hamachi/resolv.conf <<EOF
+domain $DOMAIN
+nameserver $NAMESERVER
+EOF
+
+# cleanup
+rm -f /var/lib/logmein-hamachi/resolv.conf.tmp

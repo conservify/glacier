@@ -7,14 +7,14 @@ BUILD=$PROJECT/build
 
 function archive_directory {
     pushd $1
-    find | cpio -o -H newc | gzip -9 > $2
+    sudo find | sudo cpio -o -H newc | gzip -9 > $2
     popd
 }
 
 function unarchive_directory {
     mkdir -p $2
     pushd $2
-    zcat $1 | cpio -d -i
+    zcat $1 | sudo cpio -d -i
     popd
 }
 
@@ -30,11 +30,11 @@ function archive_partitions {
         set -- $line
         offs=$(($2*512))
 
-        losetup -o $offs /dev/loop1 $SOURCE
-        mount /dev/loop1 $TEMP
+        sudo losetup -o $offs /dev/loop1 $SOURCE
+        sudo mount /dev/loop1 $TEMP
         archive_directory $TEMP $BUILD/card$number.gz
-        umount $TEMP
-        losetup -d /dev/loop1
+        sudo umount $TEMP
+        sudo losetup -d /dev/loop1
         number=$((number+1))
     done
 }
@@ -51,13 +51,13 @@ function fill_partition {
         set -- $line
         offs=$(($2*512))
 
-        losetup -o $offs /dev/loop1 $IMAGE
+        sudo losetup -o $offs /dev/loop1 $IMAGE
         eval "$FORMAT /dev/loop1"
         mkdir -p card-temp
-        mount /dev/loop1 card-temp
+        sudo mount /dev/loop1 card-temp
         unarchive_directory $FILE card-temp
-        umount card-temp
-        losetup -d /dev/loop1
+        sudo umount card-temp
+        sudo losetup -d /dev/loop1
         rmdir card-temp
     done
 }
@@ -87,10 +87,11 @@ function build_mydata {
     chmod 600 home/tc/.ssh/id_rsa
     chmod 644 home/tc/.ssh/id_rsa.pub
     chmod 644 home/tc/.ssh/authorized_keys
-    chown 0.0 -R opt home var
-    chown 1001.50 -R home/tc
-    chown 0.50 -R opt
-    tar czf ../mydata.tgz ./
+    sudo chown 0.0 -R opt home var
+    sudo chown 1001.50 -R home/tc
+    sudo chown 0.50 -R opt
+    ls -slh home
+    sudo tar czf ../mydata.tgz ./
     popd
 }
 
@@ -118,64 +119,95 @@ function partition_image {
 EOF
 }
 
-function cleanup {
-    losetup -D
-}
-
-losetup -D
-
 SOURCE=piCore-9.0.3.img
 archive_partitions $SOURCE
 download_extensions
 build_mydata
 
-WORK=$BUILD/card0
+# ==============================================================================
+
+WORK=$BUILD/card0-lodge
+BASE_WORK=$BUILD/card0-lodge-base
+sudo rm -rf $WORK
 mkdir -p $WORK
-
-rm -rf $BUILD/card0-base
-mkdir $BUILD/card0-base
-
 unarchive_directory $BUILD/card0.gz $WORK
 
-pushd $BUILD/card0-base
-zcat $WORK/9.0.3v7.gz | cpio -d -i
-patch etc/init.d/tc-config -i $PROJECT/tc-config-rsyslogd.patch
-for a in $PROJECT/mandatory/*.tcz; do unsquashfs -f -d ./ $a ; done
-ldconfig -r $BUILD/card0-base
-find | cpio -o -H newc | gzip -9 > $WORK/9.0.3v7.gz
+sudo rm -rf $BASE_WORK
+mkdir $BASE_WORK
+pushd $BASE_WORK
+zcat $WORK/9.0.3v7.gz | sudo cpio -d -i
+sudo patch etc/init.d/tc-config -i $PROJECT/tc-config-rsyslogd.patch
+for a in $PROJECT/mandatory/*.tcz; do sudo unsquashfs -f -d ./ $a ; done
+ls -lh etc/rsyslog*
+sudo cp $PROJECT/mydata/etc/rsyslog.conf.lodge etc/rsyslog.conf
+sudo cp $PROJECT/mydata/etc/logrotate.conf etc
+sudo ldconfig -r $BASE_WORK
+sudo mkdir -p home/tc
+sudo chmod 755 home/tc
+sudo -- sh -c "find | cpio -o -H newc | gzip -9 > $WORK/9.0.3v7.gz"
 popd
+sudo rm -rf $BASE_WORK
 
 for a in $WORK/cmdline*; do
     sed -i -e 's/quiet/nodhcp cron syslog host=lodge logo.nologo/g' $a
     sed -i -e 's/loglevel=3/loglevel=6/g' $a
 done
 
+sudo cp $WORK/config.txt ~/
+
 archive_directory $WORK $BUILD/card0-lodge.gz
 
+# ==============================================================================
+
+WORK=$BUILD/card0-glacier
+BASE_WORK=$BUILD/card0-glacier-base
+sudo rm -rf $WORK
+mkdir -p $WORK
+unarchive_directory $BUILD/card0.gz $WORK
+
+sudo rm -rf $BASE_WORK
+mkdir $BASE_WORK
+pushd $BASE_WORK
+zcat $WORK/9.0.3v7.gz | sudo cpio -d -i
+sudo patch etc/init.d/tc-config -i $PROJECT/tc-config-rsyslogd.patch
+for a in $PROJECT/mandatory/*.tcz; do sudo unsquashfs -f -d ./ $a ; done
+sudo cp $PROJECT/mydata/etc/rsyslog.conf.glacier etc/rsyslog.conf
+sudo cp $PROJECT/mydata/etc/logrotate.conf etc
+sudo ldconfig -r $BASE_WORK
+sudo mkdir -p home/tc
+sudo chmod 755 home/tc
+sudo -- sh -c "find | cpio -o -H newc | gzip -9 > $WORK/9.0.3v7.gz"
+popd
+sudo rm -rf $BASE_WORK
+
 for a in $WORK/cmdline*; do
-    sed -i -e 's/lodge/glacier/g' $a
+    sed -i -e 's/quiet/nodhcp cron syslog host=glacier logo.nologo/g' $a
+    sed -i -e 's/loglevel=3/loglevel=6/g' $a
 done
 
+sudo cp $WORK/config.txt ~/
+
 archive_directory $WORK $BUILD/card0-glacier.gz
+
+# ==============================================================================
 
 WORK=$BUILD/card1
 rm -rf $WORK
 mkdir -p $WORK
 unarchive_directory $BUILD/card1.gz $WORK
-touch $WORK/tce/copy2fs.flg
-cp -ar $PROJECT/.extensions-cache/* $WORK/tce/optional
-cp $PROJECT/onboot.lst $WORK/tce
-cp $BUILD/mydata.tgz $WORK/tce
+sudo touch $WORK/tce/copy2fs.flg
+sudo cp -ar $PROJECT/.extensions-cache/* $WORK/tce/optional
+sudo cp $PROJECT/onboot.lst $WORK/tce
+sudo cp $BUILD/mydata.tgz $WORK/tce
 archive_directory $WORK $BUILD/card1.gz
 
-IMAGE="$BUILD/piCore-9.0.3-lodge.img"
+IMAGE="$BUILD/lodge.img"
 partition_image $IMAGE
 fill_partition $IMAGE "W95" $BUILD/card0-lodge.gz "sudo mkfs.vfat"
 fill_partition $IMAGE "Linux" $BUILD/card1.gz "sudo mkfs.ext4"
 
-IMAGE="$BUILD/piCore-9.0.3-glacier.img"
+IMAGE="$BUILD/glacier.img"
 partition_image $IMAGE
 fill_partition $IMAGE "W95" $BUILD/card0-glacier.gz "sudo mkfs.vfat"
 fill_partition $IMAGE "Linux" $BUILD/card1.gz "sudo mkfs.ext4"
 
-cleanup

@@ -1,9 +1,10 @@
 BUILD=build/conservify-glacier-tools
 
-all: image
+all: images
 
 setup:
-	mkdir -p $(BUILD)/app/data/obsidian
+	sudo losetup -D
+	@mkdir -p $(BUILD)/app/data/obsidian
 
 $(BUILD)/app/tunneller: ../tunneller/*.go
 	env GOOS=linux GOARCH=arm go build -o $@ $^
@@ -21,7 +22,7 @@ $(BUILD)/app/adc: setup
 	cd ../psn-adc && make
 	cp ../psn-adc/AdcDemo $(BUILD)/app/adc
 
-gotools: $(BUILD)/app/tunneller $(BUILD)/app/resilience $(BUILD)/app/uploader $(BUILD)/app/morningstar
+gotools: setup $(BUILD)/app/tunneller $(BUILD)/app/resilience $(BUILD)/app/uploader $(BUILD)/app/morningstar
 
 godeps:
 	go get golang.org/x/crypto/ssh
@@ -33,26 +34,38 @@ godeps:
 	go get github.com/nlopes/slack
 	go get github.com/goburrow/modbus
 
-conservify-glacier-tools.tcz: gotools $(BUILD)/app/adc
+build/zerotier.tcz: setup
+	mksquashfs packages/zerotier build/zerotier.tcz -b 4k -no-xattrs -noappend
+
+build/hamachi.tcz: setup
+	sudo rm -rf packages/hamachi/dev/net
+	mkdir -p packages/hamachi/dev/net
+	mkdir -p packages/hamachi/lib
+	sudo mknod packages/hamachi/dev/net/tun c 10 200
+	sudo chmod 0666 packages/hamachi/dev/net/tun
+	ln -sf ld-linux-armhf.so.3 packages/hamachi/lib/ld-linux.so.3
+	ln -sf hamachid packages/hamachi/usr/local/bin/hamachi
+	mksquashfs packages/hamachi build/hamachi.tcz -b 4k -no-xattrs -noappend
+
+build/conservify-glacier-tools.tcz: gotools $(BUILD)/app/adc
 	cp adc-wrapper $(BUILD)/app/adc-wrapper
 	cp uploader-wrapper $(BUILD)/app/uploader-wrapper
 	cp tunneller-wrapper $(BUILD)/app/tunneller-wrapper
 	cp conservify-glacier-tools $(BUILD)/app
-	rm -f conservify-glacier-tools.tcz
-	mksquashfs $(BUILD) conservify-glacier-tools.tcz -b 4k -no-xattrs
+	mksquashfs $(BUILD) build/conservify-glacier-tools.tcz -b 4k -no-xattrs -noappend
+
+packages: setup build/zerotier.tcz build/hamachi.tcz build/conservify-glacier-tools.tcz
 	mkdir -p .extensions-cache
-	mv conservify-glacier-tools.tcz .extensions-cache
+	cp build/*.tcz .extensions-cache
 
 piCore-9.0.3.img:
 	wget http://tinycorelinux.net/9.x/armv7/releases/RPi/piCore-9.0.3.zip
 	unzip piCore-9.0.3.zip
 
-build/piCore-9.0.3-lodge.img: piCore-9.0.3.img conservify-glacier-tools.tcz
+build/lodge.img: piCore-9.0.3.img packages
 	bash create-image.sh
 
-image: build/piCore-9.0.3-lodge.img
+images: build/lodge.img build/glacier.img
 
 clean:
 	rm -rf $(BUILD)
-	rm -rf piCore-*-lodge.img
-	rm -rf piCore-*-glacier.img
