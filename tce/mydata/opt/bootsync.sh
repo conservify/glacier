@@ -14,7 +14,5 @@ NAME=/opt/`hostname`/bootsync.sh
 echo "Executing $NAME" | /usr/bin/logger
 sh $NAME | /usr/bin/logger
 
-zerotier-one -d
-
 mkdir -p /data
 mount /dev/sda1 /data

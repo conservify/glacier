@@ -1,4 +1,5 @@
-BUILD=`pwd`/build
+PROJECT=$(shell pwd)
+BUILD=$(PROJECT)/build
 EXTENSIONS_CACHE=".extensions-cache"
 MYDATA_ROOT=$(BUILD)/mydata-temp
 TOOLS_ROOT=$(BUILD)/conservify-glacier-tools
@@ -27,7 +28,7 @@ $(BUILD)/app/adc: setup
 
 gotools: setup $(BUILD)/app/tunneller $(BUILD)/app/resilience $(BUILD)/app/uploader $(BUILD)/app/morningstar
 
-build/mydata.tgz:
+$(BUILD)/mydata.tgz: setup
 	sudo rm -rf mydata.tgz $(MYDATA_ROOT)
 	cp -ar mydata $(MYDATA_ROOT)
 	mkdir $(MYDATA_ROOT)/home/tc/.ssh -p
@@ -41,7 +42,7 @@ build/mydata.tgz:
 	sudo chown 0.0 -R $(MYDATA_ROOT)/opt $(MYDATA_ROOT)/home $(MYDATA_ROOT)/var
 	sudo chown 1001.50 -R $(MYDATA_ROOT)/home/tc
 	sudo chown 0.50 -R $(MYDATA_ROOT)/opt
-	sudo tar czf $(BUILD)/mydata.tgz $(MYDATA_ROOT)
+	(cd $(MYDATA_ROOT) && sudo tar czf $(BUILD)/mydata.tgz ./)
 
 godeps:
 	go get golang.org/x/crypto/ssh
@@ -53,10 +54,10 @@ godeps:
 	go get github.com/nlopes/slack
 	go get github.com/goburrow/modbus
 
-build/zerotier.tcz: setup
-	mksquashfs packages/zerotier build/zerotier.tcz -b 4k -no-xattrs -noappend
+$(BUILD)/zerotier.tcz: setup
+	mksquashfs packages/zerotier $(BUILD)/zerotier.tcz -b 4k -no-xattrs -noappend
 
-build/hamachi.tcz: setup
+$(BUILD)/hamachi.tcz: setup
 	sudo rm -rf packages/hamachi/dev/net
 	mkdir -p packages/hamachi/dev/net
 	mkdir -p packages/hamachi/lib
@@ -64,9 +65,9 @@ build/hamachi.tcz: setup
 	sudo chmod 0666 packages/hamachi/dev/net/tun
 	ln -sf ld-linux-armhf.so.3 packages/hamachi/lib/ld-linux.so.3
 	ln -sf hamachid packages/hamachi/usr/local/bin/hamachi
-	mksquashfs packages/hamachi build/hamachi.tcz -b 4k -no-xattrs -noappend
+	mksquashfs packages/hamachi $(BUILD)/hamachi.tcz -b 4k -no-xattrs -noappend
 
-build/conservify-glacier-tools.tcz: gotools $(BUILD)/app/adc
+$(BUILD)/conservify-glacier-tools.tcz: gotools $(BUILD)/app/adc
 	mkdir -p $(TOOLS_ROOT)/app
 	cp adc-wrapper $(TOOLS_ROOT)/app/adc-wrapper
 	cp uploader-wrapper $(TOOLS_ROOT)/app/uploader-wrapper
@@ -74,18 +75,15 @@ build/conservify-glacier-tools.tcz: gotools $(BUILD)/app/adc
 	cp conservify-glacier-tools $(TOOLS_ROOT)/app
 	mksquashfs $(TOOLS_ROOT) $(BUILD)/conservify-glacier-tools.tcz -b 4k -no-xattrs -noappend
 
-build/r8152.tcz:
-	touch build build/r8152.tcz
+$(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz:
+	echo These are made on another Pi.
+	cp packages/r8152.tcz $(BUILD)
+	cp packages/usbserial.tcz $(BUILD)
+	cp packages/logrotate.tcz $(BUILD)
 
-build/usbserial.tcz:
-	touch build build/usbserial.tcz
-
-build/logrotate.tcz:
-	touch build build/logrotate.tcz
-
-packages: setup build/zerotier.tcz build/hamachi.tcz build/conservify-glacier-tools.tcz build/r8152.tcz build/usbserial.tcz build/logrotate.tcz
+packages: setup $(BUILD)/zerotier.tcz $(BUILD)/hamachi.tcz $(BUILD)/conservify-glacier-tools.tcz $(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz
 	mkdir -p $(EXTENSIONS_CACHE)
-	cp build/*.tcz $(EXTENSIONS_CACHE)
+	cp $(BUILD)/*.tcz $(EXTENSIONS_CACHE)
 	for name in `cat extensions`; do                                                        \
 		if [ ! -f $(EXTENSIONS_CACHE)/$$name ]; then                                        \
 			(cd $(EXTENSIONS_CACHE) && wget http://tinycorelinux.net/9.x/armv7/tcz/$$name); \
@@ -97,23 +95,23 @@ piCore-9.0.3.img:
 	unzip piCore-9.0.3.zip
 	rm -f README 	piCore-*.txt
 
-build/card0.gz build/card1.gz: piCore-9.0.3.img
+$(BUILD)/card0.gz $(BUILD)/card1.gz: piCore-9.0.3.img
 	bash ./archive-partitions.sh piCore-9.0.3.img
 
-build/card0-lodge.gz build/card0-glacier.gz build/card1-both.gz: build/card0.gz build/card1.gz build/mydata.tgz packages
+$(BUILD)/card0-lodge.gz $(BUILD)/card0-glacier.gz $(BUILD)/card1-both.gz: $(BUILD)/card0.gz $(BUILD)/card1.gz $(BUILD)/mydata.tgz packages
 	bash create-image.sh
 
-build/lodge.img: build/card0-lodge.gz build/card0-glacier.gz build/card1-both.gz
+$(BUILD)/lodge.img: $(BUILD)/card0-lodge.gz $(BUILD)/card0-glacier.gz $(BUILD)/card1-both.gz
 	./partition-image.sh $(BUILD)/lodge.img
 	./fill-partition.sh $(BUILD)/lodge.img "W95" $(BUILD)/card0-lodge.gz "sudo mkfs.vfat"
 	./fill-partition.sh $(BUILD)/lodge.img "Linux" $(BUILD)/card1-both.gz "sudo mkfs.ext4"
 
-build/glacier.img: build/card0-glacier.gz build/card1-both.gz
+$(BUILD)/glacier.img: $(BUILD)/card0-glacier.gz $(BUILD)/card1-both.gz
 	./partition-image.sh $(BUILD)/glacier.img
 	./fill-partition.sh $(BUILD)/glacier.img "W95" $(BUILD)/card0-glacier.gz "sudo mkfs.vfat"
 	./fill-partition.sh $(BUILD)/glacier.img "Linux" $(BUILD)/card1-both.gz "sudo mkfs.ext4"
 
-images: build/lodge.img build/glacier.img
+images: $(BUILD)/lodge.img $(BUILD)/glacier.img
 
 clean:
 	sudo rm -rf $(BUILD)

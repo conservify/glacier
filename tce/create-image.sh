@@ -21,12 +21,13 @@ for a in $PROJECT/mandatory/*.tcz; do
         sudo unsquashfs -f -d ./ $a;
     fi
 done
-sudo cp $PROJECT/mydata/etc/rsyslog.conf.lodge etc/rsyslog.conf
-sudo cp $PROJECT/mydata/etc/logrotate.conf etc
+sudo cp $PROJECT/mandatory/etc/rsyslog.conf.lodge etc/rsyslog.conf
+sudo cp $PROJECT/mandatory/etc/logrotate.conf etc
+pwd
 sudo ldconfig -r $CARD0_LODGE_BASE_WORK
 sudo mkdir -p home/tc
 sudo chmod 755 home/tc
-sudo -- sh -c "find | cpio -o -H newc | gzip -9 > $WORK/9.0.3v7.gz"
+sudo -- sh -c "find | cpio -o -H newc | gzip -9 > $CARD0_LODGE_WORK/9.0.3v7.gz"
 popd
 sudo rm -rf $CARD0_LODGE_BASE_WORK
 
@@ -57,12 +58,12 @@ for a in $PROJECT/mandatory/*.tcz; do
         sudo unsquashfs -f -d ./ $a;
     fi
 done
-sudo cp $PROJECT/mydata/etc/rsyslog.conf.glacier etc/rsyslog.conf
-sudo cp $PROJECT/mydata/etc/logrotate.conf etc
+sudo cp $PROJECT/mandatory/etc/rsyslog.conf.glacier etc/rsyslog.conf
+sudo cp $PROJECT/mandatory/etc/logrotate.conf etc
 sudo ldconfig -r $CARD0_GLACIER_BASE_WORK
 sudo mkdir -p home/tc
 sudo chmod 755 home/tc
-sudo -- sh -c "find | cpio -o -H newc | gzip -9 > $WORK/9.0.3v7.gz"
+sudo -- sh -c "find | cpio -o -H newc | gzip -9 > $CARD0_GLACIER_WORK/9.0.3v7.gz"
 popd
 sudo rm -rf $CARD0_GLACIER_BASE_WORK
 
