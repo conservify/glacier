@@ -74,6 +74,7 @@ zlib_base-dev.tcz
 ntp.tcz
 iproute2.tcz
 acl-dev.tcz
+watchdog.tcz
 logrotate.tcz
 conservify-glacier-tools.tcz
 r8152.tcz

@@ -8,25 +8,32 @@ all: images
 
 setup:
 	sudo losetup -D
-	@mkdir -p $(BUILD)/app/data/obsidian
+	mkdir -p $(BUILD)/app/data/obsidian
+	mkdir -p $(TOOLS_ROOT)/app
 
-$(BUILD)/app/tunneller: ../tunneller/*.go
+$(TOOLS_ROOT)/app/tunneller: ../tunneller/*.go
 	env GOOS=linux GOARCH=arm go build -o $@ $^
 
-$(BUILD)/app/resilience: ../resilience/*.go
+$(TOOLS_ROOT)/app/resilience: ../resilience/*.go
 	env GOOS=linux GOARCH=arm go build -o $@ $^
 
-$(BUILD)/app/uploader: ../uploader/*.go
+$(TOOLS_ROOT)/app/uploader: ../uploader/*.go
 	env GOOS=linux GOARCH=arm go build -o $@ $^
 
-$(BUILD)/app/morningstar: ../morningstar/*.go
+$(TOOLS_ROOT)/app/morningstar: ../morningstar/*.go
 	env GOOS=linux GOARCH=arm go build -o $@ $^
 
-$(BUILD)/app/adc: setup
-	cd ../psn-adc && make
-	cp ../psn-adc/AdcDemo $(BUILD)/app/adc
+$(TOOLS_ROOT)/app/adc: setup
+	cd ../psn-adc && make TOOLCHAIN_PREFIX=arm-linux-gnueabi- CPPFLAGS_EXTRA=-I/usr/arm-linux-gnueabi/include LDFLAGS_EXTRA=-L/usr/arm-linux-gnueabi/lib
+	cp ../psn-adc/AdcDemo $(TOOLS_ROOT)/app/adc
 
-gotools: setup $(BUILD)/app/tunneller $(BUILD)/app/resilience $(BUILD)/app/uploader $(BUILD)/app/morningstar
+tools: setup $(TOOLS_ROOT)/app/adc $(TOOLS_ROOT)/app/tunneller $(TOOLS_ROOT)/app/resilience $(TOOLS_ROOT)/app/uploader $(TOOLS_ROOT)/app/morningstar
+
+$(BUILD)/conservify-glacier-tools.tcz: setup tools
+	cp adc-wrapper $(TOOLS_ROOT)/app/adc-wrapper
+	cp uploader-wrapper $(TOOLS_ROOT)/app/uploader-wrapper
+	cp tunneller-wrapper $(TOOLS_ROOT)/app/tunneller-wrapper
+	mksquashfs $(TOOLS_ROOT) $(BUILD)/conservify-glacier-tools.tcz -b 4k -no-xattrs -noappend
 
 $(BUILD)/mydata.tgz: setup
 	sudo rm -rf mydata.tgz $(MYDATA_ROOT)
@@ -67,14 +74,6 @@ $(BUILD)/hamachi.tcz: setup
 	ln -sf hamachid packages/hamachi/usr/local/bin/hamachi
 	mksquashfs packages/hamachi $(BUILD)/hamachi.tcz -b 4k -no-xattrs -noappend
 
-$(BUILD)/conservify-glacier-tools.tcz: gotools $(BUILD)/app/adc
-	mkdir -p $(TOOLS_ROOT)/app
-	cp adc-wrapper $(TOOLS_ROOT)/app/adc-wrapper
-	cp uploader-wrapper $(TOOLS_ROOT)/app/uploader-wrapper
-	cp tunneller-wrapper $(TOOLS_ROOT)/app/tunneller-wrapper
-	cp conservify-glacier-tools $(TOOLS_ROOT)/app
-	mksquashfs $(TOOLS_ROOT) $(BUILD)/conservify-glacier-tools.tcz -b 4k -no-xattrs -noappend
-
 $(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz:
 	echo These are made on another Pi.
 	cp packages/r8152.tcz $(BUILD)
@@ -114,4 +113,5 @@ $(BUILD)/glacier.img: $(BUILD)/card0-glacier.gz $(BUILD)/card1-both.gz
 images: $(BUILD)/lodge.img $(BUILD)/glacier.img
 
 clean:
+	cd ../psn-adc && make clean
 	sudo rm -rf $(BUILD)

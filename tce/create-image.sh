@@ -23,7 +23,8 @@ for a in $PROJECT/mandatory/*.tcz; do
 done
 sudo cp $PROJECT/mandatory/etc/rsyslog.conf.lodge etc/rsyslog.conf
 sudo cp $PROJECT/mandatory/etc/logrotate.conf etc
-pwd
+sudo cp -ar $PROJECT/mandatory/etc/periodic etc
+sudo cp etc/periodic/mirror-data.sh etc/periodic/5min
 sudo ldconfig -r $CARD0_LODGE_BASE_WORK
 sudo mkdir -p home/tc
 sudo chmod 755 home/tc
@@ -36,7 +37,7 @@ for a in $CARD0_LODGE_WORK/cmdline*; do
     sed -i -e 's/loglevel=3/loglevel=6/g' $a
 done
 
-sudo cp $CARD0_LODGE_WORK/config.txt ~/
+echo 'dtparam=watchdog=on' | sudo tee --append $CARD0_LODGE_WORK/config.txt
 
 archive_directory $CARD0_LODGE_WORK $BUILD/card0-lodge.gz
 
@@ -60,6 +61,8 @@ for a in $PROJECT/mandatory/*.tcz; do
 done
 sudo cp $PROJECT/mandatory/etc/rsyslog.conf.glacier etc/rsyslog.conf
 sudo cp $PROJECT/mandatory/etc/logrotate.conf etc
+sudo cp -ar $PROJECT/mandatory/etc/periodic etc
+sudo cp etc/periodic/mirror-obsidian.sh etc/periodic/5min
 sudo ldconfig -r $CARD0_GLACIER_BASE_WORK
 sudo mkdir -p home/tc
 sudo chmod 755 home/tc
@@ -72,7 +75,7 @@ for a in $CARD0_GLACIER_WORK/cmdline*; do
     sed -i -e 's/loglevel=3/loglevel=6/g' $a
 done
 
-sudo cp $CARD0_GLACIER_WORK/config.txt ~/
+echo 'dtparam=watchdog=on' | sudo tee --append $CARD0_GLACIER_WORK/config.txt
 
 archive_directory $CARD0_GLACIER_WORK $BUILD/card0-glacier.gz
 

@@ -4,6 +4,7 @@ etc/passwd
 etc/shadow
 etc/group
 etc/gshadow
+etc/periodic
 usr/local/etc/ssh/ssh_host_dsa_key
 usr/local/etc/ssh/ssh_host_dsa_key.pub
 usr/local/etc/ssh/ssh_host_ecdsa_key

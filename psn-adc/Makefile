@@ -2,7 +2,13 @@
 
 all: libpsn32.a AdcDemo
 
-CPPFLAGS= -D__i386 -D_LINUX -D_INTEL -D_USE_SCHED  -D_USE_PTHREADS -D_USE_TERMIOS -O3 -Wall -Wno-write-strings -c
+TOOLCHAIN_PREFIX=
+GXX_COMPILER=$(TOOLCHAIN_PREFIX)g++
+AR_COMPILER=$(TOOLCHAIN_PREFIX)ar
+CPPFLAGS_EXTRA=
+LDFLAGS_EXTRA=
+CPPFLAGS= -D__i386 -D_LINUX -D_INTEL -D_USE_SCHED  -D_USE_PTHREADS -D_USE_TERMIOS -O3 -Wall -Wno-write-strings -c $(CPPFLAGS_EXTRA)
+LDFLAGS=$(LDFLAGS_EXTRA)
 DOCKER_IMAGE_VERSION=latest
 DOCKER_IMAGE_NAME=conservify/adc-logger
 DOCKER_IMAGE_TAGNAME=$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
@@ -12,10 +18,10 @@ H= PSNADBoard.h Adcv1.h AdcNew.h AdcDemo.h
 
 libpsn32.a : $(OBJS)
 	rm -f libpsn32.a
-	ar -csq libpsn32.a $(OBJS)
+	$(AR_COMPILER) -csq libpsn32.a $(OBJS)
 
 .cpp.o:
-	g++ $(CPPFLAGS) $<
+	$(GXX_COMPILER)  $(CPPFLAGS) $<
 
 PSNADBoard.o : $(H)
 AdcBoard.o : $(H)
@@ -30,23 +36,15 @@ WwvRef.o : $(H)
 WwvbRef.o : $(H)
 
 AdcDemo.o : AdcDemo.cpp
-	g++ $(CPPFLAGS) AdcDemo.cpp
+	$(GXX_COMPILER) $(CPPFLAGS) AdcDemo.cpp
 
 AdcDemo : AdcDemo.o libpsn32.a AdcDemo.h
-	g++ -o AdcDemo AdcDemo.o -L. -lpsn32 -lpthread 
-
-build:	all
-	docker build -t $(DOCKER_IMAGE_TAGNAME) .
-
-push:	build
-	docker push $(DOCKER_IMAGE_NAME)
-
-test:
-	docker run --rm $(DOCKER_IMAGE_TAGNAME) /bin/echo "Success."
+	$(GXX_COMPILER) -o AdcDemo AdcDemo.o -L. -lpsn32 -lpthread $(LDFLAGS)
 
 .PHONY : clean
 clean :
 	rm -f *.o
 	rm -f libpsn32.a
 	rm -f AdcDemo
+
 # end

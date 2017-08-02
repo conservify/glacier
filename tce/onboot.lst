@@ -1,6 +1,7 @@
 openssh.tcz
 screen.tcz
 libattr.tcz
+watchdog.tcz
 attr.tcz
 attr-dev.tcz
 popt.tcz

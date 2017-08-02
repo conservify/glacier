@@ -240,8 +240,6 @@ func main() {
 		}
 	}
 
-	log.Printf("Starting up... doing initial scan...")
-
 	ScanDirectories(flag.Args(), &config)
 
 	if config.Watch {

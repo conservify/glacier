@@ -236,8 +236,8 @@ typedef struct logfile_t {
 
 logfile_t lf = { 0 };
 
-#define INCOMING_FILE_NAME_CSV     "/app/data/incoming.csv"
-#define INCOMING_FILE_NAME_BIN     "/app/data/incoming.bin"
+#define INCOMING_FILE_NAME_CSV     "/data/geophone/incoming.csv"
+#define INCOMING_FILE_NAME_BIN     "/data/geophone/incoming.bin"
 #define FILE_NAME_EXT_CSV          "csv"
 #define FILE_NAME_EXT_BIN          "bin"
 
@@ -265,12 +265,12 @@ BOOL WriteLogFile(logfile_t *lf, DataHeader *hdr) {
 
 		SYSTEMTIME *st = &hdr->packetTime;
 
-		snprintf(lf->bin_file_name, sizeof(lf->bin_file_name), "/app/data/geophones_%04d%02d%02d_%02d%02d%02d.%s", 
+		snprintf(lf->bin_file_name, sizeof(lf->bin_file_name), "/data/geophone/geophones_%04d%02d%02d_%02d%02d%02d.%s",
 				st->wYear, st->wMonth, st->wDay, st->wHour, st->wMinute, st->wSecond, FILE_NAME_EXT_BIN);
 
 		lf->bin_fp = fopen(INCOMING_FILE_NAME_BIN, "w");
 
-		snprintf(lf->csv_file_name, sizeof(lf->csv_file_name), "/app/data/geophones_%04d%02d%02d_%02d%02d%02d.%s", 
+		snprintf(lf->csv_file_name, sizeof(lf->csv_file_name), "/data/geophone/geophones_%04d%02d%02d_%02d%02d%02d.%s",
 				st->wYear, st->wMonth, st->wDay, st->wHour, st->wMinute, st->wSecond, FILE_NAME_EXT_CSV);
 
 		lf->csv_fp = fopen(INCOMING_FILE_NAME_CSV, "w");

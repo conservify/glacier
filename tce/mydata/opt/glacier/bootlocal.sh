@@ -8,13 +8,13 @@
                       --pattern "([^\.]+)_(\d{8})_(\d{6}).bin$" --watch \
                       --token "zddgXMjr_YI2e87G0mch6tXHMupLGZ6PZ58mHOSdqJtQ566PJj8mzQ" \
                       --archive \
-		              /app/data &
+		              /data/geophone &
 
 /app/uploader-wrapper --url http://code.conservify.org/geophones \
                       --syslog uploader-obsidian \
                       --log /var/log/uploader-obsidian.log \
                       --pattern "(\d{14}).dig1.ch1.KMI.evt$" --watch \
                       --token "zddgXMjr_YI2e87G0mch6tXHMupLGZ6PZ58mHOSdqJtQ566PJj8mzQ" \
-		              /app/data/obsidian
+		              /data/obsidian &
 
-/app/adc-wrapper > /var/log/adc.log 2>&1
+/app/adc-wrapper &
