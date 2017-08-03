@@ -1,5 +1,0 @@
-#!/bin/bash
-
-set -e
-
-rsync -zvua root@obsidian:/data/events/ /data/obsidian
