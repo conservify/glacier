@@ -18,5 +18,9 @@ NAME=/opt/`hostname`/bootsync.sh
 echo "Executing $NAME" | /usr/bin/logger
 sh $NAME | /usr/bin/logger
 
+# Sync time
+ntpdate tick.ucla.edu
+ntpd
+
 # Do background stuff now that everything is ready.
 /opt/bootlocal.sh &

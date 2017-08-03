@@ -351,6 +351,7 @@ void NewADData( DWORD type, DataHeader *hdr, void *adcData, DWORD dataLen )
 #else
 		printf("\n");
 #endif
+        fflush(stdout);
 	}
 
 	/* Now demux the data */
@@ -405,6 +406,8 @@ void DisplayDllInfo()
 		dllInfo.maxInQueue, dllInfo.maxUserQueue, dllInfo.maxOutQueue, dllInfo.crcErrors );
 	printf("  UserQueueFullCount=%d XmitQueueFillCount=%d CPU Loop Errors=%d\n",
 		dllInfo.userQueueFullCount, dllInfo.xmitQueueFullCount, dllInfo.cpuLoopErrors );
+
+    fflush(stdout);
 }
 
 /* Display the various messages from the DLL or ADC board. */
@@ -431,6 +434,8 @@ void DisplayMsg( DWORD type, char *string )
 		printf("\n%s=%s\n", preStr, string );
 	else
 		printf("%s=%s\n", preStr, string );
+
+    fflush(stdout);
 }
 
 /* Displays DLL and ADC board information. Called when a ADC_STATUS message is sent 
@@ -450,6 +455,7 @@ void DisplayStatus( StatusInfo *sts )
 	printf( "    AddFlag=%d AddDropCount=%d WWVWidth=%d LockTime=%d AdjustNum=%d TimeDiff=%d Offset=%d\n", 
 		ti->addDropFlag, ti->addDropCount, ti->pulseWidth, ti->timeLocked, ti->adjustNumber, 
 		ti->averageTimeDiff, ti->timeOffset );	
+    fflush(stdout);
 }
 
 /* Saves time adjustment information to a file. Called when a ADC_SAVE_TIME_INFO message

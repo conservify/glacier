@@ -2,7 +2,7 @@
 
 /app/tunneller-wrapper --syslog tunneller-ssh --remote-port 7002 --log /var/log/tunneller.log --key /home/tc/.ssh/id_rsa --server 34.201.197.136 &
 
-/app/uploader-wrapper --url https://code.conservify.org/geophone \
+/app/uploader-wrapper --url https://calgary.ocr.nyc/send \
                       --syslog uploader-geophone \
                       --log /var/log/uploader-geophone.log \
                       --pattern "([^\.]+)_(\d{8})_(\d{6}).bin$" --watch \
@@ -10,7 +10,7 @@
                       --archive \
 		              /data/geophone &
 
-/app/uploader-wrapper --url http://code.conservify.org/geophones \
+/app/uploader-wrapper --url https://calgary.ocr.nyc/send \
                       --syslog uploader-obsidian \
                       --log /var/log/uploader-obsidian.log \
                       --pattern "(\d{14}).dig1.ch1.KMI.evt$" --watch \

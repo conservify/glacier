@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo "169.254.127.129 obsidian" >> /etc/hosts
+
 ifconfig eth0 169.254.128.130 netmask 255.255.255.0 broadcast 169.254.128.255 up
 route add default gw 169.254.128.129 eth0
 

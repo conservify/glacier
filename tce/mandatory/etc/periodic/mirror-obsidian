@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+rsync -zvua root@obsidian:/data/events/ /data/obsidian | /usr/bin/logger -t mirror-obsidian 2>&1

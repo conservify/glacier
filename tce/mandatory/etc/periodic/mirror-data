@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -e
+
+rsync -zvua tc@glacier:/data/ /data/ | /usr/bin/logger -t mirror-obsidian 2>&1

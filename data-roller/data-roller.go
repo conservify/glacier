@@ -17,6 +17,7 @@ type Config struct {
 	Syslog  string
 	From    string
 	Require int
+	FreeUp  int
 	DryRun  bool
 }
 
@@ -79,6 +80,7 @@ func main() {
 	flag.StringVar(&config.Syslog, "syslog", "", "enable syslog and name the ap")
 	flag.StringVar(&config.From, "from", "", "from directory")
 	flag.IntVar(&config.Require, "require", 0, "free MB to require")
+	flag.IntVar(&config.FreeUp, "free-up", 0, "free up so many MB")
 	flag.BoolVar(&config.DryRun, "dry", false, "dry run mode")
 
 	flag.Parse()
@@ -105,8 +107,13 @@ func main() {
 		}
 	}
 
+	freeUp := uint64(config.FreeUp) * uint64(1024*1024)
 	requiredBytes := uint64(config.Require) * uint64(1024*1024)
 	available := freeSpaceOn(config.From)
+	if freeUp > 0 {
+		log.Printf("Freeing up %d bytes", freeUp)
+		requiredBytes = available + freeUp
+	}
 
 	fs := FileSet{}
 	err := filepath.Walk(config.From, processFile(&fs, &config))
@@ -119,7 +126,7 @@ func main() {
 	for _, file := range fs.Files {
 		log.Printf("Processing (avail %d) (req %d) (file %v) (ctime %d)\n", available, requiredBytes, file.Path, file.Ctime)
 
-		if config.Require > 0 && available < requiredBytes {
+		if requiredBytes > 0 && available < requiredBytes {
 			log.Printf("Deleting %s to make room...", file)
 			if !config.DryRun {
 				os.Remove(file.Path)
