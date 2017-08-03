@@ -71,6 +71,8 @@ sed.tcz
 squashfs-tools.tcz
 util-linux_base-dev.tcz
 zlib_base-dev.tcz
+libevent.tcz
+libcap.tcz
 ntp.tcz
 iproute2.tcz
 acl-dev.tcz

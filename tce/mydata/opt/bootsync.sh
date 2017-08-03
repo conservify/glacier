@@ -8,6 +8,11 @@ echo "169.254.128.129 lodge" >> /etc/hosts
 echo "169.254.128.130 glacier" >> /etc/hosts
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 
+# Data folders.
+mkdir -p /data
+ln -sf /mnt/mmcblk0p2/data/geophone /data/geophone
+ln -sf /mnt/mmcblk0p2/data/obsidian /data/obsidian
+
 # Execute configuration based on our hostname.
 NAME=/opt/`hostname`/bootsync.sh
 echo "Executing $NAME" | /usr/bin/logger

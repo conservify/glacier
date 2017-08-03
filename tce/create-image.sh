@@ -24,7 +24,7 @@ done
 sudo cp $PROJECT/mandatory/etc/rsyslog.conf.lodge etc/rsyslog.conf
 sudo cp $PROJECT/mandatory/etc/logrotate.conf etc
 sudo cp -ar $PROJECT/mandatory/etc/periodic etc
-sudo cp etc/periodic/mirror-data.sh etc/periodic/5min
+sudo cp etc/periodic/mirror-data etc/periodic/5min
 sudo ldconfig -r $CARD0_LODGE_BASE_WORK
 sudo mkdir -p home/tc
 sudo chmod 755 home/tc
@@ -62,7 +62,7 @@ done
 sudo cp $PROJECT/mandatory/etc/rsyslog.conf.glacier etc/rsyslog.conf
 sudo cp $PROJECT/mandatory/etc/logrotate.conf etc
 sudo cp -ar $PROJECT/mandatory/etc/periodic etc
-sudo cp etc/periodic/mirror-obsidian.sh etc/periodic/5min
+sudo cp etc/periodic/mirror-obsidian etc/periodic/5min
 sudo ldconfig -r $CARD0_GLACIER_BASE_WORK
 sudo mkdir -p home/tc
 sudo chmod 755 home/tc
@@ -87,6 +87,8 @@ mkdir -p $CARD1_WORK
 unarchive_directory $BUILD/card1.gz $CARD1_WORK
 sudo touch $CARD1_WORK/tce/copy2fs.flg
 sudo cp -ar $PROJECT/.extensions-cache/* $CARD1_WORK/tce/optional
+sudo mkdir -p $CARD1_WORK/data/geophone
+sudo mkdir -p $CARD1_WORK/data/obsidian
 sudo cp $PROJECT/onboot.lst $CARD1_WORK/tce
 sudo cp $BUILD/mydata.tgz $CARD1_WORK/tce
 archive_directory $CARD1_WORK $BUILD/card1-both.gz

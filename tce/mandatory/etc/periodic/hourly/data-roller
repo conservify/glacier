@@ -1,0 +1,3 @@
+#!/bin/sh
+
+/app/data-roller --from /data/geophones --require 100 | /usr/bin/logger -t data-roller 2>&1

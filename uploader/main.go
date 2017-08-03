@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -147,9 +148,56 @@ func ArchiveBinary(file *WaveformBinary, filePath string, config *Config) (err e
 	return
 }
 
-func ScanDirectories(paths []string, config *Config) {
-	re := regexp.MustCompile(config.Pattern)
+type PendingFile struct {
+	Name  string
+	Path  string
+	Stamp time.Time
+}
 
+type ByStamp []PendingFile
+
+func (s ByStamp) Len() int {
+	return len(s)
+}
+
+func (s ByStamp) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s ByStamp) Less(i, j int) bool {
+	return s[i].Stamp.Unix() > s[j].Stamp.Unix()
+}
+
+func ReadFiles(directory string, config *Config) (pending []PendingFile, err error) {
+	re := regexp.MustCompile(config.Pattern)
+	files, err := ioutil.ReadDir(directory)
+	if err != nil {
+		log.Fatalf("Error listing directory %v", err)
+	}
+
+	pending = make([]PendingFile, 0)
+
+	for _, child := range files {
+		if !child.IsDir() {
+			childPath := path.Join(directory, child.Name())
+			matches := re.FindAllStringSubmatch(child.Name(), -1)
+			if len(matches) > 0 {
+				stamp := time.Now()
+				pending = append(pending, PendingFile{
+					Name:  child.Name(),
+					Path:  childPath,
+					Stamp: stamp,
+				})
+			}
+		}
+	}
+
+	sort.Sort(ByStamp(pending))
+
+	return
+}
+
+func ScanDirectories(paths []string, config *Config) {
 	for _, filePath := range paths {
 		fi, err := os.Stat(filePath)
 		if err != nil {
@@ -157,48 +205,42 @@ func ScanDirectories(paths []string, config *Config) {
 		}
 		switch mode := fi.Mode(); {
 		case mode.IsDir():
-			files, err := ioutil.ReadDir(filePath)
+			files, err := ReadFiles(filePath, config)
 			if err != nil {
 				log.Fatalf("Error listing directory %v", err)
 			}
 
 			for _, child := range files {
-				if !child.IsDir() {
-					childPath := path.Join(filePath, child.Name())
-					matches := re.FindAllStringSubmatch(child.Name(), -1)
-					if len(matches) > 0 {
-						if strings.EqualFold(path.Ext(child.Name()), ".evt") {
-							binaryPath := childPath + ".bin"
+				if strings.EqualFold(path.Ext(child.Name), ".evt") {
+					binaryPath := child.Path + ".bin"
 
-							if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
-								log.Printf("Processing %s...", childPath)
+					if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
+						log.Printf("Processing %s...", child.Path)
 
-								parsed, err := WriteSimplifiedBinary(childPath, binaryPath)
-								if err != nil {
-									log.Printf("Error writing binary %s", err)
-								}
+						parsed, err := WriteSimplifiedBinary(child.Path, binaryPath)
+						if err != nil {
+							log.Printf("Error writing binary %s", err)
+						}
 
-								binary := NewKinemetricsBinary(parsed)
-								if binary != nil {
-									if err := UploadBinary(binary, binaryPath, config); err != nil {
-										log.Printf("Error uploading %s", err)
-									}
-								}
-							}
-						} else if config.Archive {
-							binary := NewGeophoneBinary(childPath)
-							if binary != nil {
-								if err := UploadBinary(binary, childPath, config); err != nil {
-									log.Printf("Error uploading %s", err)
-								}
-
-								if err := ArchiveBinary(binary, childPath, config); err != nil {
-									log.Printf("Error archiving %s", err)
-								}
-							} else {
-								log.Printf("Unable to parse Geophone file name: %s", childPath)
+						binary := NewKinemetricsBinary(parsed)
+						if binary != nil {
+							if err := UploadBinary(binary, binaryPath, config); err != nil {
+								log.Printf("Error uploading %s", err)
 							}
 						}
+					}
+				} else if config.Archive {
+					binary := NewGeophoneBinary(child.Path)
+					if binary != nil {
+						if err := UploadBinary(binary, child.Path, config); err != nil {
+							log.Printf("Error uploading %s", err)
+						}
+
+						if err := ArchiveBinary(binary, child.Path, config); err != nil {
+							log.Printf("Error archiving %s", err)
+						}
+					} else {
+						log.Printf("Unable to parse Geophone file name: %s", child.Path)
 					}
 				}
 			}

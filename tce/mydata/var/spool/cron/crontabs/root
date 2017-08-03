@@ -1,3 +1,4 @@
+*/5     *       *       *       *       run-parts /etc/periodic/5min
 */15    *       *       *       *       run-parts /etc/periodic/15min
 */30    *       *       *       *       run-parts /etc/periodic/30min
 0       *       *       *       *       run-parts /etc/periodic/hourly

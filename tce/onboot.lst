@@ -7,7 +7,6 @@ attr-dev.tcz
 popt.tcz
 logrotate.tcz
 rsync.tcz
-go.tcz
 screen.tcz
 rsync.tcz
 r8152.tcz
@@ -16,8 +15,9 @@ libelf.tcz
 iptables.tcz
 libacl.tcz
 iproute2.tcz
+libevent.tcz
+libcap.tcz
 ntp.tcz
 netfilter-4.9.22-piCore-v7.tcz
-zerotier.tcz
 hamachi.tcz
 conservify-glacier-tools.tcz

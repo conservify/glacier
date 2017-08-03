@@ -20,6 +20,9 @@ $(TOOLS_ROOT)/app/resilience: ../resilience/*.go
 $(TOOLS_ROOT)/app/uploader: ../uploader/*.go
 	env GOOS=linux GOARCH=arm go build -o $@ $^
 
+$(TOOLS_ROOT)/app/data-roller: ../data-roller/*.go
+	env GOOS=linux GOARCH=arm go build -o $@ $^
+
 $(TOOLS_ROOT)/app/morningstar: ../morningstar/*.go
 	env GOOS=linux GOARCH=arm go build -o $@ $^
 
@@ -27,7 +30,7 @@ $(TOOLS_ROOT)/app/adc: setup
 	cd ../psn-adc && make TOOLCHAIN_PREFIX=arm-linux-gnueabi- CPPFLAGS_EXTRA=-I/usr/arm-linux-gnueabi/include LDFLAGS_EXTRA=-L/usr/arm-linux-gnueabi/lib
 	cp ../psn-adc/AdcDemo $(TOOLS_ROOT)/app/adc
 
-tools: setup $(TOOLS_ROOT)/app/adc $(TOOLS_ROOT)/app/tunneller $(TOOLS_ROOT)/app/resilience $(TOOLS_ROOT)/app/uploader $(TOOLS_ROOT)/app/morningstar
+tools: setup $(TOOLS_ROOT)/app/adc $(TOOLS_ROOT)/app/tunneller $(TOOLS_ROOT)/app/resilience $(TOOLS_ROOT)/app/uploader $(TOOLS_ROOT)/app/morningstar $(TOOLS_ROOT)/app/data-roller
 
 $(BUILD)/conservify-glacier-tools.tcz: setup tools
 	cp adc-wrapper $(TOOLS_ROOT)/app/adc-wrapper
@@ -83,16 +86,18 @@ $(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz:
 packages: setup $(BUILD)/zerotier.tcz $(BUILD)/hamachi.tcz $(BUILD)/conservify-glacier-tools.tcz $(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz
 	mkdir -p $(EXTENSIONS_CACHE)
 	cp $(BUILD)/*.tcz $(EXTENSIONS_CACHE)
-	for name in `cat extensions`; do                                                        \
-		if [ ! -f $(EXTENSIONS_CACHE)/$$name ]; then                                        \
-			(cd $(EXTENSIONS_CACHE) && wget http://tinycorelinux.net/9.x/armv7/tcz/$$name); \
-		fi                                                                                  \
+	for name in `cat extensions`; do                                                                    \
+		if [ ! -f $(EXTENSIONS_CACHE)/$$name ]; then                                                    \
+			(cd $(EXTENSIONS_CACHE) && wget -cq http://tinycorelinux.net/9.x/armv7/tcz/$$name.md5.txt); \
+			(cd $(EXTENSIONS_CACHE) && wget -cq http://tinycorelinux.net/9.x/armv7/tcz/$$name.dep);     \
+			(cd $(EXTENSIONS_CACHE) && wget -cq http://tinycorelinux.net/9.x/armv7/tcz/$$name);         \
+		fi                                                                                              \
 	done
 
 piCore-9.0.3.img:
 	wget http://tinycorelinux.net/9.x/armv7/releases/RPi/piCore-9.0.3.zip
 	unzip piCore-9.0.3.zip
-	rm -f README 	piCore-*.txt
+	rm -f README piCore-*.txt
 
 $(BUILD)/card0.gz $(BUILD)/card1.gz: piCore-9.0.3.img
 	bash ./archive-partitions.sh piCore-9.0.3.img
