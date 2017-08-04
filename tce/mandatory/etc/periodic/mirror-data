@@ -36,6 +36,10 @@ if [ -e /dev/sda1 ]; then
                 log "Offsite backup copy failed (OFFSET_BACKUP:FATAL)"
             fi
         fi
+
+        # Log disk space of everything for monitoring.
+        df -h | /usr/bin/logger -t "disk-space"
+
         umount -f /backup
     else
         log "/dev/sda1 unmountable (OFFSET_BACKUP:FATAL)"
