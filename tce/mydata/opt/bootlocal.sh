@@ -14,3 +14,6 @@ echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
 # Execute configuration based on our hostname.
 /opt/`hostname`/bootlocal.sh
+
+# Wait for the wireless before we do some things.
+/opt/await-wireless.sh

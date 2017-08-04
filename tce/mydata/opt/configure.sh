@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# NOTE: We should be root.
+
+# Setup Hamachi
 hamachi login
 hamachi attach jacob@conservify.org
 sleep 5
