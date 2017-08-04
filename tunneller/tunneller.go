@@ -78,14 +78,15 @@ func publicKeyFile(file string) ssh.AuthMethod {
 }
 
 type Options struct {
-	User           string
-	KeyFile        string
-	LogFile        string
-	LocalEndpoint  Endpoint
-	ServerEndpoint Endpoint
-	RemoteEndpoint Endpoint
-	Reverse        bool
-	Syslog         string
+	User              string
+	KeyFile           string
+	LogFile           string
+	LocalEndpoint     Endpoint
+	ServerEndpoint    Endpoint
+	RemoteEndpoint    Endpoint
+	Reverse           bool
+	Syslog            string
+	ReconnectInterval int
 }
 
 func forwardLocalPortToRemotePort(o *Options, sshConfig *ssh.ClientConfig) {
@@ -193,7 +194,7 @@ func forwardRemotePortToLocalPort(o *Options, sshConfig *ssh.ClientConfig) {
 
 			go serviceRemoteToLocalConnections(listener, o, sshConfig, &busy)
 
-			time.Sleep(60 * time.Second)
+			time.Sleep(o.ReconnectInterval * time.Second)
 
 			busy.Lock()
 
@@ -228,6 +229,7 @@ func main() {
 	flag.StringVar(&o.Syslog, "syslog", "", "enable syslog and name the ap")
 	flag.IntVar(&o.RemoteEndpoint.Port, "remote-port", 7000, "port that will forward to local port")
 	flag.IntVar(&o.LocalEndpoint.Port, "local-port", 22, "port to accept incoming connections")
+	flag.IntVar(&o.ReconnectInterval, "reconnect-interval", 300, "how often to force a reconnection")
 	flag.BoolVar(&o.Reverse, "reverse", false, "reverse the direction, listen locally")
 
 	flag.Parse()
