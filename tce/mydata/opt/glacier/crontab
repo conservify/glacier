@@ -1,1 +1,0 @@
-*/5 * * * * root /opt/glacier/mirror-obsidian | /usr/bin/logger -t mirror-obsidian

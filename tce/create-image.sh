@@ -38,7 +38,6 @@ sudo rm -rf $CARD0_LODGE_BASE_WORK
 for a in $CARD0_LODGE_WORK/cmdline*; do
     sed -i -e 's/quiet/nodhcp cron syslog host=lodge logo.nologo/g' $a
     sed -i -e 's/loglevel=3/loglevel=6/g' $a
-    sed -i -e 's/waitusb=1/waitusb=5/g' $a
 done
 
 echo 'dtparam=watchdog=on' | sudo tee --append $CARD0_LODGE_WORK/config.txt
@@ -81,10 +80,7 @@ sudo rm -rf $CARD0_GLACIER_BASE_WORK
 for a in $CARD0_GLACIER_WORK/cmdline*; do
     sed -i -e 's/quiet/nodhcp cron syslog host=glacier logo.nologo/g' $a
     sed -i -e 's/loglevel=3/loglevel=6/g' $a
-    sed -i -e 's/waitusb=1/waitusb=5/g' $a
 done
-
-cp $CARD0_GLACIER_WORK/cmdline* ~/
 
 echo 'dtparam=watchdog=on' | sudo tee --append $CARD0_GLACIER_WORK/config.txt
 
