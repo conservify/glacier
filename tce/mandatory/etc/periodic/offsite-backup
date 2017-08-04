@@ -24,7 +24,7 @@ if [ -e /dev/sda1 ]; then
     mount /dev/sda1 /backup
     if [ "$?" == 0 ]; then
         if [ -z "$PERFORM_COPY" ]; then
-            ssh -t glacier "sudo -- sh -c '/etc/periodic/mirror-data -c'"
+            ssh -t glacier "sudo -- sh -c '/etc/periodic/offsite-backup -c'"
             if [ "$?" != 0 ]; then
                 log "Offsite backup ssh failed (OFFSET_BACKUP:FATAL)"
             fi

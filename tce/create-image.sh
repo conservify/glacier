@@ -24,7 +24,7 @@ done
 sudo cp $PROJECT/mandatory/etc/rsyslog.conf.lodge etc/rsyslog.conf
 sudo cp $PROJECT/mandatory/etc/logrotate.conf etc
 sudo cp -ar $PROJECT/mandatory/etc/periodic etc
-sudo cp etc/periodic/mirror-data etc/periodic/12min
+sudo cp etc/periodic/offsite-backup etc/periodic/12min
 sudo cp -ar /etc/ssl etc
 sudo rmdir var/log
 sudo ln -sf /mnt/mmcblk0p2/data/log var/log
