@@ -11,7 +11,6 @@ do
     esac
 done
 
-
 function log() {
     /usr/bin/logger -t offsite-backup "$@"
 }
@@ -27,14 +26,14 @@ if [ -e /dev/sda1 ]; then
         if [ -z "$PERFORM_COPY" ]; then
             ssh -t glacier "sudo -- sh -c '/etc/periodic/mirror-data -c'"
             if [ "$?" != 0 ]; then
-                log "Offsite backup copy failede (OFFSET_BACKUP:FATAL)"
+                log "Offsite backup ssh failed (OFFSET_BACKUP:FATAL)"
             fi
         else
             rsync -zvua --progress /backup lodge:/backup | /usr/bin/logger -t offsite-backup
             if [ "$?" == 0 ]; then
                 log "Offsite backup done (OFFSET_BACKUP:GOOD)"
             else
-                log "Offsite backup copy failede (OFFSET_BACKUP:FATAL)"
+                log "Offsite backup copy failed (OFFSET_BACKUP:FATAL)"
             fi
         fi
         umount -f /backup
