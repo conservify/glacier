@@ -10,6 +10,7 @@ import (
 	"log/syslog"
 	"net"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -22,6 +23,20 @@ func (endpoint *Endpoint) String() string {
 	return fmt.Sprintf("%s:%d", endpoint.Host, endpoint.Port)
 }
 
+type IdleTimeoutConn struct {
+	Conn net.Conn
+}
+
+func (self IdleTimeoutConn) Read(buf []byte) (int, error) {
+	self.Conn.SetDeadline(time.Now().Add(30 * time.Second))
+	return self.Conn.Read(buf)
+}
+
+func (self IdleTimeoutConn) Write(buf []byte) (int, error) {
+	self.Conn.SetDeadline(time.Now().Add(30 * time.Second))
+	return self.Conn.Write(buf)
+}
+
 // From https://sosedoff.com/2015/05/25/ssh-port-forwarding-with-go.html
 // Handle local client connections and tunnel data to the remote server
 // Will use io.Copy - http://golang.org/pkg/io/#Copy
@@ -29,7 +44,7 @@ func handleConnection(connection net.Conn, remote net.Conn) {
 	chDone := make(chan bool)
 
 	go func() {
-		_, err := io.Copy(connection, remote)
+		_, err := io.Copy(IdleTimeoutConn{Conn: connection}, IdleTimeoutConn{Conn: remote})
 		if err != nil {
 			log.Printf("Error copying remote->local: %s", err)
 		}
@@ -37,7 +52,7 @@ func handleConnection(connection net.Conn, remote net.Conn) {
 	}()
 
 	go func() {
-		_, err := io.Copy(remote, connection)
+		_, err := io.Copy(IdleTimeoutConn{Conn: remote}, IdleTimeoutConn{Conn: connection})
 		if err != nil {
 			log.Printf("Error copying local->remote: %s", err)
 		}
@@ -85,7 +100,9 @@ func forwardLocalPortToRemotePort(o *Options, sshConfig *ssh.ClientConfig) {
 
 			clientConnection, err := listener.Accept()
 			if err != nil {
-				log.Printf("Error %s", err)
+				if err != io.EOF {
+					log.Printf("Error %s", err)
+				}
 				break
 			} else {
 				log.Printf("Connecting to %v...", o.ServerEndpoint.String())
@@ -122,6 +139,43 @@ func forwardLocalPortToRemotePort(o *Options, sshConfig *ssh.ClientConfig) {
 	}
 }
 
+func serviceRemoteToLocalConnections(listener net.Listener, o *Options, sshConfig *ssh.ClientConfig, busy *sync.Mutex) {
+	for {
+		clientConnection, err := listener.Accept()
+		if err != nil {
+			if err != io.EOF {
+				log.Printf("Error %s", err)
+			}
+			return
+		} else {
+			busy.Lock()
+
+			log.Printf("New connection, opening %s...", o.LocalEndpoint.String())
+
+			local, err := net.Dial("tcp", o.LocalEndpoint.String())
+			if err != nil {
+				log.Printf("Unable to connect to local server: %s", err)
+			} else {
+				log.Printf("Tunnelling!")
+
+				s := time.Now()
+
+				handleConnection(clientConnection, local)
+
+				local.Close()
+
+				log.Printf("Done after %v", time.Since(s))
+			}
+
+			clientConnection.Close()
+		}
+
+		busy.Unlock()
+
+		time.Sleep(1 * time.Second)
+	}
+}
+
 func forwardRemotePortToLocalPort(o *Options, sshConfig *ssh.ClientConfig) {
 	log.Printf("Connecting to %v...", o.ServerEndpoint.String())
 
@@ -135,34 +189,13 @@ func forwardRemotePortToLocalPort(o *Options, sshConfig *ssh.ClientConfig) {
 		if err != nil {
 			log.Printf("Unable to listen on %v: %s", o.RemoteEndpoint, err)
 		} else {
-			for {
-				clientConnection, err := listener.Accept()
-				if err != nil {
-					log.Printf("Error %s", err)
-					break
-				} else {
-					log.Printf("New connection, opening %s...", o.LocalEndpoint.String())
+			busy := sync.Mutex{}
 
-					local, err := net.Dial("tcp", o.LocalEndpoint.String())
-					if err != nil {
-						log.Printf("Unable to connect to local server: %s", err)
-					} else {
-						log.Printf("Tunnelling!")
+			go serviceRemoteToLocalConnections(listener, o, sshConfig, &busy)
 
-						s := time.Now()
+			time.Sleep(60 * time.Second)
 
-						handleConnection(clientConnection, local)
-
-						local.Close()
-
-						log.Printf("Done after %v", time.Since(s))
-					}
-
-					clientConnection.Close()
-				}
-
-				time.Sleep(1 * time.Second)
-			}
+			busy.Lock()
 
 			listener.Close()
 		}
