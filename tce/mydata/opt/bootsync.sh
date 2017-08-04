@@ -14,12 +14,9 @@ ln -sf /mnt/mmcblk0p2/data/geophone /data/geophone
 ln -sf /mnt/mmcblk0p2/data/obsidian /data/obsidian
 
 # Execute configuration based on our hostname.
-NAME=/opt/`hostname`/bootsync.sh
-echo "Executing $NAME" | /usr/bin/logger
-sh $NAME | /usr/bin/logger
+/opt/`hostname`/bootsync.sh
 
-# Sync time
-ntpdate tick.ucla.edu
+# Start sync
 ntpd
 
 # Do background stuff now that everything is ready.

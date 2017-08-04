@@ -13,6 +13,4 @@ echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 /usr/local/bin/hamachid
 
 # Execute configuration based on our hostname.
-NAME=/opt/`hostname`/bootlocal.sh
-echo "Executing $NAME" | /usr/bin/logger
-sh $NAME | /usr/bin/logger
+/opt/`hostname`/bootlocal.sh

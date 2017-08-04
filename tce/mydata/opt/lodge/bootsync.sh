@@ -1,11 +1,5 @@
 #!/bin/sh
 
-ifconfig eth1 169.254.128.129 netmask 255.255.255.0 broadcast 169.254.128.255 up
+/opt/manage-iface.sh eth1 169.254.128.129 netmask 255.255.255.0 broadcast 169.254.128.255 up &
 
-/etc/init.d/dhcp.sh
-
-echo "1" > /proc/sys/net/ipv4/ip_forward
-
-iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-iptables -A FORWARD -i eth1 -o eth1 -m state --state RELATED,ESTABLISHED -j ACCEPT
-iptables -A FORWARD -i eth0 -o eth0 -j ACCEPT
+/sbin/udhcpc -b -i eth0 -x hostname:lodge -p /var/run/udhcpc.eth0.pid -s /opt/lodge/udhcpc-action.sh >/dev/null 2>&1 &
