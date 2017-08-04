@@ -1,0 +1,3 @@
+#!/bin/sh
+
+ntpdate tick.ucla.edu | /usr/bin/logger
