@@ -15,12 +15,12 @@ if [ -e /dev/sda1 ]; then
         rsync -zvua --progress /data/geophone/ /backup/geophone/ | /usr/bin/logger -t local-backup 2>&1
         rsync -zvua --progress /data/obsidian/ /backup/obsidian/ | /usr/bin/logger -t local-backup 2>&1
         umount -f /backup
-        log "Local backup done (BACKUP:GOOD)"
+        log "Local backup done (LOCAL_BACKUP:GOOD)"
     else
-        log "/dev/sda1 unmountable (BACKUP:FATAL)"
+        log "/dev/sda1 unmountable (LOCAL_BACKUP:FATAL)"
         exit 2
     fi
 else
-    log "/dev/sda1 is the wrong type (BACKUP:FATAL)"
+    log "/dev/sda1 is the wrong type (LOCAL_BACKUP:FATAL)"
     exit 2
 fi

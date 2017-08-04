@@ -18,10 +18,10 @@ while /bin/true; do
     if [ "$?" == 0 ]; then
         CURRENT_IP=`ifconfig $IFACE 2>/dev/null|awk '/inet addr:/ {print $2}'|sed 's/addr://'`
         if [ "$CURRENT_IP" = "$IP" ]; then
-            log "Currently $IFACE is $CURRENT_IP, leaving alone..."
+            log "Currently '$IFACE' is '$CURRENT_IP', leaving alone..."
             DELAY=600
         else
-            log "Currently $IFACE is $CURRENT_IP, changing..."
+            log "Currently '$IFACE' is '$CURRENT_IP', changing..."
             ifconfig "$@" | /usr/bin/logger -t "$TAG" 2>&1
             UP="/opt/$HOST/iface-$IFACE-up.sh"
             log "Running $UP"

@@ -194,7 +194,7 @@ func forwardRemotePortToLocalPort(o *Options, sshConfig *ssh.ClientConfig) {
 
 			go serviceRemoteToLocalConnections(listener, o, sshConfig, &busy)
 
-			time.Sleep(o.ReconnectInterval * time.Second)
+			time.Sleep(time.Duration(o.ReconnectInterval) * time.Second)
 
 			busy.Lock()
 

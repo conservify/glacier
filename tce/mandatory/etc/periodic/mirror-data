@@ -1,5 +1,48 @@
 #!/bin/sh
+# -*- mode: sh -*-
 
-set -e
+# Parse command line.
+unset PERFORM_COPY
+while getopts c OPTION
+do
+    case ${OPTION} in
+        c) PERFORM_COPY=TRUE ;;
+        *) exit 2 ;;
+    esac
+done
 
-rsync -zvua tc@glacier:/data/ /data/ | /usr/bin/logger -t mirror-obsidian 2>&1
+
+function log() {
+    /usr/bin/logger -t offsite-backup "$@"
+}
+
+log "Performing offsite backup..."
+
+mkdir -p /backup
+umount -f /backup > /dev/null 2>&1 || /bin/true
+
+if [ -e /dev/sda1 ]; then
+    mount /dev/sda1 /backup
+    if [ "$?" == 0 ]; then
+        if [ -z "$PERFORM_COPY" ]; then
+            ssh -t glacier "sudo -- sh -c '/etc/periodic/mirror-data -c'"
+            if [ "$?" != 0 ]; then
+                log "Offsite backup copy failede (OFFSET_BACKUP:FATAL)"
+            fi
+        else
+            rsync -zvua --progress /backup lodge:/backup | /usr/bin/logger -t offsite-backup
+            if [ "$?" == 0 ]; then
+                log "Offsite backup done (OFFSET_BACKUP:GOOD)"
+            else
+                log "Offsite backup copy failede (OFFSET_BACKUP:FATAL)"
+            fi
+        fi
+        umount -f /backup
+    else
+        log "/dev/sda1 unmountable (OFFSET_BACKUP:FATAL)"
+        exit 2
+    fi
+else
+    log "/dev/sda1 is the wrong type (OFFSET_BACKUP:FATAL)"
+    exit 2
+fi
