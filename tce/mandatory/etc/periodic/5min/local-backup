@@ -1,4 +1,5 @@
 #!/bin/sh
+# -*- mode: sh -*-
 
 function log() {
     /usr/bin/logger -t local-backup "$@"

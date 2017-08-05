@@ -10,9 +10,11 @@ while /bin/true; do
         if [ "$?" == 0 ]; then
             /usr/bin/logger -t await-wireless "Wireless up"
 
+            # HACK: Wait for SSH to come up?
+            sleep 10
+
             # Fix the keys situation.
-            ssh-keyscan lodge > /root/.ssh/known_hosts
-            ssh-keyscan glacier >> /root/.ssh/known_hosts
+            ssh-keyscan lodge glacier > /root/.ssh/known_hosts | /usr/bin/logger -t await-wireless
             cp /root/.ssh/known_hosts ~tc/.ssh
             chown tc. ~tc/.ssh/known_hosts
 
