@@ -26,14 +26,14 @@ if [ -e /dev/sda1 ]; then
         if [ -z "$PERFORM_COPY" ]; then
             ssh -t glacier "sudo -- sh -c '/etc/periodic/offsite-backup -c'"
             if [ "$?" != 0 ]; then
-                log "Offsite backup ssh failed (OFFSET_BACKUP:FATAL)"
+                log "Offsite backup ssh failed (OFFSITE_BACKUP:FATAL)"
             fi
         else
             rsync -zvua --progress /backup lodge:/backup | /usr/bin/logger -t offsite-backup
             if [ "$?" == 0 ]; then
-                log "Offsite backup done (OFFSET_BACKUP:GOOD)"
+                log "Offsite backup done (OFFSITE_BACKUP:GOOD)"
             else
-                log "Offsite backup copy failed (OFFSET_BACKUP:FATAL)"
+                log "Offsite backup copy failed (OFFSITE_BACKUP:FATAL)"
             fi
         fi
 
@@ -42,10 +42,10 @@ if [ -e /dev/sda1 ]; then
 
         umount -f /backup
     else
-        log "/dev/sda1 unmountable (OFFSET_BACKUP:FATAL)"
+        log "/dev/sda1 unmountable (OFFSITE_BACKUP:FATAL)"
         exit 2
     fi
 else
-    log "/dev/sda1 is the wrong type (OFFSET_BACKUP:FATAL)"
+    log "/dev/sda1 is the wrong type (OFFSITE_BACKUP:FATAL)"
     exit 2
 fi
