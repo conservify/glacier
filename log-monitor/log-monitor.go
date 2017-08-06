@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"github.com/hpcloud/tail"
 	"log"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -14,7 +16,7 @@ type NetworkStatus struct {
 	Machines map[string]*Machine
 }
 
-type AdcStatus struct {
+type GeophoneStatus struct {
 	LastUpdatedAt time.Time
 	GpsLock       bool
 }
@@ -26,9 +28,9 @@ type UploaderStatus struct {
 
 type MountPoint struct {
 	MountPoint string
-	Size       string
-	Available  string
-	Used       string
+	Size       int64
+	Available  int64
+	Used       float64
 }
 
 type MountPoints struct {
@@ -55,7 +57,7 @@ type Machine struct {
 	Mounts        MountPoints
 	LocalBackup   BackupStatus
 	OffsiteBackup BackupStatus
-	Adc           AdcStatus
+	Geophone      GeophoneStatus
 	Uploader      UploaderStatus
 }
 
@@ -119,6 +121,8 @@ func (l *LogFileParser) TryParseUptime(sl *SysLogLine, m *Machine) {
 // Aug  5 00:13:03 lodge disk-space: /dev/sda1               343.7G      3.7G    322.5G   1% /backup
 
 var spacesRe = regexp.MustCompile("\\s+")
+var bytesRe = regexp.MustCompile("(.+)([kMG])")
+var makeNumberRe = regexp.MustCompile("[MG%]")
 
 func (l *LogFileParser) TryParseDisk(sl *SysLogLine, m *Machine) {
 	if sl.Facility != "disk-space" {
@@ -126,12 +130,31 @@ func (l *LogFileParser) TryParseDisk(sl *SysLogLine, m *Machine) {
 	}
 
 	parts := spacesRe.Split(sl.Message, -1)
+	if parts[1] == "Size" {
+		return
+	}
+
+	size, err := parseBytes(parts[1])
+	if err != nil {
+		log.Printf("Error parsing '%v'", parts[1])
+		return
+	}
+	available, err := parseBytes(parts[3])
+	if err != nil {
+		log.Printf("Error parsing '%v'", parts[3])
+		return
+	}
+	used, err := strconv.ParseFloat(makeNumberRe.ReplaceAllString(parts[4], ""), 32)
+	if err != nil {
+		log.Printf("Error parsing %v", makeNumberRe.ReplaceAllString(parts[4], ""))
+		return
+	}
 
 	mp := &MountPoint{
 		MountPoint: parts[0],
-		Size:       parts[1],
-		Available:  parts[3],
-		Used:       parts[4],
+		Size:       size,
+		Available:  available,
+		Used:       used,
 	}
 
 	m.Mounts.LastUpdatedAt = time.Now()
@@ -187,33 +210,46 @@ func (l *LogFileParser) TryParseOffsiteBackup(sl *SysLogLine, m *Machine) {
 	}
 }
 
-func (l *LogFileParser) TryParseAdc(sl *SysLogLine, m *Machine) {
+func (l *LogFileParser) TryParseGeophone(sl *SysLogLine, m *Machine) {
 	if sl.Facility == "adc" {
-		m.Adc.LastUpdatedAt = time.Now()
+		m.Geophone.LastUpdatedAt = time.Now()
 	}
 }
 
-func sendStatus(ns *NetworkStatus) {
-	for {
-		ns.Lock.Lock()
-
-		log.Printf("Hello")
-
-		ns.Lock.Unlock()
-
-		time.Sleep(5 * time.Second)
+func fileToWatch() string {
+	args := flag.Args()
+	if len(args) > 0 {
+		return args[0]
 	}
+	return "/var/log/syslog"
+}
 
+func NewMachine(name string) *Machine {
+
+	return &Machine{
+		Hostname: name,
+		Mounts: MountPoints{
+			Mounts: make(map[string]*MountPoint),
+		},
+		Status: MachineStatus{},
+	}
 }
 
 func main() {
-	t, err := tail.TailFile("/var/log/syslog", tail.Config{Follow: true})
+	flag.Parse()
+
+	file := fileToWatch()
+	log.Printf("Watching %s", file)
+	t, err := tail.TailFile(file, tail.Config{Follow: true})
 	if err == nil {
 		ns := NetworkStatus{
 			Machines: make(map[string]*Machine),
 		}
 
-		go sendStatus(&ns)
+		ns.Machines["lodge"] = NewMachine("lodge")
+		ns.Machines["glacier"] = NewMachine("glacier")
+
+		go SendStatus(&ns)
 
 		parser := &LogFileParser{}
 		for line := range t.Lines {
@@ -221,13 +257,7 @@ func main() {
 
 			ns.Lock.Lock()
 			if ns.Machines[sl.Hostname] == nil {
-				ns.Machines[sl.Hostname] = &Machine{
-					Hostname: sl.Hostname,
-					Mounts: MountPoints{
-						Mounts: make(map[string]*MountPoint),
-					},
-					Status: MachineStatus{},
-				}
+				ns.Machines[sl.Hostname] = NewMachine(sl.Hostname)
 			}
 
 			m := ns.Machines[sl.Hostname]
@@ -237,7 +267,7 @@ func main() {
 			parser.TryParseDisk(sl, m)
 			parser.TryParseLocalBackup(sl, m)
 			parser.TryParseOffsiteBackup(sl, m)
-			parser.TryParseAdc(sl, m)
+			parser.TryParseGeophone(sl, m)
 
 			ns.Lock.Unlock()
 		}
