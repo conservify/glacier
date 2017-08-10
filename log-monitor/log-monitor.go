@@ -240,11 +240,14 @@ func main() {
 
 	file := fileToWatch()
 	log.Printf("Watching %s", file)
+
 	t, err := tail.TailFile(file, tail.Config{Follow: true})
 	if err == nil {
 		ns := NetworkStatus{
 			Machines: make(map[string]*Machine),
 		}
+
+		go StartWebServer(&ns)
 
 		ns.Machines["lodge"] = NewMachine("lodge")
 		ns.Machines["glacier"] = NewMachine("glacier")
