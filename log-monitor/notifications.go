@@ -13,6 +13,7 @@ type StatusUpdate struct {
 }
 
 type NotificationStatus struct {
+	Attempt        int
 	PreviousStatus StatusType
 	StartTime      time.Time
 	LastStatus     time.Time
@@ -54,9 +55,13 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 	}
 
 	if notifs.PreviousStatus != newStatus {
-		log.Printf("State change %v -> %v", notifs.PreviousStatus, newStatus)
-		notifs.PreviousStatus = newStatus
-		notify = true
+		log.Printf("State change %v -> %v (%d)", notifs.PreviousStatus, newStatus, notifs.Attempt)
+		notifs.Attempt += 1
+		if notifs.Attempt == 3 {
+			notifs.PreviousStatus = newStatus
+			notifs.Attempt = 0
+			notify = true
+		}
 	}
 	if newStatus != Good {
 		interval = 6 * time.Hour
@@ -91,6 +96,8 @@ func SendStatus(ni *NetworkInfo) {
 
 	notifs := &NotificationStatus{
 		PreviousStatus: Unknown,
+		Attempt:        0,
+		LastStatus:     time.Now(),
 		StartTime:      time.Now(),
 	}
 	for {
