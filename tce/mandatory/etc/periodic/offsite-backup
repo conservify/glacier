@@ -25,7 +25,9 @@ if [ -e /dev/sda1 ]; then
     if [ "$?" == 0 ]; then
         if [ -z "$PERFORM_COPY" ]; then
             ssh -t glacier "sudo -- sh -c '/etc/periodic/offsite-backup -c'"
-            if [ "$?" != 0 ]; then
+            if [ "$?" == 0 ]; then
+                log "Offsite backup ssh done (OFFSITE_BACKUP:GOOD)"
+            else
                 log "Offsite backup ssh failed (OFFSITE_BACKUP:FATAL)"
             fi
         else
