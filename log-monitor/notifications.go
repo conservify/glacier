@@ -14,6 +14,7 @@ type StatusUpdate struct {
 
 type NotificationStatus struct {
 	PreviousStatus StatusType
+	StartTime      time.Time
 	LastStatus     time.Time
 }
 
@@ -22,6 +23,7 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 	interval := 24 * time.Hour
 	newStatus := Good
 	ns, _ := ToNetworkStatus(ni)
+	problems := make([]StatusUpdate, 0)
 
 	for _, m := range ns.Machines {
 		all := []StatusUpdate{
@@ -43,13 +45,13 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 		machineStatus := Good
 		for _, su := range all {
 			machineStatus = machineStatus.Prioritize(su.Status)
+
+			if su.Status != Good {
+				problems = append(problems, su)
+			}
 		}
 		newStatus = newStatus.Prioritize(machineStatus)
-
-		log.Printf("%s: %v", m.Hostname, machineStatus)
 	}
-
-	log.Printf("Global: %v (was %v)", newStatus, notifs.PreviousStatus)
 
 	if notifs.PreviousStatus != newStatus {
 		log.Printf("State change %v -> %v", notifs.PreviousStatus, newStatus)
@@ -64,14 +66,22 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 		notify = true
 	}
 
+	upFor := time.Now().Sub(notifs.StartTime)
+	gracePeriod := (20 * time.Minute) > upFor
 	if notify {
-		log.Printf("Notifying")
+		log.Printf("Notifying %v", problems)
 		notifs.LastStatus = time.Now()
 		twilio := gotwilio.NewTwilioClient(twilioSid, twilioToken)
 
 		from := "+12132617278"
 		to := "+19515438308"
-		message := fmt.Sprintf("Status: %s", newStatus)
+		message := fmt.Sprintf("%s https://code.conservify.org/glacier", newStatus)
+		if gracePeriod {
+			message = "(Grace) " + message
+		}
+		if len(problems) > 0 {
+			message = message + fmt.Sprintf(" %v", problems)
+		}
 		twilio.SendSMS(from, to, message, "", "")
 	}
 }
@@ -81,6 +91,7 @@ func SendStatus(ni *NetworkInfo) {
 
 	notifs := &NotificationStatus{
 		PreviousStatus: Unknown,
+		StartTime:      time.Now(),
 	}
 	for {
 		notifs.sendSingleStatus(ni)

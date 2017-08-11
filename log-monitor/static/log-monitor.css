@@ -5,3 +5,13 @@
 .age {
     font-size: 14pt;
 }
+
+ul.log li {
+    font-size: 9pt;
+}
+
+ul.log {
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+}

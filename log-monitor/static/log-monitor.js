@@ -20,10 +20,48 @@ class LastUpdatedStatus extends React.Component {
     }
 }
 
+class LogDisplay extends React.Component {
+    constructor() {
+        super();
+        this.state = {
+            visible: false
+        };
+    }
+
+    toggleVisible() {
+        const { visible } = this.state;
+        this.setState({
+            visible: !visible
+        });
+    }
+
+    render() {
+        const { log } = this.props;
+        const { visible } = this.state;
+
+        if (!log) {
+            return (<div></div>);
+        }
+        if (!visible) {
+            return (<div className="btn btn-logs btn-sm btn-outline-secondary" onClick={() => this.toggleVisible()}>Logs</div>);
+        }
+
+        return (
+                <div>
+                    <div className="btn btn-logs btn-sm btn-outline-secondary" onClick={() => this.toggleVisible()}>Logs</div>
+                    <ul className="log">
+                    {log.map((l, k) => <li key={k}>{l}</li>)}
+                    </ul>
+                </div>
+        );
+    }
+}
+
 class Machine extends React.Component {
     renderStatus(health) {
         return (<div className="health">
-                <LastUpdatedStatus status={health.status} time={health.info.lastUpdatedAt} title="Health" />
+                    <LastUpdatedStatus status={health.status} time={health.info.lastUpdatedAt} title="Health" />
+                    <LogDisplay log={health.info.log} />
                     <table className="table">
                         <tbody>
                             <tr><th>Uptime</th><td>{health.info.uptime}</td></tr>
@@ -68,25 +106,37 @@ class Machine extends React.Component {
 
     renderLocalBackup(backups) {
         return (
+            <div>
                 <LastUpdatedStatus status={backups.status} time={backups.info.lastUpdatedAt} title="Local Backup" />
+                <LogDisplay log={backups.info.log} />
+            </div>
         );
     }
 
     renderOffsiteBackup(backups) {
         return (
+            <div>
                 <LastUpdatedStatus status={backups.status} time={backups.info.lastUpdatedAt} title="Offsite Backup" />
+                <LogDisplay log={backups.info.log} />
+            </div>
         );
     }
 
     renderGeophone(geophone) {
         return (
+            <div>
                 <LastUpdatedStatus status={geophone.status} time={geophone.info.lastUpdatedAt} title="Geophone" />
+                <LogDisplay log={geophone.info.log} />
+            </div>
         );
     }
 
     renderUploader(uploader) {
         return (
+            <div>
                 <LastUpdatedStatus status={uploader.status} time={uploader.lastUpdatedAt} title="Uploader" />
+                <LogDisplay log={uploader.info.log} />
+            </div>
         );
     }
 }
@@ -98,9 +148,9 @@ class LodgeMachine extends Machine {
         return (<div className="col">
                 <h1>{machine.hostname}</h1>
                 {this.renderStatus(machine.health)}
-                {this.renderMounts(machine.mounts)}
                 {this.renderLocalBackup(machine.localBackup)}
                 {this.renderOffsiteBackup(machine.offsiteBackup)}
+                {this.renderMounts(machine.mounts)}
                 </div>);
     }
 }
@@ -112,9 +162,9 @@ class GlacierMachine extends Machine {
         return (<div className="col">
                 <h1>{machine.hostname}</h1>
                 {this.renderStatus(machine.health)}
-                {this.renderMounts(machine.mounts)}
                 {this.renderLocalBackup(machine.localBackup)}
                 {this.renderOffsiteBackup(machine.offsiteBackup)}
+                {this.renderMounts(machine.mounts)}
                 {this.renderGeophone(machine.geophone)}
                 {this.renderUploader(machine.uploader)}
                 </div>);

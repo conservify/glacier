@@ -23,12 +23,14 @@ type GeophoneInfo struct {
 	Frequency     int        `json:"frequency"`
 	LastUpdatedAt time.Time  `json:"lastUpdatedAt"`
 	Status        StatusType `json:"status"`
+	Log           []string   `json:"log"`
 }
 
 type UploaderInfo struct {
 	Frequency     int        `json:"frequency"`
 	LastUpdatedAt time.Time  `json:"lastUpdatedAt"`
 	Status        StatusType `json:"status"`
+	Log           []string   `json:"log"`
 }
 
 type MountPointInfo struct {
@@ -45,6 +47,7 @@ type MountPointsInfo struct {
 }
 
 type HealthInfo struct {
+	Log           []string   `json:"log"`
 	Frequency     int        `json:"frequency"`
 	LastUpdatedAt time.Time  `json:"lastUpdatedAt"`
 	Users         string     `json:"users"`
@@ -57,6 +60,7 @@ type BackupInfo struct {
 	Frequency     int        `json:"frequency"`
 	LastUpdatedAt time.Time  `json:"lastUpdatedAt"`
 	Status        StatusType `json:"status"`
+	Log           []string   `json:"log"`
 }
 
 type MachineInfo struct {
@@ -81,6 +85,7 @@ func NewMachineInfo(name string) *MachineInfo {
 }
 
 type SysLogLine struct {
+	Raw      string
 	StampRaw string
 	Stamp    time.Time
 	Hostname string
@@ -109,6 +114,7 @@ func (l *LogFileParser) Parse(line string) *SysLogLine {
 	}
 	facility := cleanupFacilityRe.ReplaceAllString(wholeFacility, "")
 	return &SysLogLine{
+		Raw:      line,
 		StampRaw: stampRaw,
 		Stamp:    stamp,
 		Hostname: parts[0],
@@ -123,7 +129,15 @@ func (l *LogFileParser) Parse(line string) *SysLogLine {
 
 var uptimeRe = regexp.MustCompile("([\\d:]+) up (.+),\\s+(\\d+) users,\\s+load average: (.+)")
 
-func (l *LogFileParser) TryParseUptime(sl *SysLogLine, m *MachineInfo) {
+func updateLog(m string, log []string) []string {
+	l := append(log, m)
+	if len(l) > 10 {
+		return l[1:len(l)]
+	}
+	return l
+}
+
+func (l *LogFileParser) TryParseHealth(sl *SysLogLine, m *MachineInfo) {
 	if sl.Facility != "status" {
 		return
 	}
@@ -138,6 +152,7 @@ func (l *LogFileParser) TryParseUptime(sl *SysLogLine, m *MachineInfo) {
 		Uptime:        v[0][2],
 		Users:         v[0][3],
 		LoadAverage:   v[0][4],
+		Log:           updateLog(sl.Message, m.Health.Log),
 	}
 }
 
@@ -231,12 +246,17 @@ func (l *LogFileParser) TryParseLocalBackup(sl *SysLogLine, m *MachineInfo) {
 	s := ParseSimpleInlineStatus(sl.Message)
 	if s != nil {
 		if s.Which == "LOCAL_BACKUP" {
-			log.Printf("Local backup %v", sl.Stamp)
+			log.Printf("Local backup %v (%s) %v", sl.Stamp, m.Hostname, s)
 			m.LocalBackup = BackupInfo{
 				Frequency:     5,
 				LastUpdatedAt: sl.Stamp,
 				Status:        toStatusType(s.Status),
+				Log:           updateLog(sl.Message, m.LocalBackup.Log),
 			}
+		}
+	} else {
+		if sl.Facility == "local-backup" {
+			m.LocalBackup.Log = updateLog(sl.Message, m.LocalBackup.Log)
 		}
 	}
 }
@@ -245,12 +265,17 @@ func (l *LogFileParser) TryParseOffsiteBackup(sl *SysLogLine, m *MachineInfo) {
 	s := ParseSimpleInlineStatus(sl.Message)
 	if s != nil {
 		if s.Which == "OFFSITE_BACKUP" {
-			log.Printf("Offsite backup %v (%s)", sl.Stamp, m.Hostname)
+			log.Printf("Offsite backup %v (%s) %v", sl.Stamp, m.Hostname, s)
 			m.OffsiteBackup = BackupInfo{
 				Frequency:     20,
 				LastUpdatedAt: sl.Stamp,
 				Status:        toStatusType(s.Status),
+				Log:           updateLog(sl.Message, m.OffsiteBackup.Log),
 			}
+		}
+	} else {
+		if sl.Facility == "offsite-backup" {
+			m.OffsiteBackup.Log = updateLog(sl.Message, m.OffsiteBackup.Log)
 		}
 	}
 }
@@ -259,6 +284,7 @@ func (l *LogFileParser) TryParseGeophone(sl *SysLogLine, m *MachineInfo) {
 	if sl.Facility == "adc" {
 		m.Geophone = GeophoneInfo{
 			LastUpdatedAt: sl.Stamp,
+			Log:           updateLog(sl.Message, m.Geophone.Log),
 		}
 	}
 }
@@ -267,6 +293,7 @@ func (l *LogFileParser) TryParseUploader(sl *SysLogLine, m *MachineInfo) {
 	if sl.Facility == "uploader-geophone" {
 		m.Uploader = UploaderInfo{
 			LastUpdatedAt: sl.Stamp,
+			Log:           updateLog(sl.Message, m.Uploader.Log),
 		}
 	}
 }
@@ -289,7 +316,7 @@ func (parser *LogFileParser) ProcessLine(ni *NetworkInfo, line string) {
 	m := ni.Machines[sl.Hostname]
 	m.LastMessageAt = sl.Stamp
 
-	parser.TryParseUptime(sl, m)
+	parser.TryParseHealth(sl, m)
 	parser.TryParseDisk(sl, m)
 	parser.TryParseLocalBackup(sl, m)
 	parser.TryParseOffsiteBackup(sl, m)
@@ -305,6 +332,8 @@ func main() {
 	}
 
 	go StartWebServer(&ni)
+
+	go SendStatus(&ni)
 
 	ni.Machines["lodge"] = NewMachineInfo("lodge")
 	ni.Machines["glacier"] = NewMachineInfo("glacier")
