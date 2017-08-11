@@ -14,7 +14,7 @@ func statusHandler(ni *NetworkInfo) http.HandlerFunc {
 }
 
 func StartWebServer(ni *NetworkInfo) {
-	http.HandleFunc("/status.json", statusHandler(ni))
-	http.Handle("/", http.FileServer(http.Dir("./static")))
+	http.HandleFunc("/glacier/status.json", statusHandler(ni))
+	http.Handle("/glacier/", http.StripPrefix("/glacier", http.FileServer(http.Dir("./static"))))
 	http.ListenAndServe(":8000", nil)
 }
