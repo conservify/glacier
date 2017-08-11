@@ -33,12 +33,34 @@ class Machine extends React.Component {
                 </div>);
     }
 
+    humanizeBytes(bytes) {
+        const GB = 1024 * 1024 * 1024;
+        const MB = 1024 * 1024;
+        const KB = 1024;
+        if (bytes > GB) {
+            return (bytes / GB).toFixed(2) + "G";
+        }
+        if (bytes > MB) {
+            return (bytes / MB).toFixed(2) + "M";
+        }
+        if (bytes > KB) {
+            return (bytes / KB).toFixed(2) + "k";
+        }
+        return bytes;
+    }
+
+    renderMount(m) {
+        const size = this.humanizeBytes(m.size);
+        const available = this.humanizeBytes(m.available);
+        return <tr key={m.mountPoint}><td>{m.mountPoint}</td><td>{size}</td><td>{available}</td><td>%{m.used}</td></tr>;
+    }
+
     renderMounts(mounts) {
         return (<div className="mounts">
                     <LastUpdatedStatus status={mounts.status} time={mounts.info.lastUpdatedAt} title="Mounts" />
                     <table className="table">
                         <tbody>
-                        {$.map(mounts.info.mounts, (v, k) => <tr key={v.mountPoint}><td>{v.mountPoint}></td><td>{v.size}</td><td>{v.available}</td><td>%{v.used}</td></tr>)}
+                        {$.map(mounts.info.mounts, (v, k) => this.renderMount(v))}
                         </tbody>
                     </table>
                 </div>);
