@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -ex
+
+go build -o log-monitor *.go
+
+ssh ubuntu@code.conservify.org "tail -n 1000 -f /var/log/syslog" | ./log-monitor

@@ -1,21 +1,20 @@
 package main
 
 import (
-	"net/http"
 	"encoding/json"
+	"net/http"
 )
 
-func statusHandler(ns *NetworkStatus) http.HandlerFunc {
+func statusHandler(ni *NetworkInfo) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ns.Lock.Lock()
+		ns, _ := ToNetworkStatus(ni)
 		b, _ := json.Marshal(*ns)
 		w.Write(b)
-		ns.Lock.Unlock()
 	}
 }
 
-func StartWebServer(ns *NetworkStatus) {
-	http.HandleFunc("/status.json", statusHandler(ns))
+func StartWebServer(ni *NetworkInfo) {
+	http.HandleFunc("/status.json", statusHandler(ni))
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	http.ListenAndServe(":8000", nil)
 }

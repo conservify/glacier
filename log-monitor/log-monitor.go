@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"flag"
+	"fmt"
 	"github.com/hpcloud/tail"
 	"log"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,58 +14,75 @@ import (
 	"time"
 )
 
-type NetworkStatus struct {
-	Lock     sync.Mutex
-	Machines map[string]*Machine
+type NetworkInfo struct {
+	Lock     sync.Mutex              `json:"lock"`
+	Machines map[string]*MachineInfo `json:"machines"`
 }
 
-type GeophoneStatus struct {
-	LastUpdatedAt time.Time
-	GpsLock       bool
+type GeophoneInfo struct {
+	Frequency     int        `json:"frequency"`
+	LastUpdatedAt time.Time  `json:"lastUpdatedAt"`
+	Status        StatusType `json:"status"`
 }
 
-type UploaderStatus struct {
-	LastUpdatedAt time.Time
-	Failed        bool
+type UploaderInfo struct {
+	Frequency     int        `json:"frequency"`
+	LastUpdatedAt time.Time  `json:"lastUpdatedAt"`
+	Status        StatusType `json:"status"`
 }
 
-type MountPoint struct {
-	MountPoint string
-	Size       int64
-	Available  int64
-	Used       float64
+type MountPointInfo struct {
+	MountPoint string  `json:"mountPoint"`
+	Size       int64   `json:"size"`
+	Available  int64   `json:"available"`
+	Used       float64 `json:"used"`
 }
 
-type MountPoints struct {
-	LastUpdatedAt time.Time
-	Mounts        map[string]*MountPoint
+type MountPointsInfo struct {
+	Frequency     int                        `json:"frequency"`
+	LastUpdatedAt time.Time                  `json:"lastUpdatedAt"`
+	Mounts        map[string]*MountPointInfo `json:"mounts"`
 }
 
-type MachineStatus struct {
-	LastUpdatedAt time.Time
-	Users         string
-	Uptime        string
-	LoadAverage   string
+type HealthInfo struct {
+	Frequency     int        `json:"frequency"`
+	LastUpdatedAt time.Time  `json:"lastUpdatedAt"`
+	Users         string     `json:"users"`
+	Uptime        string     `json:"uptime"`
+	LoadAverage   string     `json:"loadAverage"`
+	Status        StatusType `json:"status"`
 }
 
-type BackupStatus struct {
-	LastUpdatedAt time.Time
-	Failed        bool
+type BackupInfo struct {
+	Frequency     int        `json:"frequency"`
+	LastUpdatedAt time.Time  `json:"lastUpdatedAt"`
+	Status        StatusType `json:"status"`
 }
 
-type Machine struct {
-	Hostname      string
-	LastMessageAt time.Time
-	Status        MachineStatus
-	Mounts        MountPoints
-	LocalBackup   BackupStatus
-	OffsiteBackup BackupStatus
-	Geophone      GeophoneStatus
-	Uploader      UploaderStatus
+type MachineInfo struct {
+	Hostname      string          `json:"hostname"`
+	LastMessageAt time.Time       `json:"lastMessageAt"`
+	Health        HealthInfo      `json:"health"`
+	Mounts        MountPointsInfo `json:"mounts"`
+	LocalBackup   BackupInfo      `json:"localBackup"`
+	OffsiteBackup BackupInfo      `json:"offsiteBackup"`
+	Geophone      GeophoneInfo    `json:"geophone"`
+	Uploader      UploaderInfo    `json:"uploader"`
+}
+
+func NewMachineInfo(name string) *MachineInfo {
+	return &MachineInfo{
+		Hostname: name,
+		Mounts: MountPointsInfo{
+			Mounts: make(map[string]*MountPointInfo),
+		},
+		Health: HealthInfo{},
+	}
 }
 
 type SysLogLine struct {
 	StampRaw string
+	Stamp    time.Time
 	Hostname string
 	Facility string
 	Message  string
@@ -71,13 +91,28 @@ type SysLogLine struct {
 type LogFileParser struct {
 }
 
+var cleanupFacilityRe = regexp.MustCompile("\\[\\d+\\]")
+
 func (l *LogFileParser) Parse(line string) *SysLogLine {
 	timeLength := len("Aug  4 21:46:55")
+	if len(line) < timeLength+1 {
+		return nil
+	}
 	parts := strings.SplitN(line[timeLength+1:], " ", 3)
+	wholeFacility := strings.TrimSpace(strings.Replace(parts[1], ":", "", -1))
+	now := time.Now()
+	stampRaw := line[0:timeLength]
+	stamp, err := time.Parse("2006 Jan 02 15:04:05", fmt.Sprintf("%d %s", now.Year(), stampRaw))
+	if err != nil {
+		log.Printf("Error parsing time %s", err)
+		return nil
+	}
+	facility := cleanupFacilityRe.ReplaceAllString(wholeFacility, "")
 	return &SysLogLine{
-		StampRaw: line[0:timeLength],
+		StampRaw: stampRaw,
+		Stamp:    stamp,
 		Hostname: parts[0],
-		Facility: strings.TrimSpace(strings.Replace(parts[1], ":", "", -1)),
+		Facility: facility,
 		Message:  strings.TrimSpace(parts[2]),
 	}
 }
@@ -88,7 +123,7 @@ func (l *LogFileParser) Parse(line string) *SysLogLine {
 
 var uptimeRe = regexp.MustCompile("([\\d:]+) up (.+),\\s+(\\d+) users,\\s+load average: (.+)")
 
-func (l *LogFileParser) TryParseUptime(sl *SysLogLine, m *Machine) {
+func (l *LogFileParser) TryParseUptime(sl *SysLogLine, m *MachineInfo) {
 	if sl.Facility != "status" {
 		return
 	}
@@ -98,14 +133,12 @@ func (l *LogFileParser) TryParseUptime(sl *SysLogLine, m *Machine) {
 		return
 	}
 
-	m.Status = MachineStatus{
-		LastUpdatedAt: time.Now(),
-		Uptime:        v[0][1],
-		Users:         v[0][2],
-		LoadAverage:   v[0][3],
+	m.Health = HealthInfo{
+		LastUpdatedAt: sl.Stamp,
+		Uptime:        v[0][2],
+		Users:         v[0][3],
+		LoadAverage:   v[0][4],
 	}
-
-	log.Printf("Uptime: %v", m.Status)
 }
 
 // Aug  5 00:13:03 glacier disk-space: Filesystem                Size      Used Available Use% Mounted on
@@ -124,7 +157,7 @@ var spacesRe = regexp.MustCompile("\\s+")
 var bytesRe = regexp.MustCompile("(.+)([kMG])")
 var makeNumberRe = regexp.MustCompile("[MG%]")
 
-func (l *LogFileParser) TryParseDisk(sl *SysLogLine, m *Machine) {
+func (l *LogFileParser) TryParseDisk(sl *SysLogLine, m *MachineInfo) {
 	if sl.Facility != "disk-space" {
 		return
 	}
@@ -150,14 +183,14 @@ func (l *LogFileParser) TryParseDisk(sl *SysLogLine, m *Machine) {
 		return
 	}
 
-	mp := &MountPoint{
+	mp := &MountPointInfo{
 		MountPoint: parts[0],
 		Size:       size,
 		Available:  available,
 		Used:       used,
 	}
 
-	m.Mounts.LastUpdatedAt = time.Now()
+	m.Mounts.LastUpdatedAt = sl.Stamp
 	m.Mounts.Mounts[mp.MountPoint] = mp
 
 	log.Printf("MountPoint: %v", mp)
@@ -168,6 +201,16 @@ var statusRe = regexp.MustCompile("\\((\\S+):(\\S+)\\)")
 type SimpleInlineStatus struct {
 	Which  string
 	Status string
+}
+
+func toStatusType(s string) StatusType {
+	if s == "GOOD" {
+		return Good
+	}
+	if s == "FATAL" {
+		return Fatal
+	}
+	return Unknown
 }
 
 func ParseSimpleInlineStatus(text string) *SimpleInlineStatus {
@@ -181,98 +224,105 @@ func ParseSimpleInlineStatus(text string) *SimpleInlineStatus {
 		Status: v[0][2],
 	}
 
-	log.Printf("Flag: %v", ss)
-
 	return &ss
 }
 
-func (l *LogFileParser) TryParseLocalBackup(sl *SysLogLine, m *Machine) {
+func (l *LogFileParser) TryParseLocalBackup(sl *SysLogLine, m *MachineInfo) {
 	s := ParseSimpleInlineStatus(sl.Message)
 	if s != nil {
 		if s.Which == "LOCAL_BACKUP" {
-			m.LocalBackup = BackupStatus{
-				LastUpdatedAt: time.Now(),
-				Failed:        s.Status == "FATAL",
+			log.Printf("Local backup %v", sl.Stamp)
+			m.LocalBackup = BackupInfo{
+				Frequency:     5,
+				LastUpdatedAt: sl.Stamp,
+				Status:        toStatusType(s.Status),
 			}
 		}
 	}
 }
 
-func (l *LogFileParser) TryParseOffsiteBackup(sl *SysLogLine, m *Machine) {
+func (l *LogFileParser) TryParseOffsiteBackup(sl *SysLogLine, m *MachineInfo) {
 	s := ParseSimpleInlineStatus(sl.Message)
 	if s != nil {
 		if s.Which == "OFFSITE_BACKUP" {
-			m.OffsiteBackup = BackupStatus{
-				LastUpdatedAt: time.Now(),
-				Failed:        s.Status == "FATAL",
+			log.Printf("Offsite backup %v (%s)", sl.Stamp, m.Hostname)
+			m.OffsiteBackup = BackupInfo{
+				Frequency:     20,
+				LastUpdatedAt: sl.Stamp,
+				Status:        toStatusType(s.Status),
 			}
 		}
 	}
 }
 
-func (l *LogFileParser) TryParseGeophone(sl *SysLogLine, m *Machine) {
+func (l *LogFileParser) TryParseGeophone(sl *SysLogLine, m *MachineInfo) {
 	if sl.Facility == "adc" {
-		m.Geophone.LastUpdatedAt = time.Now()
+		m.Geophone = GeophoneInfo{
+			LastUpdatedAt: sl.Stamp,
+		}
 	}
 }
 
-func fileToWatch() string {
-	args := flag.Args()
-	if len(args) > 0 {
-		return args[0]
+func (l *LogFileParser) TryParseUploader(sl *SysLogLine, m *MachineInfo) {
+	if sl.Facility == "uploader-geophone" {
+		m.Uploader = UploaderInfo{
+			LastUpdatedAt: sl.Stamp,
+		}
 	}
-	return "/var/log/syslog"
 }
 
-func NewMachine(name string) *Machine {
+func (parser *LogFileParser) ProcessLine(ni *NetworkInfo, line string) {
+	sl := parser.Parse(line)
 
-	return &Machine{
-		Hostname: name,
-		Mounts: MountPoints{
-			Mounts: make(map[string]*MountPoint),
-		},
-		Status: MachineStatus{},
+	ni.Lock.Lock()
+
+	defer ni.Lock.Unlock()
+
+	if ni.Machines[sl.Hostname] == nil {
+		if false {
+			ni.Machines[sl.Hostname] = NewMachineInfo(sl.Hostname)
+		} else {
+			return
+		}
 	}
+
+	m := ni.Machines[sl.Hostname]
+	m.LastMessageAt = sl.Stamp
+
+	parser.TryParseUptime(sl, m)
+	parser.TryParseDisk(sl, m)
+	parser.TryParseLocalBackup(sl, m)
+	parser.TryParseOffsiteBackup(sl, m)
+	parser.TryParseGeophone(sl, m)
+	parser.TryParseUploader(sl, m)
 }
 
 func main() {
 	flag.Parse()
 
-	file := fileToWatch()
-	log.Printf("Watching %s", file)
+	ni := NetworkInfo{
+		Machines: make(map[string]*MachineInfo),
+	}
 
-	t, err := tail.TailFile(file, tail.Config{Follow: true})
-	if err == nil {
-		ns := NetworkStatus{
-			Machines: make(map[string]*Machine),
-		}
+	go StartWebServer(&ni)
 
-		go StartWebServer(&ns)
+	ni.Machines["lodge"] = NewMachineInfo("lodge")
+	ni.Machines["glacier"] = NewMachineInfo("glacier")
 
-		ns.Machines["lodge"] = NewMachine("lodge")
-		ns.Machines["glacier"] = NewMachine("glacier")
-
-		go SendStatus(&ns)
-
-		parser := &LogFileParser{}
-		for line := range t.Lines {
-			sl := parser.Parse(line.Text)
-
-			ns.Lock.Lock()
-			if ns.Machines[sl.Hostname] == nil {
-				ns.Machines[sl.Hostname] = NewMachine(sl.Hostname)
+	parser := &LogFileParser{}
+	args := flag.Args()
+	if len(args) > 0 {
+		t, err := tail.TailFile(args[0], tail.Config{Follow: true})
+		if err == nil {
+			for line := range t.Lines {
+				parser.ProcessLine(&ni, line.Text)
 			}
-
-			m := ns.Machines[sl.Hostname]
-			m.LastMessageAt = time.Now()
-
-			parser.TryParseUptime(sl, m)
-			parser.TryParseDisk(sl, m)
-			parser.TryParseLocalBackup(sl, m)
-			parser.TryParseOffsiteBackup(sl, m)
-			parser.TryParseGeophone(sl, m)
-
-			ns.Lock.Unlock()
+		}
+	} else {
+		r := bufio.NewScanner(os.Stdin)
+		for r.Scan() {
+			l := r.Text()
+			parser.ProcessLine(&ni, l)
 		}
 	}
 }
