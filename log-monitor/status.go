@@ -76,7 +76,7 @@ type MachineStatus struct {
 	Uploader      *UploaderStatus    `json:"uploader"`
 }
 
-const offlineWarningAfter = -1 * time.Minute
+const offlineWarningAfter = -6 * time.Minute
 const diskUnknownAfter = -20 * time.Minute
 const geophoneInterval = -20 * time.Second
 const uploaderInterval = -2 * time.Minute
