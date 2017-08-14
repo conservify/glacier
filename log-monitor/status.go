@@ -80,7 +80,7 @@ const offlineWarningAfter = -6 * time.Minute
 const diskUnknownAfter = -10 * time.Minute
 const geophoneInterval = -20 * time.Second
 const uploaderInterval = -2 * time.Minute
-const localBackupInterval = -6 * time.Minute
+const localBackupInterval = -10 * time.Minute
 const offsiteBackupInterval = -10 * time.Minute
 
 const GB = 1024 * 1024 * 1024

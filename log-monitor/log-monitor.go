@@ -341,11 +341,15 @@ func main() {
 	parser := &LogFileParser{}
 	args := flag.Args()
 	if len(args) > 0 {
-		t, err := tail.TailFile(args[0], tail.Config{Follow: true})
-		if err == nil {
-			for line := range t.Lines {
-				parser.ProcessLine(&ni, line.Text)
+		for {
+			t, err := tail.TailFile(args[0], tail.Config{Follow: true})
+			if err == nil {
+				for line := range t.Lines {
+					parser.ProcessLine(&ni, line.Text)
+				}
 			}
+
+			time.Sleep(1 * time.Second)
 		}
 	} else {
 		r := bufio.NewScanner(os.Stdin)
