@@ -8,8 +8,9 @@ import (
 )
 
 type StatusUpdate struct {
-	Name   string
-	Status StatusType
+	Machine string
+	Name    string
+	Status  StatusType
 }
 
 type NotificationStatus struct {
@@ -28,19 +29,19 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 
 	for _, m := range ns.Machines {
 		all := []StatusUpdate{
-			StatusUpdate{Status: m.Health.Status, Name: "Health"},
-			StatusUpdate{Status: m.Mounts.Status, Name: "Mounts"},
-			StatusUpdate{Status: m.LocalBackup.Status, Name: "LocalBackup"},
+			StatusUpdate{Machine: m.Hostname, Status: m.Health.Status, Name: "Health"},
+			StatusUpdate{Machine: m.Hostname, Status: m.Mounts.Status, Name: "Mounts"},
+			StatusUpdate{Machine: m.Hostname, Status: m.LocalBackup.Status, Name: "LocalBackup"},
 		}
 
 		if m.OffsiteBackup != nil {
-			all = append(all, StatusUpdate{Status: m.OffsiteBackup.Status, Name: "OffsiteBackup"})
+			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "OffsiteBackup", Status: m.OffsiteBackup.Status})
 		}
 		if m.Geophone != nil {
-			all = append(all, StatusUpdate{Status: m.Geophone.Status, Name: "Geophone"})
+			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Geophone", Status: m.Geophone.Status})
 		}
 		if m.Uploader != nil {
-			all = append(all, StatusUpdate{Status: m.Uploader.Status, Name: "Uploader"})
+			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Uploader", Status: m.Uploader.Status})
 		}
 
 		machineStatus := Good
@@ -62,8 +63,10 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 			notifs.Attempt = 0
 			notify = true
 		}
+	} else {
+		notifs.Attempt = 0
 	}
-	if newStatus != Good {
+	if notifs.PreviousStatus != Good {
 		interval = 6 * time.Hour
 	}
 	if notifs.LastStatus.Add(interval).Before(time.Now()) {
@@ -74,12 +77,9 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 	upFor := time.Now().Sub(notifs.StartTime)
 	gracePeriod := (20 * time.Minute) > upFor
 	if notify {
-		log.Printf("Notifying %v", problems)
 		notifs.LastStatus = time.Now()
 		twilio := gotwilio.NewTwilioClient(twilioSid, twilioToken)
 
-		from := "+12132617278"
-		to := "+19515438308"
 		message := fmt.Sprintf("%s https://code.conservify.org/glacier", newStatus)
 		if gracePeriod {
 			message = "(Grace) " + message
@@ -87,7 +87,10 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 		if len(problems) > 0 {
 			message = message + fmt.Sprintf(" %v", problems)
 		}
-		twilio.SendSMS(from, to, message, "", "")
+		for _, to := range toNumbers {
+			log.Printf("Notifying %v %v", problems, to)
+			twilio.SendSMS(fromNumber, to, message, "", "")
+		}
 	}
 }
 
