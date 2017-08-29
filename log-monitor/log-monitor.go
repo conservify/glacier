@@ -107,7 +107,7 @@ func (l *LogFileParser) Parse(line string) *SysLogLine {
 	wholeFacility := strings.TrimSpace(strings.Replace(parts[1], ":", "", -1))
 	now := time.Now()
 	stampRaw := line[0:timeLength]
-	stamp, err := time.Parse("2006 Jan 02 15:04:05", fmt.Sprintf("%d %s", now.Year(), stampRaw))
+	stamp, err := time.Parse("2006 Jan  2 15:04:05", fmt.Sprintf("%d %s", now.Year(), stampRaw))
 	if err != nil {
 		log.Printf("Error parsing time %s", err)
 		return nil
@@ -300,6 +300,9 @@ func (l *LogFileParser) TryParseUploader(sl *SysLogLine, m *MachineInfo) {
 
 func (parser *LogFileParser) ProcessLine(ni *NetworkInfo, line string) {
 	sl := parser.Parse(line)
+	if sl == nil {
+		return
+	}
 
 	ni.Lock.Lock()
 
