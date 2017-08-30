@@ -4,6 +4,8 @@
 # and therefore not slow down the boot process.
 /usr/bin/sethostname box
 
+chmod 700 /root
+
 echo "169.254.128.129 lodge" >> /etc/hosts
 echo "169.254.128.130 glacier" >> /etc/hosts
 echo "nameserver 8.8.8.8" >> /etc/resolv.conf
