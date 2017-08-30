@@ -1,8 +1,8 @@
-*/5     *       *       *       *       run-parts /etc/periodic/5min
-*/13    *       *       *       *       run-parts /etc/periodic/13min
-*/15    *       *       *       *       run-parts /etc/periodic/15min
-*/12    *       *       *       *       run-parts /etc/periodic/12min
-*/20    *       *       *       *       run-parts /etc/periodic/20min
-*/30    *       *       *       *       run-parts /etc/periodic/30min
-0       *       *       *       *       run-parts /etc/periodic/hourly
-0       2       *       *       *       run-parts /etc/periodic/daily
+*/5              *       *       *       *       run-parts /etc/periodic/5min
+7,17,27,37,47,57 *       *       *       *       run-parts /etc/periodic/13min
+*/15             *       *       *       *       run-parts /etc/periodic/15min
+*/12             *       *       *       *       run-parts /etc/periodic/12min
+*/20             *       *       *       *       run-parts /etc/periodic/20min
+*/30             *       *       *       *       run-parts /etc/periodic/30min
+0                *       *       *       *       run-parts /etc/periodic/hourly
+0                2       *       *       *       run-parts /etc/periodic/daily
