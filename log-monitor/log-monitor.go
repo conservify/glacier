@@ -70,6 +70,13 @@ type ResilienceCheckInfo struct {
 	Log           []string   `json:"log"`
 }
 
+type CronCheckInfo struct {
+	Frequency     int        `json:"frequency"`
+	LastUpdatedAt time.Time  `json:"lastUpdatedAt"`
+	Status        StatusType `json:"status"`
+	Log           []string   `json:"log"`
+}
+
 type MachineInfo struct {
 	Hostname      string              `json:"hostname"`
 	LastMessageAt time.Time           `json:"lastMessageAt"`
@@ -80,6 +87,7 @@ type MachineInfo struct {
 	Geophone      GeophoneInfo        `json:"geophone"`
 	Uploader      UploaderInfo        `json:"uploader"`
 	Resilience    ResilienceCheckInfo `json:"resilience"`
+	Cron          CronCheckInfo       `json:"cron"`
 }
 
 func NewMachineInfo(name string) *MachineInfo {
@@ -317,6 +325,17 @@ func (l *LogFileParser) TryParseResilienceCheck(sl *SysLogLine, m *MachineInfo) 
 	}
 }
 
+func (l *LogFileParser) TryParseCronCheck(sl *SysLogLine, m *MachineInfo) {
+	if sl.Facility == "crond" {
+		m.Cron = CronCheckInfo{
+			Frequency:     7,
+			LastUpdatedAt: sl.Stamp,
+			Log:           updateLog(sl.Message, m.Cron.Log),
+			Status:        Good,
+		}
+	}
+}
+
 func (parser *LogFileParser) ProcessLine(ni *NetworkInfo, line string) {
 	sl := parser.Parse(line)
 	if sl == nil {
@@ -345,6 +364,7 @@ func (parser *LogFileParser) ProcessLine(ni *NetworkInfo, line string) {
 	parser.TryParseGeophone(sl, m)
 	parser.TryParseUploader(sl, m)
 	parser.TryParseResilienceCheck(sl, m)
+	parser.TryParseCronCheck(sl, m)
 }
 
 func main() {

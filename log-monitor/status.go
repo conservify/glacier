@@ -71,6 +71,11 @@ type ResilienceCheckStatus struct {
 	Status StatusType          `json:"status"`
 }
 
+type CronCheckStatus struct {
+	Info   CronCheckInfo `json:"info"`
+	Status StatusType    `json:"status"`
+}
+
 type MachineStatus struct {
 	Hostname      string                 `json:"hostname"`
 	Health        *HealthStatus          `json:"health"`
@@ -80,6 +85,7 @@ type MachineStatus struct {
 	Geophone      *GeophoneStatus        `json:"geophone"`
 	Uploader      *UploaderStatus        `json:"uploader"`
 	Resilience    *ResilienceCheckStatus `json:"resilience"`
+	Cron          *CronCheckStatus       `json:"cron"`
 }
 
 const offlineWarningAfter = -6 * time.Minute
@@ -89,6 +95,7 @@ const uploaderInterval = -2 * time.Minute
 const localBackupInterval = -10 * time.Minute
 const offsiteBackupInterval = -10 * time.Minute
 const resilienceCheckInterval = -32 * time.Minute
+const cronCheckInterval = -6 * time.Minute
 
 const GB = 1024 * 1024 * 1024
 const MB = 1024 * 1024
@@ -225,6 +232,17 @@ func checkResilienceCheck(m *MachineInfo) *ResilienceCheckStatus {
 	}
 }
 
+func checkCronCheck(m *MachineInfo) *CronCheckStatus {
+	status := m.Cron.Status
+	if m.Cron.LastUpdatedAt.Before(time.Now().Add(cronCheckInterval)) {
+		status = Unknown
+	}
+	return &CronCheckStatus{
+		Info:   m.Cron,
+		Status: status,
+	}
+}
+
 func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 	ni.Lock.Lock()
 	defer ni.Lock.Unlock()
@@ -243,6 +261,7 @@ func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 		LocalBackup:   checkLocalBackup(lodge),
 		OffsiteBackup: checkOffsiteBackup(lodge),
 		Resilience:    checkResilienceCheck(glacier),
+		Cron:          checkCronCheck(glacier),
 	}
 
 	ns.Machines["glacier"] = &MachineStatus{
@@ -254,6 +273,7 @@ func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 		Geophone:      checkGeophone(glacier),
 		Uploader:      checkUploader(glacier),
 		Resilience:    checkResilienceCheck(glacier),
+		Cron:          checkCronCheck(glacier),
 	}
 
 	return
