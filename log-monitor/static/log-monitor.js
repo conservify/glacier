@@ -134,7 +134,7 @@ class Machine extends React.Component {
     renderUploader(uploader) {
         return (
                 <div>
-                <LastUpdatedStatus status={uploader.status} time={uploader.lastUpdatedAt} title="Uploader" />
+                <LastUpdatedStatus status={uploader.status} time={uploader.info.lastUpdatedAt} title="Uploader" />
                 <LogDisplay log={uploader.info.log} />
                 </div>
         );
@@ -143,7 +143,7 @@ class Machine extends React.Component {
     renderResilience(resilience) {
         return (
             <div>
-                <LastUpdatedStatus status={resilience.status} time={resilience.lastUpdatedAt} title="Resilience" />
+                <LastUpdatedStatus status={resilience.status} time={resilience.info.lastUpdatedAt} title="Resilience" />
                 <LogDisplay log={resilience.info.log} />
             </div>
         );
