@@ -12,6 +12,18 @@ RESOLV_CONF="/etc/resolv.conf"
 [ -n "$subnet" ] && NETMASK="netmask $subnet"
 
 case "$1" in
+        leasefail)
+                mkdir -p /tmp/udhcpd-failures
+                touch /tmp/udhcpd-failures/failure.$$
+                NUM=`ls /tmp/udhcpd-failures/failure.* | wc -l`
+                /usr/bin/logger "leasefail #$NUM"
+                if [ "$NUM" -eq "10" ]; then
+                        rm -rf /tmp/udhcpd-failures
+                        /usr/bin/logger "leasefail REBOOT"
+                        /sbin/reboot
+                fi
+                ;;
+
         deconfig)
                 /sbin/ifconfig $interface 0.0.0.0
                 ;;
