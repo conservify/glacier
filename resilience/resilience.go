@@ -23,7 +23,8 @@ func testNetworking(hostname string) (anySuccess bool, stopped bool) {
 	p := fastping.NewPinger()
 	ra, err := net.ResolveIPAddr("ip4:icmp", hostname)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error: %v", err)
+		return false, false
 	}
 
 	responses := make(map[string]*response)
