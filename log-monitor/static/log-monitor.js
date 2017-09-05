@@ -90,7 +90,7 @@ class Machine extends React.Component {
     renderMount(m) {
         const size = this.humanizeBytes(m.size);
         const available = this.humanizeBytes(m.available);
-        return <tr key={m.mountPoint}><td>{m.mountPoint}</td><td>{size}</td><td>{available}</td><td>%{m.used}</td></tr>;
+        return <tr key={m.mountPoint}><td>{m.mountPoint}</td><td>{size}</td><td>{available}</td><td>{m.used}%</td></tr>;
     }
 
     renderMounts(mounts) {

@@ -260,8 +260,8 @@ func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 		Mounts:        checkDisk(lodge),
 		LocalBackup:   checkLocalBackup(lodge),
 		OffsiteBackup: checkOffsiteBackup(lodge),
-		Resilience:    checkResilienceCheck(glacier),
-		Cron:          checkCronCheck(glacier),
+		Resilience:    checkResilienceCheck(lodge),
+		Cron:          checkCronCheck(lodge),
 	}
 
 	ns.Machines["glacier"] = &MachineStatus{
