@@ -25,3 +25,4 @@ status/status
 tunneller/glacier*
 tunneller/tunneller
 log-monitor/log-monitor
+resilience/resilience
