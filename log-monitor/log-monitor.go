@@ -63,15 +63,23 @@ type BackupInfo struct {
 	Log           []string   `json:"log"`
 }
 
+type ResilienceCheckInfo struct {
+	Frequency     int        `json:"frequency"`
+	LastUpdatedAt time.Time  `json:"lastUpdatedAt"`
+	Status        StatusType `json:"status"`
+	Log           []string   `json:"log"`
+}
+
 type MachineInfo struct {
-	Hostname      string          `json:"hostname"`
-	LastMessageAt time.Time       `json:"lastMessageAt"`
-	Health        HealthInfo      `json:"health"`
-	Mounts        MountPointsInfo `json:"mounts"`
-	LocalBackup   BackupInfo      `json:"localBackup"`
-	OffsiteBackup BackupInfo      `json:"offsiteBackup"`
-	Geophone      GeophoneInfo    `json:"geophone"`
-	Uploader      UploaderInfo    `json:"uploader"`
+	Hostname      string              `json:"hostname"`
+	LastMessageAt time.Time           `json:"lastMessageAt"`
+	Health        HealthInfo          `json:"health"`
+	Mounts        MountPointsInfo     `json:"mounts"`
+	LocalBackup   BackupInfo          `json:"localBackup"`
+	OffsiteBackup BackupInfo          `json:"offsiteBackup"`
+	Geophone      GeophoneInfo        `json:"geophone"`
+	Uploader      UploaderInfo        `json:"uploader"`
+	Resilience    ResilienceCheckInfo `json:"resilience"`
 }
 
 func NewMachineInfo(name string) *MachineInfo {
@@ -298,6 +306,17 @@ func (l *LogFileParser) TryParseUploader(sl *SysLogLine, m *MachineInfo) {
 	}
 }
 
+func (l *LogFileParser) TryParseResilienceCheck(sl *SysLogLine, m *MachineInfo) {
+	if sl.Facility == "resilience" {
+		m.Resilience = ResilienceCheckInfo{
+			Frequency:     32,
+			LastUpdatedAt: sl.Stamp,
+			Log:           updateLog(sl.Message, m.Resilience.Log),
+			Status:        Good,
+		}
+	}
+}
+
 func (parser *LogFileParser) ProcessLine(ni *NetworkInfo, line string) {
 	sl := parser.Parse(line)
 	if sl == nil {
@@ -325,6 +344,7 @@ func (parser *LogFileParser) ProcessLine(ni *NetworkInfo, line string) {
 	parser.TryParseOffsiteBackup(sl, m)
 	parser.TryParseGeophone(sl, m)
 	parser.TryParseUploader(sl, m)
+	parser.TryParseResilienceCheck(sl, m)
 }
 
 func main() {

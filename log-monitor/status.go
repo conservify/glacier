@@ -66,14 +66,20 @@ type BackupStatus struct {
 	Status StatusType `json:"status"`
 }
 
+type ResilienceCheckStatus struct {
+	Info   ResilienceCheckInfo `json:"info"`
+	Status StatusType          `json:"status"`
+}
+
 type MachineStatus struct {
-	Hostname      string             `json:"hostname"`
-	Health        *HealthStatus      `json:"health"`
-	Mounts        *MountPointsStatus `json:"mounts"`
-	LocalBackup   *BackupStatus      `json:"localBackup"`
-	OffsiteBackup *BackupStatus      `json:"offsiteBackup"`
-	Geophone      *GeophoneStatus    `json:"geophone"`
-	Uploader      *UploaderStatus    `json:"uploader"`
+	Hostname      string                 `json:"hostname"`
+	Health        *HealthStatus          `json:"health"`
+	Mounts        *MountPointsStatus     `json:"mounts"`
+	LocalBackup   *BackupStatus          `json:"localBackup"`
+	OffsiteBackup *BackupStatus          `json:"offsiteBackup"`
+	Geophone      *GeophoneStatus        `json:"geophone"`
+	Uploader      *UploaderStatus        `json:"uploader"`
+	Resilience    *ResilienceCheckStatus `json:"resilience"`
 }
 
 const offlineWarningAfter = -6 * time.Minute
@@ -82,6 +88,7 @@ const geophoneInterval = -20 * time.Second
 const uploaderInterval = -2 * time.Minute
 const localBackupInterval = -10 * time.Minute
 const offsiteBackupInterval = -10 * time.Minute
+const resilienceCheckInterval = -32 * time.Minute
 
 const GB = 1024 * 1024 * 1024
 const MB = 1024 * 1024
@@ -207,6 +214,17 @@ func checkOffsiteBackup(m *MachineInfo) *BackupStatus {
 	}
 }
 
+func checkResilienceCheck(m *MachineInfo) *ResilienceCheckStatus {
+	status := m.Resilience.Status
+	if m.Resilience.LastUpdatedAt.Before(time.Now().Add(resilienceCheckInterval)) {
+		status = Unknown
+	}
+	return &ResilienceCheckStatus{
+		Info:   m.Resilience,
+		Status: status,
+	}
+}
+
 func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 	ni.Lock.Lock()
 	defer ni.Lock.Unlock()
@@ -224,6 +242,7 @@ func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 		Mounts:        checkDisk(lodge),
 		LocalBackup:   checkLocalBackup(lodge),
 		OffsiteBackup: checkOffsiteBackup(lodge),
+		Resilience:    checkResilienceCheck(glacier),
 	}
 
 	ns.Machines["glacier"] = &MachineStatus{
@@ -234,6 +253,7 @@ func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 		OffsiteBackup: checkOffsiteBackup(glacier),
 		Geophone:      checkGeophone(glacier),
 		Uploader:      checkUploader(glacier),
+		Resilience:    checkResilienceCheck(glacier),
 	}
 
 	return

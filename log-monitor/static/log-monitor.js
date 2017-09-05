@@ -133,9 +133,18 @@ class Machine extends React.Component {
 
     renderUploader(uploader) {
         return (
-            <div>
+                <div>
                 <LastUpdatedStatus status={uploader.status} time={uploader.lastUpdatedAt} title="Uploader" />
                 <LogDisplay log={uploader.info.log} />
+                </div>
+        );
+    }
+
+    renderResilience(resilience) {
+        return (
+            <div>
+                <LastUpdatedStatus status={resilience.status} time={resilience.lastUpdatedAt} title="Resilience" />
+                <LogDisplay log={resilience.info.log} />
             </div>
         );
     }
@@ -148,6 +157,7 @@ class LodgeMachine extends Machine {
         return (<div className="col">
                 <h1>{machine.hostname}</h1>
                 {this.renderStatus(machine.health)}
+                {this.renderResilience(machine.resilience)}
                 {this.renderLocalBackup(machine.localBackup)}
                 {this.renderOffsiteBackup(machine.offsiteBackup)}
                 {this.renderMounts(machine.mounts)}
@@ -162,6 +172,7 @@ class GlacierMachine extends Machine {
         return (<div className="col">
                 <h1>{machine.hostname}</h1>
                 {this.renderStatus(machine.health)}
+                {this.renderResilience(machine.resilience)}
                 {this.renderLocalBackup(machine.localBackup)}
                 {this.renderOffsiteBackup(machine.offsiteBackup)}
                 {this.renderMounts(machine.mounts)}
