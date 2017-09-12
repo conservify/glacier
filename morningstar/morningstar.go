@@ -252,154 +252,153 @@ func (controller *ProStarMppt) ReadLedState() (value string, err error) {
 }
 
 func (controller *ProStarMppt) Refresh() (err error) {
-	var chargeData *ProStarMpptData
+	cd := &controller.data
 
-	chargeData.ChargeCurrent, err = controller.ReadFloat16(0x10)
+	cd.ChargeCurrent, err = controller.ReadFloat16(0x10)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.ArrayCurrent, err = controller.ReadFloat16(0x11)
+	cd.ArrayCurrent, err = controller.ReadFloat16(0x11)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.BatteryTerminalVoltage, err = controller.ReadFloat16(0x12)
+	cd.BatteryTerminalVoltage, err = controller.ReadFloat16(0x12)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.ArrayVoltage, err = controller.ReadFloat16(0x13)
+	cd.ArrayVoltage, err = controller.ReadFloat16(0x13)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.LoadVoltage, err = controller.ReadFloat16(0x14)
+	cd.LoadVoltage, err = controller.ReadFloat16(0x14)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.BatteryCurrentNet, err = controller.ReadFloat16(0x15)
+	cd.BatteryCurrentNet, err = controller.ReadFloat16(0x15)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.LoadCurrent, err = controller.ReadFloat16(0x16)
+	cd.LoadCurrent, err = controller.ReadFloat16(0x16)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.BatterySenseVoltage, err = controller.ReadFloat16(0x17)
+	cd.BatterySenseVoltage, err = controller.ReadFloat16(0x17)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.BatteryVoltageSlowFilter, err = controller.ReadFloat16(0x18)
+	cd.BatteryVoltageSlowFilter, err = controller.ReadFloat16(0x18)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.BatteryCurrentNetSlowFIlter, err = controller.ReadFloat16(0x19)
+	cd.BatteryCurrentNetSlowFIlter, err = controller.ReadFloat16(0x19)
 	if err != nil {
-		return
-	}
-
-	chargeData.HeatsinkTemperature, err = controller.ReadFloat16(0x1A)
-	if err != nil {
-		return
-	}
-	chargeData.BatteryTemperature, err = controller.ReadFloat16(0x1B)
-	if err != nil {
-		return
-	}
-	chargeData.AmbientTemperature, err = controller.ReadFloat16(0x1C)
-	if err != nil {
-		return
+		return err
 	}
 
-	chargeData.ChargeState, err = controller.ReadChargeState()
+	cd.HeatsinkTemperature, err = controller.ReadFloat16(0x1A)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.LoadState, err = controller.ReadLoadState()
+	cd.BatteryTemperature, err = controller.ReadFloat16(0x1B)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.LedState, err = controller.ReadLedState()
+	cd.AmbientTemperature, err = controller.ReadFloat16(0x1C)
 	if err != nil {
-		return
-	}
-
-	chargeData.LoadCurrentCompensated, err = controller.ReadFloat16(0x30)
-	if err != nil {
-		return
-	}
-	chargeData.LoadHvdVoltage, err = controller.ReadFloat16(0x31)
-	if err != nil {
-		return
+		return err
 	}
 
-	chargeData.PowerOut, err = controller.ReadFloat16(0x3C)
+	cd.ChargeState, err = controller.ReadChargeState()
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.ArrayTargetVoltage, err = controller.ReadFloat16(0x40)
+	cd.LoadState, err = controller.ReadLoadState()
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.MaximumBatteryVoltage, err = controller.ReadFloat16(0x41)
+	cd.LedState, err = controller.ReadLedState()
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.MinimumBatteryVoltage, err = controller.ReadFloat16(0x42)
+
+	cd.LoadCurrentCompensated, err = controller.ReadFloat16(0x30)
 	if err != nil {
-		return
+		return err
+	}
+	cd.LoadHvdVoltage, err = controller.ReadFloat16(0x31)
+	if err != nil {
+		return err
+	}
+
+	cd.PowerOut, err = controller.ReadFloat16(0x3C)
+	if err != nil {
+		return err
+	}
+	cd.ArrayTargetVoltage, err = controller.ReadFloat16(0x40)
+	if err != nil {
+		return err
+	}
+	cd.MaximumBatteryVoltage, err = controller.ReadFloat16(0x41)
+	if err != nil {
+		return err
+	}
+	cd.MinimumBatteryVoltage, err = controller.ReadFloat16(0x42)
+	if err != nil {
+		return err
 	}
 
 	var data []byte
 
 	data, err = controller.mc.ReadHoldingRegisters(0x43, 1)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.AmpHourCharge = float32(binary.BigEndian.Uint16(data)) * 0.1
+	cd.AmpHourCharge = float32(binary.BigEndian.Uint16(data)) * 0.1
 
 	data, err = controller.mc.ReadHoldingRegisters(0x44, 1)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.AmpHourLoad = float32(binary.BigEndian.Uint16(data)) * 0.1
+	cd.AmpHourLoad = float32(binary.BigEndian.Uint16(data)) * 0.1
 
 	data, err = controller.mc.ReadHoldingRegisters(0x49, 1)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.TimeInAbsorption = binary.BigEndian.Uint16(data)
+	cd.TimeInAbsorption = binary.BigEndian.Uint16(data)
 
 	data, err = controller.mc.ReadHoldingRegisters(0x4E, 1)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.TimeInEqualization = binary.BigEndian.Uint16(data)
+	cd.TimeInEqualization = binary.BigEndian.Uint16(data)
 
 	data, err = controller.mc.ReadHoldingRegisters(0x4F, 1)
 	if err != nil {
-		return
+		return err
 	}
-	chargeData.TimeInFloat = binary.BigEndian.Uint16(data)
+	cd.TimeInFloat = binary.BigEndian.Uint16(data)
 
-	return
+	return nil
 }
 
-func FindDevice() (device *string) {
-	return
+type Options struct {
+	Device  string
+	CsvFile string
+	Echo    bool
 }
 
 func main() {
-	device := flag.String("device", "/dev/ttyUSB0", "usb device")
-	search := flag.Bool("search", false, "search all usb devices")
-	csvFile := flag.String("csv", "morningstar.csv", "csv file")
-	echo := flag.Bool("echo", false, "echo to te user")
+	options := Options{}
+
+	flag.StringVar(&options.Device, "device", "/dev/ttyUSB0", "usb device")
+	flag.StringVar(&options.CsvFile, "csv", "morningstar.csv", "csv file")
+	flag.BoolVar(&options.Echo, "echo", false, "echo to te user")
 
 	flag.Parse()
 
-	if *search {
-		device = FindDevice()
-	}
-
 	proStar := NewProStarMppt()
-	err := proStar.Connect(*device)
+	err := proStar.Connect(options.Device)
 	if err != nil {
 		log.Fatal("Unable to open device", err)
 	}
@@ -462,9 +461,9 @@ func main() {
 
 	w := bufio.NewWriter(os.Stdout)
 
-	if !*echo {
-		log.Printf("Opening %v", *csvFile)
-		file, err := os.OpenFile(*csvFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+	if !options.Echo {
+		log.Printf("Opening %v", options.CsvFile)
+		file, err := os.OpenFile(options.CsvFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 		if err != nil {
 			log.Fatal(err)
 		}
