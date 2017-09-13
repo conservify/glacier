@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -xe
+
+env GOOS=linux GOARCH=arm go build -o morningstar morningstar.go
+
+scp morningstar tc@25.5.171.244:
+
+ssh tc@25.5.171.244 "sudo ./morningstar --device /dev/ttyUSB0 --syslog morningstar --echo"

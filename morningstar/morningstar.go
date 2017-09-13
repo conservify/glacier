@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"github.com/goburrow/modbus"
 	"log"
+	"log/syslog"
 	"math"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -89,44 +91,81 @@ func NewProStarMppt() (controller *ProStarMppt) {
 	return
 }
 
-func (controller *ProStarMppt) Connect(address string) (err error) {
-	controller.handler = modbus.NewRTUClientHandler(address)
-	controller.handler.BaudRate = 9600
-	controller.handler.DataBits = 8
-	controller.handler.Parity = "N"
-	controller.handler.StopBits = 1
-	controller.handler.SlaveId = 1
-	controller.handler.Timeout = 10 * time.Second
+func (c *ProStarMppt) Connect(address string) (err error) {
+	c.handler = modbus.NewRTUClientHandler(address)
+	c.handler.BaudRate = 9600
+	c.handler.DataBits = 8
+	c.handler.Parity = "N"
+	c.handler.StopBits = 1
+	c.handler.SlaveId = 1
+	c.handler.Timeout = 10 * time.Second
 
-	err = controller.handler.Connect()
+	err = c.handler.Connect()
 	if err != nil {
 		return
 	}
 
-	controller.mc = modbus.NewClient(controller.handler)
+	c.mc = modbus.NewClient(c.handler)
 
 	return
 }
 
-func (controller *ProStarMppt) ReadFloat16(address uint16) (value float32, err error) {
-	data, err := controller.mc.ReadHoldingRegisters(address, 1)
+func (c *ProStarMppt) ReadHoldingRegisters(address uint16) (data []byte, err error) {
+	time.Sleep(1 * time.Second)
+
+	for i := 0; ; i++ {
+		data, err = c.mc.ReadHoldingRegisters(address, 1)
+		if err != nil {
+			if i == 3 {
+				err = fmt.Errorf("Error reading '%v' (%v)", address, err)
+				return
+			}
+		} else {
+			return
+		}
+	}
+
+	return
+}
+
+func (c *ProStarMppt) ReadFloat16(address uint16) (value float32, err error) {
+	data, err := c.ReadHoldingRegisters(address)
 	if err != nil {
 		return
 	}
 
 	value = math.Float32frombits(float16toUint32(binary.BigEndian.Uint16(data)))
-
 	return
 }
 
-func (controller *ProStarMppt) Close() {
-	if controller.handler != nil {
-		controller.handler.Close()
+func (c *ProStarMppt) ReadFloat32(address uint16) (value float32, err error) {
+	data, err := c.ReadHoldingRegisters(address)
+	if err != nil {
+		return
+	}
+
+	value = float32(binary.BigEndian.Uint16(data)) * 0.1
+	return
+}
+
+func (c *ProStarMppt) ReadUint16(address uint16) (value uint16, err error) {
+	data, err := c.ReadHoldingRegisters(address)
+	if err != nil {
+		return
+	}
+
+	value = binary.BigEndian.Uint16(data)
+	return
+}
+
+func (c *ProStarMppt) Close() {
+	if c.handler != nil {
+		c.handler.Close()
 	}
 }
 
-func (controller *ProStarMppt) ReadChargeState() (value string, err error) {
-	data, err := controller.mc.ReadHoldingRegisters(0x21, 1)
+func (c *ProStarMppt) ReadChargeState() (value string, err error) {
+	data, err := c.ReadHoldingRegisters(0x21)
 	if err != nil {
 		return
 	}
@@ -161,8 +200,8 @@ func (controller *ProStarMppt) ReadChargeState() (value string, err error) {
 	return
 }
 
-func (controller *ProStarMppt) ReadLoadState() (value string, err error) {
-	data, err := controller.mc.ReadHoldingRegisters(0x2E, 1)
+func (c *ProStarMppt) ReadLoadState() (value string, err error) {
+	data, err := c.ReadHoldingRegisters(0x2E)
 	if err != nil {
 		return
 	}
@@ -191,8 +230,8 @@ func (controller *ProStarMppt) ReadLoadState() (value string, err error) {
 	return
 }
 
-func (controller *ProStarMppt) ReadLedState() (value string, err error) {
-	data, err := controller.mc.ReadHoldingRegisters(0x3B, 1)
+func (c *ProStarMppt) ReadLedState() (value string, err error) {
+	data, err := c.ReadHoldingRegisters(0x3B)
 	if err != nil {
 		return
 	}
@@ -347,37 +386,30 @@ func (controller *ProStarMppt) Refresh() (err error) {
 		return err
 	}
 
-	var data []byte
-
-	data, err = controller.mc.ReadHoldingRegisters(0x43, 1)
+	cd.AmpHourCharge, err = controller.ReadFloat32(0x43)
 	if err != nil {
 		return err
 	}
-	cd.AmpHourCharge = float32(binary.BigEndian.Uint16(data)) * 0.1
 
-	data, err = controller.mc.ReadHoldingRegisters(0x44, 1)
+	cd.AmpHourLoad, err = controller.ReadFloat32(0x44)
 	if err != nil {
 		return err
 	}
-	cd.AmpHourLoad = float32(binary.BigEndian.Uint16(data)) * 0.1
 
-	data, err = controller.mc.ReadHoldingRegisters(0x49, 1)
+	cd.TimeInAbsorption, err = controller.ReadUint16(0x49)
 	if err != nil {
 		return err
 	}
-	cd.TimeInAbsorption = binary.BigEndian.Uint16(data)
 
-	data, err = controller.mc.ReadHoldingRegisters(0x4E, 1)
+	cd.TimeInEqualization, err = controller.ReadUint16(0x4E)
 	if err != nil {
 		return err
 	}
-	cd.TimeInEqualization = binary.BigEndian.Uint16(data)
 
-	data, err = controller.mc.ReadHoldingRegisters(0x4F, 1)
+	cd.TimeInFloat, err = controller.ReadUint16(0x4F)
 	if err != nil {
 		return err
 	}
-	cd.TimeInFloat = binary.BigEndian.Uint16(data)
 
 	return nil
 }
@@ -386,21 +418,32 @@ type Options struct {
 	Device  string
 	CsvFile string
 	Echo    bool
+	Syslog  string
 }
 
 func main() {
 	options := Options{}
 
 	flag.StringVar(&options.Device, "device", "/dev/ttyUSB0", "usb device")
-	flag.StringVar(&options.CsvFile, "csv", "morningstar.csv", "csv file")
+	flag.StringVar(&options.CsvFile, "csv", "", "csv file")
+	flag.StringVar(&options.Syslog, "syslog", "", "enable syslog and name the ap")
 	flag.BoolVar(&options.Echo, "echo", false, "echo to te user")
 
 	flag.Parse()
 
+	if options.Syslog != "" {
+		syslog, err := syslog.New(syslog.LOG_NOTICE, options.Syslog)
+		if err == nil {
+			log.SetOutput(syslog)
+		}
+	}
+
+	log.Printf("Opening %v", options.Device)
+
 	proStar := NewProStarMppt()
 	err := proStar.Connect(options.Device)
 	if err != nil {
-		log.Fatal("Unable to open device", err)
+		log.Fatalf("Unable to open device: %v", err)
 	}
 
 	defer proStar.Close()
@@ -410,7 +453,7 @@ func main() {
 	for tries > 0 {
 		err := proStar.Refresh()
 		if err != nil {
-			log.Printf("Error getting data", err)
+			log.Printf("Error getting data: %v", err)
 		} else {
 			worked = true
 			break
@@ -420,7 +463,7 @@ func main() {
 	}
 
 	if !worked {
-		log.Fatal("Unable to get data")
+		log.Fatalf("Unable to get data")
 	}
 
 	values := []interface{}{
@@ -459,27 +502,36 @@ func main() {
 		proStar.data.TimeInFloat,
 	}
 
-	w := bufio.NewWriter(os.Stdout)
+	strs := make([]string, 0)
+	strs = append(strs, fmt.Sprintf("READING,%v", time.Now()))
+	for _, value := range values {
+		strs = append(strs, fmt.Sprintf("%v", value))
+	}
+	line := strings.Join(strs, ",")
 
-	if !options.Echo {
+	if options.CsvFile != "" {
 		log.Printf("Opening %v", options.CsvFile)
+
 		file, err := os.OpenFile(options.CsvFile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Unable to open CSV %v", err)
 		}
 
-		w = bufio.NewWriter(file)
-
 		defer file.Close()
+
+		w := bufio.NewWriter(file)
+
+		defer w.Flush()
+
+		fmt.Fprintf(w, line)
+		fmt.Fprintf(w, "\n")
 	}
 
-	fmt.Fprintf(w, "%v", time.Now())
-
-	for _, value := range values {
-		fmt.Fprintf(w, ",%v", value)
+	if options.Syslog != "" {
+		log.Printf("%s", line)
 	}
 
-	fmt.Fprintf(w, "\n")
-
-	w.Flush()
+	if options.Echo {
+		fmt.Printf("%s\n", line)
+	}
 }
