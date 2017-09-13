@@ -76,16 +76,22 @@ type CronCheckStatus struct {
 	Status StatusType    `json:"status"`
 }
 
+type MorningStarCheckStatus struct {
+	Info   MorningStarCheckInfo `json:"info"`
+	Status StatusType           `json:"status"`
+}
+
 type MachineStatus struct {
-	Hostname      string                 `json:"hostname"`
-	Health        *HealthStatus          `json:"health"`
-	Mounts        *MountPointsStatus     `json:"mounts"`
-	LocalBackup   *BackupStatus          `json:"localBackup"`
-	OffsiteBackup *BackupStatus          `json:"offsiteBackup"`
-	Geophone      *GeophoneStatus        `json:"geophone"`
-	Uploader      *UploaderStatus        `json:"uploader"`
-	Resilience    *ResilienceCheckStatus `json:"resilience"`
-	Cron          *CronCheckStatus       `json:"cron"`
+	Hostname      string                  `json:"hostname"`
+	Health        *HealthStatus           `json:"health"`
+	Mounts        *MountPointsStatus      `json:"mounts"`
+	LocalBackup   *BackupStatus           `json:"localBackup"`
+	OffsiteBackup *BackupStatus           `json:"offsiteBackup"`
+	Geophone      *GeophoneStatus         `json:"geophone"`
+	Uploader      *UploaderStatus         `json:"uploader"`
+	Resilience    *ResilienceCheckStatus  `json:"resilience"`
+	Cron          *CronCheckStatus        `json:"cron"`
+	MorningStar   *MorningStarCheckStatus `json:"morningstar"`
 }
 
 const offlineWarningAfter = -6 * time.Minute
@@ -96,6 +102,7 @@ const localBackupInterval = -10 * time.Minute
 const offsiteBackupInterval = -10 * time.Minute
 const resilienceCheckInterval = -32 * time.Minute
 const cronCheckInterval = -6 * time.Minute
+const morningStarCheckInterval = -70 * time.Minute
 
 const GB = 1024 * 1024 * 1024
 const MB = 1024 * 1024
@@ -243,6 +250,17 @@ func checkCronCheck(m *MachineInfo) *CronCheckStatus {
 	}
 }
 
+func checkMorningStarCheck(m *MachineInfo) *MorningStarCheckStatus {
+	status := m.MorningStar.Status
+	if m.MorningStar.LastUpdatedAt.Before(time.Now().Add(morningStarCheckInterval)) {
+		status = Unknown
+	}
+	return &MorningStarCheckStatus{
+		Info:   m.MorningStar,
+		Status: status,
+	}
+}
+
 func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 	ni.Lock.Lock()
 	defer ni.Lock.Unlock()
@@ -262,6 +280,7 @@ func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 		OffsiteBackup: checkOffsiteBackup(lodge),
 		Resilience:    checkResilienceCheck(lodge),
 		Cron:          checkCronCheck(lodge),
+		MorningStar:   checkMorningStarCheck(lodge),
 	}
 
 	ns.Machines["glacier"] = &MachineStatus{
@@ -274,6 +293,7 @@ func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 		Uploader:      checkUploader(glacier),
 		Resilience:    checkResilienceCheck(glacier),
 		Cron:          checkCronCheck(glacier),
+		MorningStar:   checkMorningStarCheck(glacier),
 	}
 
 	return

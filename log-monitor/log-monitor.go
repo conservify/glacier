@@ -77,17 +77,25 @@ type CronCheckInfo struct {
 	Log           []string   `json:"log"`
 }
 
+type MorningStarCheckInfo struct {
+	Frequency     int        `json:"frequency"`
+	LastUpdatedAt time.Time  `json:"lastUpdatedAt"`
+	Status        StatusType `json:"status"`
+	Log           []string   `json:"log"`
+}
+
 type MachineInfo struct {
-	Hostname      string              `json:"hostname"`
-	LastMessageAt time.Time           `json:"lastMessageAt"`
-	Health        HealthInfo          `json:"health"`
-	Mounts        MountPointsInfo     `json:"mounts"`
-	LocalBackup   BackupInfo          `json:"localBackup"`
-	OffsiteBackup BackupInfo          `json:"offsiteBackup"`
-	Geophone      GeophoneInfo        `json:"geophone"`
-	Uploader      UploaderInfo        `json:"uploader"`
-	Resilience    ResilienceCheckInfo `json:"resilience"`
-	Cron          CronCheckInfo       `json:"cron"`
+	Hostname      string               `json:"hostname"`
+	LastMessageAt time.Time            `json:"lastMessageAt"`
+	Health        HealthInfo           `json:"health"`
+	Mounts        MountPointsInfo      `json:"mounts"`
+	LocalBackup   BackupInfo           `json:"localBackup"`
+	OffsiteBackup BackupInfo           `json:"offsiteBackup"`
+	Geophone      GeophoneInfo         `json:"geophone"`
+	Uploader      UploaderInfo         `json:"uploader"`
+	Resilience    ResilienceCheckInfo  `json:"resilience"`
+	Cron          CronCheckInfo        `json:"cron"`
+	MorningStar   MorningStarCheckInfo `json:"morningstar"`
 }
 
 func NewMachineInfo(name string) *MachineInfo {
@@ -336,6 +344,17 @@ func (l *LogFileParser) TryParseCronCheck(sl *SysLogLine, m *MachineInfo) {
 	}
 }
 
+func (l *LogFileParser) TryParseMorningStarCheck(sl *SysLogLine, m *MachineInfo) {
+	if sl.Facility == "morningstar" {
+		m.MorningStar = MorningStarCheckInfo{
+			Frequency:     70,
+			LastUpdatedAt: sl.Stamp,
+			Log:           updateLog(sl.Message, m.MorningStar.Log),
+			Status:        Good,
+		}
+	}
+}
+
 func (parser *LogFileParser) ProcessLine(ni *NetworkInfo, line string) {
 	sl := parser.Parse(line)
 	if sl == nil {
@@ -365,6 +384,7 @@ func (parser *LogFileParser) ProcessLine(ni *NetworkInfo, line string) {
 	parser.TryParseUploader(sl, m)
 	parser.TryParseResilienceCheck(sl, m)
 	parser.TryParseCronCheck(sl, m)
+	parser.TryParseMorningStarCheck(sl, m)
 }
 
 func main() {
