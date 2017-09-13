@@ -8,6 +8,7 @@
 
 ul.log li {
     font-size: 9pt;
+    word-wrap: break-word;
 }
 
 ul.log {

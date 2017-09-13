@@ -157,17 +157,27 @@ class Machine extends React.Component {
             </div>
         );
     }
+
+    renderMorningStar(morningStar) {
+        return (
+            <div>
+                <LastUpdatedStatus status={morningStar.status} time={morningStar.info.lastUpdatedAt} title="MorningStar" />
+                <LogDisplay log={morningStar.info.log} />
+            </div>
+        );
+    }
 }
 
 class LodgeMachine extends Machine {
     render() {
         const { machine } = this.props;
 
-        return (<div className="col">
+        return (<div className="col-md-6">
                 <h1>{machine.hostname}</h1>
                 {this.renderStatus(machine.health)}
                 {this.renderResilience(machine.resilience)}
                 {this.renderCron(machine.cron)}
+                {this.renderMorningStar(machine.morningStar)}
                 {this.renderLocalBackup(machine.localBackup)}
                 {this.renderOffsiteBackup(machine.offsiteBackup)}
                 {this.renderMounts(machine.mounts)}
@@ -179,11 +189,12 @@ class GlacierMachine extends Machine {
     render() {
         const { machine } = this.props;
 
-        return (<div className="col">
+        return (<div className="col-md-6">
                 <h1>{machine.hostname}</h1>
                 {this.renderStatus(machine.health)}
                 {this.renderResilience(machine.resilience)}
                 {this.renderCron(machine.cron)}
+                {this.renderMorningStar(machine.morningStar)}
                 {this.renderLocalBackup(machine.localBackup)}
                 {this.renderOffsiteBackup(machine.offsiteBackup)}
                 {this.renderMounts(machine.mounts)}

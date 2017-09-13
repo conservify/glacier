@@ -95,7 +95,7 @@ type MachineInfo struct {
 	Uploader      UploaderInfo         `json:"uploader"`
 	Resilience    ResilienceCheckInfo  `json:"resilience"`
 	Cron          CronCheckInfo        `json:"cron"`
-	MorningStar   MorningStarCheckInfo `json:"morningstar"`
+	MorningStar   MorningStarCheckInfo `json:"morningStar"`
 }
 
 func NewMachineInfo(name string) *MachineInfo {

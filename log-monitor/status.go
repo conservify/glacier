@@ -91,7 +91,7 @@ type MachineStatus struct {
 	Uploader      *UploaderStatus         `json:"uploader"`
 	Resilience    *ResilienceCheckStatus  `json:"resilience"`
 	Cron          *CronCheckStatus        `json:"cron"`
-	MorningStar   *MorningStarCheckStatus `json:"morningstar"`
+	MorningStar   *MorningStarCheckStatus `json:"morningStar"`
 }
 
 const offlineWarningAfter = -6 * time.Minute
