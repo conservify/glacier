@@ -6,4 +6,5 @@ env GOOS=linux GOARCH=arm go build -o morningstar morningstar.go
 
 scp morningstar tc@192.168.0.108:
 
-ssh tc@192.168.0.108 "sudo ./morningstar --device /dev/ttyUSB0 --syslog morningstar --echo"
+# ssh tc@192.168.0.108 "sudo ./morningstar --device /dev/ttyUSB0 --syslog morningstar --echo"
+ssh tc@192.168.0.108 "sudo ./morningstar --driver pl2303 --syslog morningstar --echo"

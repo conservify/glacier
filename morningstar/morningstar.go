@@ -10,6 +10,7 @@ import (
 	"log/syslog"
 	"math"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -419,31 +420,16 @@ type Options struct {
 	CsvFile string
 	Echo    bool
 	Syslog  string
+	Driver  string
 }
 
-func main() {
-	options := Options{}
-
-	flag.StringVar(&options.Device, "device", "/dev/ttyUSB0", "usb device")
-	flag.StringVar(&options.CsvFile, "csv", "", "csv file")
-	flag.StringVar(&options.Syslog, "syslog", "", "enable syslog and name the ap")
-	flag.BoolVar(&options.Echo, "echo", false, "echo to te user")
-
-	flag.Parse()
-
-	if options.Syslog != "" {
-		syslog, err := syslog.New(syslog.LOG_NOTICE, options.Syslog)
-		if err == nil {
-			log.SetOutput(syslog)
-		}
-	}
-
-	log.Printf("Opening %v", options.Device)
+func ReadDevice(device string, options *Options) error {
+	log.Printf("Opening %v", device)
 
 	proStar := NewProStarMppt()
-	err := proStar.Connect(options.Device)
+	err := proStar.Connect(device)
 	if err != nil {
-		log.Fatalf("Unable to open device: %v", err)
+		return fmt.Errorf("Unable to open device: %v", err)
 	}
 
 	defer proStar.Close()
@@ -463,7 +449,7 @@ func main() {
 	}
 
 	if !worked {
-		log.Fatalf("Unable to get data")
+		return fmt.Errorf("Unable to get data")
 	}
 
 	values := []interface{}{
@@ -533,5 +519,58 @@ func main() {
 
 	if options.Echo {
 		fmt.Printf("%s\n", line)
+	}
+
+	return nil
+}
+
+func FindDevicesByDriver(driver string) []string {
+	devices := make([]string, 0)
+	pattern := fmt.Sprintf("/sys/bus/usb-serial/drivers/%s/tty*", driver)
+	m, err := filepath.Glob(pattern)
+	if err != nil {
+		return devices
+	}
+
+	for _, file := range m {
+		devices = append(devices, fmt.Sprintf("/dev/%s", filepath.Base(file)))
+	}
+
+	log.Printf("Trying: %v", devices)
+
+	return devices
+}
+
+func main() {
+	options := Options{}
+
+	flag.StringVar(&options.Device, "device", "", "usb device")
+	flag.StringVar(&options.CsvFile, "csv", "", "csv file")
+	flag.StringVar(&options.Syslog, "syslog", "", "enable syslog and name the ap")
+	flag.StringVar(&options.Driver, "driver", "", "check devices by the usb serial driver (experimental)")
+	flag.BoolVar(&options.Echo, "echo", false, "echo to te user")
+
+	flag.Parse()
+
+	if options.Driver == "" && options.Device == "" {
+		flag.PrintDefaults()
+		os.Exit(2)
+	}
+
+	if options.Syslog != "" {
+		syslog, err := syslog.New(syslog.LOG_NOTICE, options.Syslog)
+		if err == nil {
+			log.SetOutput(syslog)
+		}
+	}
+
+	if options.Driver != "" {
+		for _, device := range FindDevicesByDriver(options.Driver) {
+			if ReadDevice(device, &options) == nil {
+				break
+			}
+		}
+	} else {
+		ReadDevice(options.Device, &options)
 	}
 }
