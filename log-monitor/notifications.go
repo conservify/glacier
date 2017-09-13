@@ -40,6 +40,12 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 		if m.Geophone != nil {
 			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Geophone", Status: m.Geophone.Status})
 		}
+		if m.Resilience != nil {
+			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Resilience", Status: m.Resilience.Status})
+		}
+		if m.Cron != nil {
+			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Cron", Status: m.Cron.Status})
+		}
 		if m.Uploader != nil {
 			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Uploader", Status: m.Uploader.Status})
 		}

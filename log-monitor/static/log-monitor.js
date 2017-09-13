@@ -90,7 +90,7 @@ class Machine extends React.Component {
     renderMount(m) {
         const size = this.humanizeBytes(m.size);
         const available = this.humanizeBytes(m.available);
-        return <tr key={m.mountPoint}><td>{m.mountPoint}</td><td>{size}</td><td>{available}</td><td>%{m.used}</td></tr>;
+        return <tr key={m.mountPoint}><td>{m.mountPoint}</td><td>{size}</td><td>{available}</td><td>{m.used}%</td></tr>;
     }
 
     renderMounts(mounts) {
@@ -148,6 +148,15 @@ class Machine extends React.Component {
             </div>
         );
     }
+
+    renderCron(cron) {
+        return (
+            <div>
+                <LastUpdatedStatus status={cron.status} time={cron.info.lastUpdatedAt} title="Cron" />
+                <LogDisplay log={cron.info.log} />
+            </div>
+        );
+    }
 }
 
 class LodgeMachine extends Machine {
@@ -158,6 +167,7 @@ class LodgeMachine extends Machine {
                 <h1>{machine.hostname}</h1>
                 {this.renderStatus(machine.health)}
                 {this.renderResilience(machine.resilience)}
+                {this.renderCron(machine.cron)}
                 {this.renderLocalBackup(machine.localBackup)}
                 {this.renderOffsiteBackup(machine.offsiteBackup)}
                 {this.renderMounts(machine.mounts)}
@@ -173,6 +183,7 @@ class GlacierMachine extends Machine {
                 <h1>{machine.hostname}</h1>
                 {this.renderStatus(machine.health)}
                 {this.renderResilience(machine.resilience)}
+                {this.renderCron(machine.cron)}
                 {this.renderLocalBackup(machine.localBackup)}
                 {this.renderOffsiteBackup(machine.offsiteBackup)}
                 {this.renderMounts(machine.mounts)}
