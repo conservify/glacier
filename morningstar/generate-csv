@@ -1,0 +1,3 @@
+#!/bin/bash
+
+(cat header.csv ; grep READING /var/log/morningstar.log) > morningstar.csv
