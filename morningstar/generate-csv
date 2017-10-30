@@ -1,5 +1,5 @@
 #!/bin/bash
 
-(cat header.csv ; grep READING /var/log/morningstar.log) > morningstar-all.csv
-grep glacier morningstar-all.csv > morningstar-glacier.csv
-grep lodge morningstar-all.csv > morningstar-lodge.csv
+grep READING /var/log/morningstar.log > morningstar-all.csv
+(cat header.csv; grep glacier morningstar-all.csv) > morningstar-glacier.csv
+(cat header.csv; grep lodge morningstar-all.csv) > morningstar-lodge.csv

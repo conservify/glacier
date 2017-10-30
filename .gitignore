@@ -26,3 +26,4 @@ tunneller/glacier*
 tunneller/tunneller
 log-monitor/log-monitor
 resilience/resilience
+morningstar/morningstar-*.csv
