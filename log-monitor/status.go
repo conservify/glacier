@@ -287,7 +287,7 @@ func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 		Hostname:      glacier.Hostname,
 		Health:        checkHealth(glacier),
 		Mounts:        checkDisk(glacier),
-		LocalBackup:   checkLocalBackup(glacier),
+		// LocalBackup:   checkLocalBackup(glacier),
 		OffsiteBackup: checkOffsiteBackup(glacier),
 		Geophone:      checkGeophone(glacier),
 		Uploader:      checkUploader(glacier),

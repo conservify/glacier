@@ -195,7 +195,6 @@ class GlacierMachine extends Machine {
                 {this.renderResilience(machine.resilience)}
                 {this.renderCron(machine.cron)}
                 {this.renderMorningStar(machine.morningStar)}
-                {this.renderLocalBackup(machine.localBackup)}
                 {this.renderOffsiteBackup(machine.offsiteBackup)}
                 {this.renderMounts(machine.mounts)}
                 {this.renderGeophone(machine.geophone)}

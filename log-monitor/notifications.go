@@ -31,9 +31,11 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 		all := []StatusUpdate{
 			StatusUpdate{Machine: m.Hostname, Status: m.Health.Status, Name: "Health"},
 			StatusUpdate{Machine: m.Hostname, Status: m.Mounts.Status, Name: "Mounts"},
-			StatusUpdate{Machine: m.Hostname, Status: m.LocalBackup.Status, Name: "LocalBackup"},
 		}
 
+		if m.LocalBackup != nil {
+			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "LocalBackup", Status: m.LocalBackup.Status})
+		}
 		if m.OffsiteBackup != nil {
 			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "OffsiteBackup", Status: m.OffsiteBackup.Status})
 		}
