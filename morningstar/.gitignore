@@ -2,3 +2,4 @@
 env
 add-unix-time
 slack-upload-file
+morningstar.log

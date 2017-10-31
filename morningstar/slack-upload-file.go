@@ -40,7 +40,7 @@ func main() {
 	}
 	_, err := api.UploadFile(uploadParams)
 	if err != nil {
-		log.Fatal("%v", err)
+		log.Fatalf("Error uploading %s to %s: %v", o.File, o.Channel, err)
 		return
 	}
 }
