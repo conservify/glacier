@@ -4,9 +4,13 @@
 
 class LastUpdatedStatus extends React.Component {
     render() {
-        const { status, time, title } = this.props;
+        const { status, time, title, disabled } = this.props;
         const parsed = moment(time);
         const age = moment().diff(parsed, 'minutes');
+
+	if (disabled) {
+            return <h3 className="time-status"><p className="" style={{ backgroundColor: "#ddd" }}>{title} <span className="age">disabled</span></p></h3>;
+	}
 
         if (status == "Good") {
             return <h3 className="time-status"><p className="bg-success">{title} <span className="age">{age} mins</span></p></h3>;
@@ -36,8 +40,12 @@ class LogDisplay extends React.Component {
     }
 
     render() {
-        const { log } = this.props;
+        const { log, disabled } = this.props;
         const { visible } = this.state;
+
+	if (disabled) {
+            return (<div className="btn btn-logs btn-sm btn-outline-secondary">Logs</div>);
+	}
 
         if (!log) {
             return (<div></div>);
@@ -58,6 +66,15 @@ class LogDisplay extends React.Component {
 }
 
 class Machine extends React.Component {
+    renderDisabled(title) {
+        return (
+            <div>
+                <LastUpdatedStatus title={title} disabled={true} />
+                <LogDisplay disabled={true} />
+            </div>
+        );
+    }
+
     renderStatus(health) {
         return (<div className="health">
                     <LastUpdatedStatus status={health.status} time={health.info.lastUpdatedAt} title="Health" />
@@ -195,6 +212,7 @@ class GlacierMachine extends Machine {
                 {this.renderResilience(machine.resilience)}
                 {this.renderCron(machine.cron)}
                 {this.renderMorningStar(machine.morningStar)}
+                {this.renderDisabled("Local Backup")}
                 {this.renderOffsiteBackup(machine.offsiteBackup)}
                 {this.renderMounts(machine.mounts)}
                 {this.renderGeophone(machine.geophone)}
