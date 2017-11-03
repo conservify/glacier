@@ -89,6 +89,7 @@ func testNetworking(hostname string) (anySuccess bool, stopped bool) {
 func Execute(l []string, dryRun bool) error {
 	log.Printf("Exec: %v", l)
 	if !dryRun {
+		time.Sleep(10 * time.Second)
 		c := exec.Command(l[0], l[1:]...)
 		err := c.Run()
 		if err != nil {
