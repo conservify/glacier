@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -xe
+
+PI=192.168.0.119
+
+make clean
+scp * $PI:geophones/psn-adc
+ssh $PI "cd geophones/psn-adc && make && ./AdcDemo"

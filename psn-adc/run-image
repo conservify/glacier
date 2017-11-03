@@ -1,1 +1,0 @@
-sudo docker run --name adc --privileged -v /data:/app/data -t --rm conservify/psn-adc

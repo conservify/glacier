@@ -155,39 +155,69 @@ int OpenDevice()
 	return receivedSamples;
 }
 
+int CompareStrings(const void* a, const void* b)
+{
+    const char *sa = (const char *)a;
+    const char *sb = (const char *)b;
+    return strcmp(sb, sa);
+}
+
+#define MAX_DEVICES 10
+
 int FindDevice()
 {
 	DIR *dp;
 
 	struct dirent *entry;
-	
+
 	if ((dp = opendir("/dev")) == NULL)
 	{
 		fprintf(stderr, "Unable to open /dev\n");
 		return 0;
 	}
 
+    char *devices[MAX_DEVICES] = { 0 };
+    size_t number = 0;
 	while ((entry = readdir(dp)) != NULL)
 	{
 		const char *prefix = "ttyUSB";
 		if (strncmp(entry->d_name, prefix, strlen(prefix)) == 0)
 		{
-			commPortStr[0] = 0;
-			strcat(commPortStr, "/dev/");
-			strcat(commPortStr, entry->d_name);
-			printf("Trying %s...\n\n", commPortStr);
+            if (number < MAX_DEVICES) {
+                char name[32] = { 0 };
 
-			if (OpenDevice())
-			{
-				return 1;
-			}
-			consecutiveErrors = 0;
+                name[0] = 0;
+                strcat(name, "/dev/");
+                strcat(name, entry->d_name);
+
+                printf("Found %s...\n", name);
+
+                devices[number++] = strdup(name);
+            }
 		}
 	}
 
 	closedir(dp);
 
-	fprintf(stderr, "Unable to find device!\n");
+    qsort(devices, number, sizeof(char*), CompareStrings);
+
+    for (size_t i = 0; i < number; ++i) {
+        strncpy(commPortStr, devices[i], sizeof(commPortStr));
+
+        printf("Trying %s...\n", commPortStr);
+
+        free(devices[i]);
+        devices[i] = 0;
+
+        if (OpenDevice())
+        {
+            return 1;
+        }
+
+        consecutiveErrors = 0;
+    }
+
+    fprintf(stderr, "Unable to find device!\n");
 
 	return 0;
 }
@@ -198,7 +228,7 @@ int main( int argc, char *argv[] )
 	ParseCommandLine(argc, argv);
 
 	FindDevice();
-	
+
 	/* And we are done..... */
 	return 0;
 }

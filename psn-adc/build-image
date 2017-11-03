@@ -1,5 +1,0 @@
-#!/bin/bash
-
-set -e
-
-sudo docker build -t conservify/psn-adc:latest .

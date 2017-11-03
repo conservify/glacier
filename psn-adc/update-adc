@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -xe
+
+PI_ADDRESS=192.168.0.119
+
+make clean
+scp * 192.168.0.119:geophones/psn-adc
+ssh 192.168.0.119 "cd geophones/psn-adc && make"
+scp 192.168.0.119:geophones/psn-adc/AdcDemo adc
+scp adc tc@ham-lodge:
+ssh tc@ham-lodge "scp adc glacier:adc-temp && rm adc"
