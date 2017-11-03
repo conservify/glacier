@@ -90,6 +90,8 @@ int OpenDevice()
 	/* Fill in the configuration structure with the default info above */
 	MakeConfig( &config );
 	
+	printf("PSNConfigBoard()\n");
+
 	/* Pass the configuration information to the DLL. If using the Callback feature, pass
 	   a function pointer to the DDL. This function will be called by the DLL when new data 
 	   needs to be processed by the application. If using the Poll method set the third 
@@ -100,12 +102,16 @@ int OpenDevice()
 		PSNCloseBoard( hBoard );
 		return 0;
 	}
+
+	printf("PSNSendBoardCommand(ADC_CMD_RESET_BOARD)\n");
 	
 	if( !PSNSendBoardCommand( hBoard, ADC_CMD_RESET_BOARD, 0 ) )  {
 		printf("PSNSendBoardCommand Error\n");
 		PSNCloseBoard( hBoard );
 		return 0;
 	}
+
+	printf("PSNStartStopCollect(TRUE)\n");
 		
 	/* Now start the data collection. This will open the Comm port 
 	   and new data from the DLL or ADC board will be sent to the Callback function or 
@@ -116,7 +122,9 @@ int OpenDevice()
 		PSNCloseBoard( hBoard );
 		return 0;
 	}
-	
+
+	printf("while(consecutiveErrors < 3)\n");
+
 	/* Callback Mode: In this mode new data will be posted to the application by the DLL 
 	   using the Callback function.  */
 	while(consecutiveErrors < 3)  {
@@ -125,16 +133,24 @@ int OpenDevice()
 		_sleep( 100 );			/* sleep for 100 ms */
 	}
 	
+	printf("PSNStartStopCollect(FALSE)\n");
+
 	/* Stop the data collection. This will close the Comm port */
-	if( !PSNStartStopCollect( hBoard, FALSE ) )
+	if( !PSNStartStopCollect( hBoard, FALSE ) ) {
 		printf( "PSNStartStopCollect Error\n" );
+	}
 	
 	/* Sleep for a while so the DLL has some time to shut things down */
 	_sleep( 250 );
 		
+	printf("PSNCloseBoard()\n");
+
 	/* Now close the board */
-	if( ! PSNCloseBoard( hBoard ) )
+	if( ! PSNCloseBoard( hBoard ) ) {
 		printf( "PSNCloseBoard Error\n" );
+	}
+
+	printf("Done\n");
 
 	return receivedSamples;
 }
