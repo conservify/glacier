@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -xe
+
+PI=192.168.0.119
+
+scp * $PI:geophones/psn-adc
+ssh $PI "cd geophones/psn-adc && ./build-fixes-package"
+scp $PI:conservify-glacier-fixes.tcz .
+scp conservify-glacier-fixes.tcz tc@ham-lodge:
+ssh tc@ham-lodge "scp *.tcz glacier: && rm *.tcz"

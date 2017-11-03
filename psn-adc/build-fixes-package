@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -xe
+
+PACKAGE_ROOT=/tmp/package-base
+BUILD=~/
+
+rm -rf $PACKAGE_ROOT
+mkdir -p $PACKAGE_ROOT
+mkdir -p $PACKAGE_ROOT/app
+make clean
+make
+cp AdcDemo $PACKAGE_ROOT/app/adc
+mksquashfs $PACKAGE_ROOT $BUILD/conservify-glacier-fixes.tcz -b 4k -no-xattrs -noappend

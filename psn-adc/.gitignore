@@ -4,3 +4,5 @@
 data/*.csv
 incoming.*
 AdcDemo
+*.tcz
+adc
