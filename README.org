@@ -1,0 +1,216 @@
+#+TITLE:  README for glacier
+#+EMAIL:  jacob@conservify.org 
+
+This repository contains the hardware and software design for a two station
+geophone/accelerometer glacier installation. There are two stations connected
+via a point-to-point wireless link. The "glacier" station houses the sensors and
+the "lodge" station houses the internet communications.
+
+* Lodge
+** Hardware
+   This is a description of the hardware components. For wiring/connection diagrams see below.
+
+***** Raspberry Pi 3 Model B v1.2
+      https://www.amazon.com/Raspberry-Pi-RASPBERRYPI3-MODB-1GB-Model-Motherboard/dp/B01CD5VC92/ref=sr_1_1
+      
+      See 'Software' section for a description of the operating system and daemons/services/etc...
+
+***** External USB HDD
+      http://wdlabs.wd.com/products/wd-pidrive-berryboot-edition/
+      
+      Provides 1TB of extra storage.
+
+***** USB To Ethernet Adapter
+      Provides two extra USB ports as well as the Ethernet port for the Proxim.
+
+***** Power Bus Board
+      This board consolidates a fuse as well as supplying connections for
+      various voltage regulators. Fewer of the on-board regulator positions
+      ended up being used as power consumption and plans changed.
+
+      The schematics and PCB for this board are in the ~power-bus/hardware~ directory.
+
+      Attached to this board are:
+      1) 1 12V 2A voltage regulators (for powering a monitor during maintenance tasks and Obsidian)
+         https://www.pololu.com/product/2577
+      2) 1 5V 3A voltage regulators, soldered in place.
+         https://www.amazon.com/1PCS-Converter-Regulator-Power-CPT-UL-1/dp/B075KCLDBC
+      3) A 12V 3A regulator (mounted below) 
+         https://www.powerstream.com/DC3611.htm
+
+***** Power Control Board
+      This board is used to turn on/off external devices, specifically the Proxim and the Internet (via a Relay)
+      The schematics and PCB for this board are in the ~hardware/power-control~ directory. These can be ordered from OshPark.
+
+***** RockBlock+ and USB to RS232 Adapter
+      http://www.rock7mobile.com/products-rockblock-plus
+
+      This is used for emergency communications and status updates when there is
+      no connectivity. It is wired to the Pi directly, now. Eventually the plan
+      was to introduce a MCU that's always powered and could possibly trigger
+      restarts, etc...
+
+***** Proxim Wireless Station
+      http://www.proxim.com/products/point-to-multipoint/tsunami-mp-10100-series
+
+      See Proxim Wireless section for details.
+
+***** MorningStar Solar Charge Controller, Modbus to RS232 Adapter, and RS232 to USB Adapter
+      https://www.amazon.com/Morningstar-PS-MPPT-40M-Prostar-Charge-Controller/dp/B01N2773O8/ref=sr_1_1
+
+      See MorningStar Charge Controller section for details.
+
+***** Batteries (x24)
+***** AC Battery Charger
+      http://www.xantrex.com/power-products/battery-chargers/truecharge-2.aspx
+
+      This charges the batteries off the generator power that's available during Lodge operating hours.
+
+***** Internet Provider's box and AC Inverter
+      https://www.amazon.com/BESTEK-300W-Power-Inverter-Adapter/dp/B004MDXS0U/ref=sr_1_19
+
+      It might be possible in the future to run the Internet directly from the
+      DC, unfortunately we learned the power details related to this box too
+      late to get that in.
+
+** Software
+***** Operating System - Tiny Core Linux (piCore-9.0.03)
+      The process for generating the images on the SD cards is automated and directions can be found under the ~tce/~ subdirectory.
+
+***** Tunneller:
+      1) SSH - provides a backup SSH mechanism, allowing a user to ssh to a local port on the AWS server to ssh to the station.
+      2) rsyslog - forwards rsyslog messages to the AWS server.
+
+***** Scheduled ~cron~ jobs:
+      | Schedule         | Name           | Task                                                                      |
+      |------------------+----------------+---------------------------------------------------------------------------|
+      | daily            | time           | Sync time via ntpdate.                                                    |
+      | 30min            | resilience     | Checks for connectivity and or any other problems that a restart may fix. |
+      | hourly           | morningstar    | Read MorningStar status over ModBus and write to logs.                    |
+      | hourly           | logrotate      | Rotate log files.                                                         |
+      | 5min             | status         | Log disk status and uptime information.                                   |
+      | 5min             | local-backup   | Copy archived data to the external HDD.                                   |
+      | 5min             | glacier-logs   | Copy glacier logs to the lodge.                                           |
+      | 7,17,27,37,47,57 | offsite-backup | Backup glacier data to the lodge.                                         |
+
+* Glacier
+** Hardware
+   This is a description of the hardware components. For wiring/connection diagrams see below.
+
+***** Raspberry Pi 3 Model B v1.2
+      https://www.amazon.com/Raspberry-Pi-RASPBERRYPI3-MODB-1GB-Model-Motherboard/dp/B01CD5VC92/ref=sr_1_1
+      
+      See 'Software' section for a description of the operating system and daemons/services/etc...
+
+***** External USB HDD
+      http://wdlabs.wd.com/products/wd-pidrive-berryboot-edition/
+      
+      Provides 1TB of extra storage.
+
+***** USB To Ethernet Adapter
+      Provides two extra USB ports as well as the Ethernet port for the Proxim.
+
+***** Power Bus Board
+      This board consolidates a fuse as well as supplying connections for
+      various voltage regulators. Fewer of the on-board regulator positions
+      ended up being used as power consumption and plans changed.
+
+      The schematics and PCB for this board are in the ~power-bus/hardware~ directory.
+
+      Attached to this board are:
+      1) 2 12V 2A voltage regulators (for powering a monitor during maintenance tasks and Obsidian)
+         https://www.pololu.com/product/2577
+      2) 1 5V 3A voltage regulators, soldered in place.
+         https://www.amazon.com/1PCS-Converter-Regulator-Power-CPT-UL-1/dp/B075KCLDBC
+      3) A 12V 3A regulator (mounted below) 
+         https://www.powerstream.com/DC3611.htm
+
+***** Power Control Board
+      This board is used to turn on/off external devices, specifically the Proxim and the Internet (via a Relay)
+      The schematics and PCB for this board are in the ~hardware/power-control~ directory.
+
+***** RockBlock+ and USB to RS232 Adapter
+      http://www.rock7mobile.com/products-rockblock-plus
+      
+      This is used for emergency communications and status updates when there is
+      no connectivity. It is wired to the Pi directly, now. Eventually the plan
+      was to introduce a MCU that's always powered and could possibly trigger
+      restarts, etc...
+
+***** Proxim Wireless Station
+      http://www.proxim.com/products/point-to-multipoint/tsunami-mp-10100-series
+      
+      See Proxim Wireless section for details.
+
+***** MorningStar Solar Charge Controller, Modbus to RS232 Adapter, and RS232 to USB Adapter
+      See MorningStar Charge Controller section for details.
+
+***** Batteries (x15)
+
+***** Obsidian Accelerometer
+      https://kinemetrics.com/post_products/obsidian-4x/
+
+      Powered via one of the 2A 12V regulators.
+
+** Software
+***** Operating System - Tiny Core Linux (piCore-9.0.03)
+      The process for generating the images on the SD cards is automated and directions can be found under the ~tce/~ subdirectory.
+
+***** Tunneller:
+      1) SSH - provides a backup SSH mechanism, allowing a user to ssh to a local port on the AWS server to ssh to the station.
+
+***** adc 
+      Communicates with the Geophone, saving the raw incoming data.
+
+***** uploader
+      Monitors for incoming data, uploads the files, and then archives them.
+
+***** Scheduled ~cron~ jobs:
+      | Schedule | Name            | Task                                                                      |
+      |----------+-----------------+---------------------------------------------------------------------------|
+      | daily    | time            | Sync time via ntpdate.                                                    |
+      | 30min    | resilience      | Checks for connectivity and or any other problems that a restart may fix. |
+      | hourly   | morningstar     | Read MorningStar status over ModBus and write to logs.                    |
+      | hourly   | logrotate       | Rotate log files.                                                         |
+      | 5min     | status          | Log disk status and uptime information.                                   |
+      | 5min     | local-backup    | Copy archived data to the external HDD.                                   |
+      | 5min     | mirror-obsidian | Copy obsidian data.                                                       |
+      | 5min     | data-roller     | Delete old files to ensure free space on the memory card.                 |
+
+* Monitoring AWS Server
+  Can be a small instance, even free tier. This is only used to aggregate logs for monitoring and serve as a location for backup SSH tunnels to originate.
+  
+* Proxim Wireless
+** Power
+   The Proxim wireless can be powered using 12V DC (max 3A) over the 12V/Access
+   Port. There are directions in the Proxim documentation for creating an RJ11
+   cable to provide this power. This cable is then connected to the 12V 3A
+   voltage regulator.
+
+** Hardware/Installation
+   Antenna is mounted to the side of the Laundry building at the lodge and was
+   aligned using the Proxim aiming dongle. This dongle is connected to the
+   12V/Access Port and emits a tone at a frequency that indicates how good the
+   alignment is. Because the 12V/Access Port is how we power the device in
+   standard operation aiming is done while running on AC power using a PoE
+   injector.
+
+   The Proxim station has an internal heater and can be mounted outside. A log
+   of it's temperature is also available in the UI.
+
+   The unit was grounded and the all the cabling was wrapped in weather proofing
+   tape as suggested in the documentation.
+
+** Configuration
+   Only one thing was changed in the Proxim wireless configuration from a
+   standard factory installation and that is the Channel was changed to 140
+   from 160.
+  
+* MorningStar Charge Controller
+** Configuration
+   Set the DIP switches to force 12V mode and to enable ModBus. All other defaults are acceptable.
+* Obsidian Accelerometer
+** Hardware
+   See design files for mounting information.
+** Configuration
+   See repository for an export of the configuation.
