@@ -19,25 +19,29 @@ type Options struct {
 	TimeZone      string
 	HoldingPeriod int
 	Pin           int
+	TurnOn        bool
+	TurnOff       bool
 }
 
 const (
-	OnHour  = 5
 	OffHour = 22
+	OnHour  = 5
 )
 
 func holdingPeriod(o *Options) {
 	log.Printf("Entering %d minute holding period...", o.HoldingPeriod)
 
-	thirtyMinutes := 30 * time.Minute
+	period := time.Duration(o.HoldingPeriod) * time.Minute
 	start := time.Now()
 	for {
-		time.Sleep(1 * time.Minute)
 		uptime := time.Now().Sub(start)
-		if uptime > thirtyMinutes {
+		if o.HoldingPeriod == 0 || uptime > period {
 			break
 		}
+		time.Sleep(1 * time.Minute)
 	}
+
+	log.Printf("Holding period done.")
 }
 
 func echoFile(file string, text string) (err error) {
@@ -86,23 +90,18 @@ func turnEverythingOn(o *Options) (on bool) {
 	return true
 }
 
-func shouldBeOn(now time.Time, lastOff time.Time) bool {
-	if now.Hour() >= OnHour {
+func shouldBeOn(now time.Time, nextOn time.Time) bool {
+	if now.After(nextOn) {
 		return true
 	}
-	offFor := time.Now().Sub(lastOff)
-	if offFor.Hours() > 7 {
-		return true
-	}
-
 	return false
 }
 
-func shouldBeOff(t time.Time) bool {
-	if t.Hour() >= OffHour || t.Hour() < OnHour {
-		return false
+func shouldBeOff(now time.Time, nextOff time.Time) bool {
+	if now.After(nextOff) {
+		return true
 	}
-	return true
+	return false
 }
 
 func nextOffTime(loc *time.Location) time.Time {
@@ -143,6 +142,8 @@ func main() {
 
 	flag.IntVar(&o.HoldingPeriod, "holding-period", 30, "holding period in minutes")
 	flag.IntVar(&o.Pin, "pin", 17, "pin to control")
+	flag.BoolVar(&o.TurnOn, "on", false, "turn on (testing)")
+	flag.BoolVar(&o.TurnOff, "off", false, "turn off (testing)")
 	flag.StringVar(&o.LogFile, "log", "", "log file")
 	flag.StringVar(&o.Syslog, "syslog", "", "enable syslog and name the ap")
 	flag.StringVar(&o.NtpServer, "ntp-server", "0.beevik-ntp.pool.ntp.org", "ntp server")
@@ -171,6 +172,16 @@ func main() {
 		}
 	}
 
+	if o.TurnOn {
+		turnEverythingOn(&o)
+		return
+	}
+
+	if o.TurnOff {
+		turnEverythingOff(&o)
+		return
+	}
+
 	everythingOn := turnEverythingOn(&o)
 
 	// With everything on we should be connected. In fact,
@@ -185,24 +196,28 @@ func main() {
 		time.Sleep(5 * time.Minute)
 	}
 
-	lastTurnedOff := time.Now()
+	// lastTurnedOff := time.Now()
 	location, err := time.LoadLocation(o.TimeZone)
 	if err != nil {
 		log.Printf("Unable to get time: %v", err)
 	}
 
-	log.Printf("Next off: %v (in %v)", nextOffTime(location), nextOffTime(location).Sub(time.Now()))
-	log.Printf("Next on: %v (in %v)", nextOnTime(location), nextOnTime(location).Sub(time.Now()))
-
 	// Outer loop ensures we always perform a holding period after something on or off.
 	for {
+		nextOff := nextOffTime(location)
+		nextOn := nextOnTime(location)
+
+		log.Printf("Now: %v", time.Now().In(location))
+		log.Printf("Off: %v (in %v)", nextOff, nextOff.Sub(time.Now()))
+		log.Printf(" On: %v (in %v)", nextOn, nextOn.Sub(time.Now()))
+
 		holdingPeriod(&o)
 
 		for {
 			localTime := time.Now().In(location)
 
 			if everythingOn {
-				if shouldBeOff(localTime) {
+				if shouldBeOff(localTime, nextOff) {
 					n := nextOnTime(location)
 					log.Printf("Turning off, will turn on at %v (in %v)", n, n.Sub(time.Now()))
 					time.Sleep(10 * time.Second)
@@ -210,7 +225,7 @@ func main() {
 					break
 				}
 			} else {
-				if shouldBeOn(localTime, lastTurnedOff) {
+				if shouldBeOn(localTime, nextOn) {
 					n := nextOffTime(location)
 					log.Printf("Turning on, will turn off at %v (in %v)", n, n.Sub(time.Now()))
 					everythingOn = turnEverythingOn(&o)

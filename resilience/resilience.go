@@ -19,6 +19,10 @@ type response struct {
 	rtt  time.Duration
 }
 
+func testUsb() (hasDevices bool) {
+	return true
+}
+
 func testNetworking(hostname string) (anySuccess bool, stopped bool) {
 	p := fastping.NewPinger()
 	ra, err := net.ResolveIPAddr("ip4:icmp", hostname)
@@ -145,12 +149,19 @@ func main() {
 		log.Printf("Dry run enabled.")
 	}
 
-	good, stopped := testNetworking(hostname)
-	if !stopped && !good {
-		log.Printf("Unreachable, restarting computer...")
+	networkGood, stopped := testNetworking(hostname)
+	if !stopped && !networkGood {
+		log.Printf("Unreachable, restarting...")
 		Execute([]string{"/sbin/reboot"}, o.DryRun)
-	} else if good {
+	} else if networkGood {
 		log.Printf("Network is good.")
 	}
 
+	usbGood := testUsb()
+	if !usbGood {
+		log.Printf("USB devices are gone, restarting...")
+		Execute([]string{"/sbin/reboot"}, o.DryRun)
+	} else {
+		log.Printf("USB is good.")
+	}
 }
