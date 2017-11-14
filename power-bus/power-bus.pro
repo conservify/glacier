@@ -1,4 +1,4 @@
-update=4/24/2017 10:18:37 AM
+update=Mon 13 Nov 2017 03:52:27 PM PST
 version=1
 last_client=kicad
 [pcbnew]
@@ -58,4 +58,4 @@ LibName26=opto
 LibName27=atmel
 LibName28=contrib
 LibName29=valves
-LibName30=D:/Life/conservify/kicad/conservify
+LibName30=/home/jlewallen/conservify/kicad/conservify

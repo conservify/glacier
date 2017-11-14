@@ -124,6 +124,8 @@ the "lodge" station houses the internet communications.
          https://www.amazon.com/1PCS-Converter-Regulator-Power-CPT-UL-1/dp/B075KCLDBC
       3) A 12V 3A regulator (mounted below) 
          https://www.powerstream.com/DC3611.htm
+      4) 1 Adjustable Regulator (set to 15V for the Geophone) 
+         https://www.pololu.com/product/2573
 
 ***** Power Control Board
       This board is used to turn on/off external devices, specifically the Proxim and the Internet (via a Relay)
