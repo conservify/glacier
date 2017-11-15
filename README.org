@@ -74,9 +74,6 @@ the "lodge" station houses the internet communications.
       late to get that in.
 
 ** Software
-***** Operating System - Tiny Core Linux (piCore-9.0.03)
-      The process for generating the images on the SD cards is automated and directions can be found under the ~tce/~ subdirectory.
-
 ***** Tunneller:
       1) SSH - provides a backup SSH mechanism, allowing a user to ssh to a local port on the AWS server to ssh to the station.
       2) rsyslog - forwards rsyslog messages to the AWS server.
@@ -155,9 +152,6 @@ the "lodge" station houses the internet communications.
       Powered via one of the 2A 12V regulators.
 
 ** Software
-***** Operating System - Tiny Core Linux (piCore-9.0.03)
-      The process for generating the images on the SD cards is automated and directions can be found under the ~tce/~ subdirectory.
-
 ***** Tunneller:
       1) SSH - provides a backup SSH mechanism, allowing a user to ssh to a local port on the AWS server to ssh to the station.
 
@@ -178,6 +172,81 @@ the "lodge" station houses the internet communications.
       | 5min     | local-backup    | Copy archived data to the external HDD.                                   |
       | 5min     | mirror-obsidian | Copy obsidian data.                                                       |
       | 5min     | data-roller     | Delete old files to ensure free space on the memory card.                 |
+
+* Operating System
+  Each of the Raspberry Pi's is running an instance of Tiny Core Linux
+  (piCore-9.0.03) Tiny Core Linux is specifically designed for embedded
+  situations where reliability is important. Key features include:
+
+  1) Low memory (runtime and physical) 
+  2) Resiliencey via a read only runtime.
+
+  TCL will start and run directly from RAM and any changes that should be saved
+  across restarts need to be specifically saved.
+
+  Several changes were made to the default piCore image, documented below. Note,
+  also, that the process for generating images is automated and stored in the
+  ~tce~ directory. These scripts serve as a more authoriative source of
+  documentation for how to regenerate these images, should tha tbe necessary.
+
+** Networking
+
+   The private network used by the Pis and spanned by the Proxim wireless is
+   169.254.128.0/24 This is the default network for the Proxim stations. The
+   obsidian is configured to run on 169.254.127.0/24 Because the Pi's only have
+   one network port, USB Ethernet Adapters are used to provide a second one.
+
+   |              IP | Iface                       |
+   |-----------------+-----------------------------|
+   | 169.254.128.129 | Lodge IP                    |
+   | 169.254.128.130 | Glacier IP                  |
+   | 169.254.128.131 | Lodge Proxim IP             |
+   | 169.254.128.132 | Glacier Proxim IP           |
+   | 169.254.127.130 | Glacier Obsidian Network IP |
+   | 169.254.127.129 | Obsidian IP                 |
+
+** Additional Drivers 
+   These drivers had software packages were included on top of the base piCore image:
+
+   | Driver                       | Purpose                                                 |
+   |------------------------------+---------------------------------------------------------|
+   | pl2303.tcz                   | USB <-> RS232 Cable Driver                              |
+   | r8152.tcz                    | USB <-> Ethernet Adapter Driver                         |
+   | usbserial.tcz                | USB <-> UART Cable Driver                               |
+   | logrotate.tcz                | Binaries for logrotate (configuration is in ~tce~)      |
+   | logmein-hamachi.tgz          | Binaries for Hamachi VPN                                |
+   | rsyslog.tcz                  | Binaries for rsyslog (see below)                        |
+   | libestr.tcz                  | rsyslog dependency                                      |
+   | libfastjson.tcz              | rsyslog dependency                                      |
+   | liblogging.tgz               | rsyslog dependency                                      |
+   | conservify-glacier-tools.tcz | Tools binaries in /app (morningstar, resilience, etc..) |
+
+** Startup
+   Startup is controlled via ~/opt/bootlocal.sh~ and ~/opt/bootsync.sh~ like any
+   other standard TCL installation. These are configured to call machine
+   specific scripts after common work is done. These are located under
+   ~/opt/glacier~ and ~/opt/lodge~
+
+   | Script                      | Tasks                                                                                  |
+   |-----------------------------+----------------------------------------------------------------------------------------|
+   | ~/opt/bootlocal.sh~         | Configure Pi powersave mode. Start SSH/hamachid and start await-wireless.sh            |
+   | ~/opt/bootsync.sh~          | Configure DNS. Create folders that must always be present. Run ~ntpd~.                 |
+   | ~/opt/glacier/bootlocal.sh~ | start tunnellers for SSH and ~uploader,~ ~adc~ wrappers.                               |
+   | ~/opt/glacier/bootsync.sh~  | Configure proxim (~eth0~) and obsidian (~eth1~) interfaces.                            |
+   | ~/opt/lodge/bootlocal.sh~   | Start tunnellers for SSH and rsyslog.                                                  |
+   | ~/opt/lodge/bootsync.sh~    | Configure proxim network iface (~eth1~) Start DHCPC for internet connection on ~eth0~. |
+
+** Cron Jobs
+   A number of cron jobs are included by default on either machine (see above)
+   Those scripts that only run at a specific machine are toggled during the
+   image creation. They can also be customized via tweaking mydata.tgz (see TCL
+   documentation)
+
+** Rsyslog
+   Tiny Core Linux uses a trimmed down syslogd by default. We opted to include
+   rsyslog for the remote forwarding and configuration. There are patches in
+   ~tce~ that are applied to disable syslogd and enable rsyslogd. Also, the
+   configuration is available there as well.
 
 * Monitoring AWS Server
   Can be a small instance, even free tier. This is only used to aggregate logs for monitoring and serve as a location for backup SSH tunnels to originate.
@@ -207,6 +276,19 @@ the "lodge" station houses the internet communications.
    Only one thing was changed in the Proxim wireless configuration from a
    standard factory installation and that is the Channel was changed to 140
    from 160.
+
+   The link status can be monitored via the Proxim's internal web server
+   (available on port 8080) In the out of the box configuration the interfaces
+   are located at:
+
+   Lodge: ~http://169.254.128.131~
+
+   Glacier: ~http://169.254.128.132~
+
+   There is a script ~open-proxim-forwards~ that can be used to forward local
+   ports to these interfaces over SSH to make browsing them easier remotely. For
+   more details on the Proxim stations please see the reference folder for their
+   manuals.
   
 * MorningStar Charge Controller
 ** Configuration
