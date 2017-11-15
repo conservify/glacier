@@ -105,7 +105,7 @@ func shouldBeOff(now time.Time, nextOff time.Time) bool {
 }
 
 func nextOffTime(loc *time.Location) time.Time {
-	n := time.Now()
+	n := time.Now().In(loc)
 	t := time.Date(n.Year(), n.Month(), n.Day(), OffHour, 0, 0, 0, loc)
 	if t.Before(n) {
 		return t.AddDate(0, 0, 1)
@@ -114,7 +114,7 @@ func nextOffTime(loc *time.Location) time.Time {
 }
 
 func nextOnTime(loc *time.Location) time.Time {
-	n := time.Now()
+	n := time.Now().In(loc)
 	t := time.Date(n.Year(), n.Month(), n.Day(), OnHour, 0, 0, 0, loc)
 	if t.Before(n) {
 		return t.AddDate(0, 0, 1)
