@@ -207,6 +207,12 @@ func main() {
 		nextOff := nextOffTime(location)
 		nextOn := nextOnTime(location)
 
+		log.Printf("UTC:")
+		log.Printf("Now: %v", time.Now().UTC())
+		log.Printf("Off: %v (in %v)", nextOff.UTC(), nextOff.Sub(time.Now()))
+		log.Printf(" On: %v (in %v)", nextOn.UTC(), nextOn.Sub(time.Now()))
+
+		log.Printf("%s:", location)
 		log.Printf("Now: %v", time.Now().In(location))
 		log.Printf("Off: %v (in %v)", nextOff, nextOff.Sub(time.Now()))
 		log.Printf(" On: %v (in %v)", nextOn, nextOn.Sub(time.Now()))
