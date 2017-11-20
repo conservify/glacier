@@ -127,13 +127,20 @@ func UploadBinary(file *WaveformBinary, filePath string, config *Config) (err er
 	return
 }
 
-func ArchiveBinary(file *WaveformBinary, filePath string, config *Config) (err error) {
+func getArchivePath(file *WaveformBinary, filePath string, failed bool) string {
 	directory := path.Dir(filePath)
 	yearMonth := file.StartTime.Format("200601")
 	day := file.StartTime.Format("02")
 	hour := file.StartTime.Format("15")
-	newPath := path.Join(directory, "archive", yearMonth, day, hour)
+	base := "archive"
+	if failed {
+		base = "failed"
+	}
+	return path.Join(directory, base, yearMonth, day, hour)
+}
 
+func ArchiveBinary(file *WaveformBinary, filePath string, config *Config, failed bool) (err error) {
+	newPath := getArchivePath(file, filePath, failed)
 	if os.MkdirAll(newPath, 0777) == nil {
 		err := os.Rename(filePath, path.Join(newPath, path.Base(filePath)))
 		if err == nil {
@@ -232,11 +239,13 @@ func ScanDirectories(paths []string, config *Config) {
 				} else if config.Archive {
 					binary := NewGeophoneBinary(child.Path)
 					if binary != nil {
+						failed := false
 						if err := UploadBinary(binary, child.Path, config); err != nil {
+							failed = true
 							log.Printf("Error uploading %s", err)
 						}
 
-						if err := ArchiveBinary(binary, child.Path, config); err != nil {
+						if err := ArchiveBinary(binary, child.Path, config, failed); err != nil {
 							log.Printf("Error archiving %s", err)
 						}
 					} else {
