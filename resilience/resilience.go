@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	fastping "github.com/tatsushid/go-fastping"
@@ -93,11 +94,22 @@ func testNetworking(hostname string) (anySuccess bool, stopped bool) {
 func Execute(l []string, dryRun bool, sleep int) error {
 	log.Printf("Exec: %v", l)
 	if !dryRun {
+		so := bytes.Buffer{}
+		se := bytes.Buffer{}
 		time.Sleep(time.Duration(sleep) * time.Second)
 		c := exec.Command(l[0], l[1:]...)
+		c.Stdout = &so
+		c.Stderr = &se
 		err := c.Run()
 		if err != nil {
 			log.Printf("Error: %v", err)
+		}
+
+		if so.Len() > 0 {
+			log.Printf("%s", so.String())
+		}
+		if se.Len() > 0 {
+			log.Printf("%s", se.String())
 		}
 	}
 	return nil
@@ -116,7 +128,7 @@ func main() {
 
 	flag.BoolVar(&o.DryRun, "dry", false, "dry run")
 	flag.BoolVar(&o.DisableReboot, "disable-reboot", false, "disable reboot")
-	flag.StringVar(&o.LogFile, "log", "resilience.log", "log file")
+	flag.StringVar(&o.LogFile, "log", "", "log file")
 	flag.StringVar(&o.Syslog, "syslog", "", "enable syslog and name the ap")
 	flag.StringVar(&o.ActionScript, "action-script", "", "action script")
 
@@ -127,13 +139,15 @@ func main() {
 	flag.Parse()
 
 	if o.Syslog == "" {
-		f, err := os.OpenFile(o.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("Error opening file: %v", err)
-		}
-		defer f.Close()
+		if o.LogFile != "" {
+			f, err := os.OpenFile(o.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+			if err != nil {
+				log.Fatalf("Error opening file: %v", err)
+			}
+			defer f.Close()
 
-		log.SetOutput(f)
+			log.SetOutput(f)
+		}
 	} else {
 		syslog, err := syslog.New(syslog.LOG_NOTICE, o.Syslog)
 		if err == nil {
@@ -152,8 +166,9 @@ func main() {
 	}
 
 	networkGood := false
+	stopped := false
 	for try := 0; try < 3; try += 1 {
-		networkGood, stopped := testNetworking(hostname)
+		networkGood, stopped = testNetworking(hostname)
 		if stopped {
 			log.Printf("Stopped.")
 			os.Exit(1)
