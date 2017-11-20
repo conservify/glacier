@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"flag"
 	"github.com/fsnotify/fsnotify"
+	"github.com/jpillora/backoff"
 	"io/ioutil"
 	"log"
 	"log/syslog"
@@ -28,7 +29,7 @@ type Config struct {
 	Archive bool
 }
 
-func WriteSimplifiedBinary(filePath string, binaryPath string) (parsed *KinemetricsFile, err error) {
+func writeSimplifiedBinary(filePath string, binaryPath string) (parsed *KinemetricsFile, err error) {
 	fp, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
@@ -93,7 +94,7 @@ func NewGeophoneBinary(filePath string) (binary *WaveformBinary) {
 	return
 }
 
-func UploadBinary(file *WaveformBinary, filePath string, config *Config) (err error) {
+func uploadBinary(file *WaveformBinary, filePath string, config *Config) (err error) {
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return err
@@ -127,20 +128,16 @@ func UploadBinary(file *WaveformBinary, filePath string, config *Config) (err er
 	return
 }
 
-func getArchivePath(file *WaveformBinary, filePath string, failed bool) string {
-	directory := path.Dir(filePath)
+func getArchivePath(file *WaveformBinary, baseDirectory string) string {
 	yearMonth := file.StartTime.Format("200601")
 	day := file.StartTime.Format("02")
 	hour := file.StartTime.Format("15")
 	base := "archive"
-	if failed {
-		base = "failed"
-	}
-	return path.Join(directory, base, yearMonth, day, hour)
+	return path.Join(baseDirectory, base, yearMonth, day, hour)
 }
 
-func ArchiveBinary(file *WaveformBinary, filePath string, config *Config, failed bool) (err error) {
-	newPath := getArchivePath(file, filePath, failed)
+func archiveBinary(file *WaveformBinary, filePath string, config *Config) (err error) {
+	newPath := getArchivePath(file, path.Dir(filePath))
 	if os.MkdirAll(newPath, 0777) == nil {
 		err := os.Rename(filePath, path.Join(newPath, path.Base(filePath)))
 		if err == nil {
@@ -175,7 +172,7 @@ func (s ByStamp) Less(i, j int) bool {
 	return s[i].Stamp.Unix() > s[j].Stamp.Unix()
 }
 
-func ReadFiles(directory string, config *Config) (pending []PendingFile, err error) {
+func readFiles(directory string, config *Config) (pending []PendingFile, err error) {
 	re := regexp.MustCompile(config.Pattern)
 	files, err := ioutil.ReadDir(directory)
 	if err != nil {
@@ -204,55 +201,76 @@ func ReadFiles(directory string, config *Config) (pending []PendingFile, err err
 	return
 }
 
-func ScanDirectories(paths []string, config *Config) {
-	for _, filePath := range paths {
-		fi, err := os.Stat(filePath)
-		if err != nil {
-			log.Fatalf("Error %v", err)
-		}
-		switch mode := fi.Mode(); {
-		case mode.IsDir():
-			files, err := ReadFiles(filePath, config)
+func uploadSingleFile(child PendingFile, config *Config, b *backoff.Backoff) bool {
+	if strings.EqualFold(path.Ext(child.Name), ".evt") {
+		binaryPath := child.Path + ".bin"
+
+		if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
+			log.Printf("Processing %s...", child.Path)
+
+			parsed, err := writeSimplifiedBinary(child.Path, binaryPath)
 			if err != nil {
-				log.Fatalf("Error listing directory %v", err)
+				log.Printf("Error writing binary %s", err)
 			}
 
-			for _, child := range files {
-				if strings.EqualFold(path.Ext(child.Name), ".evt") {
-					binaryPath := child.Path + ".bin"
+			binary := NewKinemetricsBinary(parsed)
+			if binary != nil {
+				if err := uploadBinary(binary, binaryPath, config); err != nil {
+					log.Printf("Error uploading %s", err)
+				} else {
+					b.Reset()
+					return true
+				}
+			}
+		}
+	} else if config.Archive {
+		binary := NewGeophoneBinary(child.Path)
+		if binary != nil {
+			if err := uploadBinary(binary, child.Path, config); err != nil {
+				log.Printf("Error uploading %s", err)
+			} else {
+				b.Reset()
+				if err := archiveBinary(binary, child.Path, config); err != nil {
+					log.Printf("Error archiving %s", err)
+				}
+				return true
+			}
+		} else {
+			log.Printf("Unable to parse Geophone file name: %s", child.Path)
+		}
+	}
+	return false
+}
 
-					if _, err := os.Stat(binaryPath); os.IsNotExist(err) {
-						log.Printf("Processing %s...", child.Path)
+func scanDirectories(paths []string, config *Config, b *backoff.Backoff) {
+	for {
+		anyFiles := false
 
-						parsed, err := WriteSimplifiedBinary(child.Path, binaryPath)
-						if err != nil {
-							log.Printf("Error writing binary %s", err)
-						}
+		for _, filePath := range paths {
+			fi, err := os.Stat(filePath)
+			if err != nil {
+				log.Fatalf("Error %v", err)
+			}
+			switch mode := fi.Mode(); {
+			case mode.IsDir():
+				files, err := readFiles(filePath, config)
+				if err != nil {
+					log.Fatalf("Error listing directory %v", err)
+				}
 
-						binary := NewKinemetricsBinary(parsed)
-						if binary != nil {
-							if err := UploadBinary(binary, binaryPath, config); err != nil {
-								log.Printf("Error uploading %s", err)
-							}
-						}
-					}
-				} else if config.Archive {
-					binary := NewGeophoneBinary(child.Path)
-					if binary != nil {
-						failed := false
-						if err := UploadBinary(binary, child.Path, config); err != nil {
-							failed = true
-							log.Printf("Error uploading %s", err)
-						}
-
-						if err := ArchiveBinary(binary, child.Path, config, failed); err != nil {
-							log.Printf("Error archiving %s", err)
-						}
-					} else {
-						log.Printf("Unable to parse Geophone file name: %s", child.Path)
+				for _, child := range files {
+					anyFiles = true
+					if !uploadSingleFile(child, config, b) {
+						d := b.Duration()
+						log.Printf("Sleeping for %v", d)
+						time.Sleep(d)
 					}
 				}
 			}
+		}
+
+		if !anyFiles {
+			break
 		}
 	}
 }
@@ -291,7 +309,14 @@ func main() {
 		}
 	}
 
-	ScanDirectories(flag.Args(), &config)
+	b := &backoff.Backoff{
+		Min:    100 * time.Millisecond,
+		Max:    5 * 60 * time.Second,
+		Factor: 2,
+		Jitter: false,
+	}
+
+	scanDirectories(flag.Args(), &config, b)
 
 	if config.Watch {
 		watcher, err := fsnotify.NewWatcher()
@@ -305,7 +330,7 @@ func main() {
 			for {
 				select {
 				case _ = <-watcher.Events:
-					ScanDirectories(flag.Args(), &config)
+					scanDirectories(flag.Args(), &config, b)
 				case err := <-watcher.Errors:
 					log.Println("Error:", err)
 				}
