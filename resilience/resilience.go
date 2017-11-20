@@ -90,10 +90,10 @@ func testNetworking(hostname string) (anySuccess bool, stopped bool) {
 	return
 }
 
-func Execute(l []string, dryRun bool) error {
+func Execute(l []string, dryRun bool, sleep int) error {
 	log.Printf("Exec: %v", l)
 	if !dryRun {
-		time.Sleep(10 * time.Second)
+		time.Sleep(time.Duration(sleep) * time.Second)
 		c := exec.Command(l[0], l[1:]...)
 		err := c.Run()
 		if err != nil {
@@ -108,6 +108,7 @@ type Options struct {
 	DisableReboot bool
 	LogFile       string
 	Syslog        string
+	ActionScript  string
 }
 
 func main() {
@@ -117,6 +118,7 @@ func main() {
 	flag.BoolVar(&o.DisableReboot, "disable-reboot", false, "disable reboot")
 	flag.StringVar(&o.LogFile, "log", "resilience.log", "log file")
 	flag.StringVar(&o.Syslog, "syslog", "", "enable syslog and name the ap")
+	flag.StringVar(&o.ActionScript, "action-script", "", "action script")
 
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr, "Usage:\n  %s [options] hostname [source]\n\nOptions:\n", os.Args[0])
@@ -149,18 +151,31 @@ func main() {
 		log.Printf("Dry run enabled.")
 	}
 
-	networkGood, stopped := testNetworking(hostname)
-	if !stopped && !networkGood {
+	networkGood := false
+	for try := 0; try < 3; try += 1 {
+		networkGood, stopped := testNetworking(hostname)
+		if stopped {
+			log.Printf("Stopped.")
+			os.Exit(1)
+		}
+		if networkGood {
+			log.Printf("Network is good.")
+			break
+		} else {
+			if o.ActionScript != "" {
+				Execute([]string{o.ActionScript, fmt.Sprintf("%d", try)}, o.DryRun, 0)
+			}
+		}
+	}
+	if !networkGood {
 		log.Printf("Unreachable, restarting...")
-		Execute([]string{"/sbin/reboot"}, o.DryRun)
-	} else if networkGood {
-		log.Printf("Network is good.")
+		Execute([]string{"/sbin/reboot"}, o.DryRun, 10)
 	}
 
 	usbGood := testUsb()
 	if !usbGood {
 		log.Printf("USB devices are gone, restarting...")
-		Execute([]string{"/sbin/reboot"}, o.DryRun)
+		Execute([]string{"/sbin/reboot"}, o.DryRun, 10)
 	} else {
 		log.Printf("USB is good.")
 	}
