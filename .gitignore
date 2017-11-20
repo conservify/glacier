@@ -12,6 +12,8 @@ secrets.go
 morningstar/morningstar
 morningstar/morningstar*.csv
 
+uploader/uploader
+
 tunneller/tunneller
 log-monitor/log-monitor
 resilience/resilience
