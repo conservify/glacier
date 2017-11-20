@@ -303,9 +303,11 @@ BOOL WriteLogFile(logfile_t *lf, DataHeader *hdr) {
 			fclose(lf->csv_fp);
 			lf->csv_fp = NULL;
 
-			printf("Finished %s\n", lf->csv_file_name); 
-			if (rename(INCOMING_FILE_NAME_CSV, lf->csv_file_name) != 0) {
-				fprintf(stderr, "Unable to rename %s to %s\n", INCOMING_FILE_NAME_CSV, lf->csv_file_name);
+			if (false) {
+				printf("Finished %s\n", lf->csv_file_name); 
+				if (rename(INCOMING_FILE_NAME_CSV, lf->csv_file_name) != 0) {
+					fprintf(stderr, "Unable to rename %s to %s\n", INCOMING_FILE_NAME_CSV, lf->csv_file_name);
+				}
 			}
 		}
 
