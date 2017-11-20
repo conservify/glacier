@@ -23,3 +23,9 @@ ntpd
 
 # Do background stuff now that everything is ready.
 /opt/bootlocal.sh &
+
+# Left over from an older package.
+if [ -f /etc/periodic/13min ]; then
+    rm /etc/periodic/13min
+    filetool.sh -r
+fi

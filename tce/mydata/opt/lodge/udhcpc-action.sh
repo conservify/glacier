@@ -20,7 +20,7 @@ case "$1" in
                 if [ "$NUM" -eq "10" ]; then
                         rm -rf /tmp/udhcpd-failures
                         /usr/bin/logger "leasefail REBOOT"
-                        /sbin/reboot
+                        # /sbin/reboot
                 fi
                 ;;
 
