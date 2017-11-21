@@ -58,12 +58,12 @@ $EndComp
 $Comp
 L charge-controller U12
 U 1 1 593F135F
-P 7200 2450
-F 0 "U12" H 7350 2550 60  0001 C CNN
-F 1 "charge-controller" H 7000 2650 60  0000 C CNN
-F 2 "" H 7200 2450 60  0001 C CNN
-F 3 "" H 7200 2450 60  0001 C CNN
-	1    7200 2450
+P 7200 3250
+F 0 "U12" H 7350 3350 60  0001 C CNN
+F 1 "charge-controller" H 7000 3450 60  0000 C CNN
+F 2 "" H 7200 3250 60  0001 C CNN
+F 3 "" H 7200 3250 60  0001 C CNN
+	1    7200 3250
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -80,12 +80,12 @@ $EndComp
 $Comp
 L power-bus U1
 U 1 1 593F13B3
-P 4200 2300
-F 0 "U1" H 4150 2200 60  0001 C CNN
-F 1 "power-bus" H 4200 2300 60  0000 C CNN
-F 2 "" H 4200 2300 60  0001 C CNN
-F 3 "" H 4200 2300 60  0001 C CNN
-	1    4200 2300
+P 4200 3100
+F 0 "U1" H 4150 3000 60  0001 C CNN
+F 1 "power-bus" H 4200 3100 60  0000 C CNN
+F 2 "" H 4200 3100 60  0001 C CNN
+F 3 "" H 4200 3100 60  0001 C CNN
+	1    4200 3100
 	-1   0    0    1   
 $EndComp
 $Comp
@@ -113,12 +113,12 @@ $EndComp
 $Comp
 L wireless-bridge U6
 U 1 1 593F1504
-P 4550 5750
-F 0 "U6" H 4550 5650 60  0001 C CNN
-F 1 "wireless-bridge" H 4550 5750 60  0000 C CNN
-F 2 "" H 4550 5750 60  0001 C CNN
-F 3 "" H 4550 5750 60  0001 C CNN
-	1    4550 5750
+P 4550 6100
+F 0 "U6" H 4550 6000 60  0001 C CNN
+F 1 "wireless-bridge" H 4550 6100 60  0000 C CNN
+F 2 "" H 4550 6100 60  0001 C CNN
+F 3 "" H 4550 6100 60  0001 C CNN
+	1    4550 6100
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -132,60 +132,41 @@ F 3 "" H 4400 3800 60  0001 C CNN
 	1    4400 3800
 	1    0    0    -1  
 $EndComp
-$Comp
-L hard-drive U3
-U 1 1 593F16E0
-P 4400 3350
-F 0 "U3" H 4400 3250 60  0001 C CNN
-F 1 "hard-drive" H 4400 3350 60  0000 C CNN
-F 2 "" H 4400 3350 60  0001 C CNN
-F 3 "" H 4400 3350 60  0001 C CNN
-	1    4400 3350
-	1    0    0    -1  
-$EndComp
-Text Label 5150 2050 0    60   ~ 0
+Text Label 5150 2850 0    60   ~ 0
 5v
-Text Label 5100 2150 0    60   ~ 0
+Text Label 5100 2950 0    60   ~ 0
 15v
-Text Label 5000 2250 0    60   ~ 0
-12v#1
-Text Label 5000 2350 0    60   ~ 0
-12v#2
 Text Label 6150 4550 0    60   ~ 0
 12v#1
 $Comp
 L batteries U10
 U 1 1 593F2508
-P 6700 1800
-F 0 "U10" H 6700 1700 60  0001 C CNN
-F 1 "batteries" H 6700 1800 60  0000 C CNN
-F 2 "" H 6700 1800 60  0001 C CNN
-F 3 "" H 6700 1800 60  0001 C CNN
-	1    6700 1800
+P 6700 2600
+F 0 "U10" H 6700 2500 60  0001 C CNN
+F 1 "batteries" H 6700 2600 60  0000 C CNN
+F 2 "" H 6700 2600 60  0001 C CNN
+F 3 "" H 6700 2600 60  0001 C CNN
+	1    6700 2600
 	1    0    0    -1  
 $EndComp
 Text Label 3400 4750 0    60   ~ 0
 5v
 Wire Wire Line
-	3400 5650 3700 5650
+	3400 6000 3700 6000
 Wire Wire Line
 	5150 4200 6500 4200
 Wire Wire Line
-	4950 2050 5250 2050
+	4950 2850 5250 2850
 Wire Wire Line
-	5250 2150 4950 2150
+	5250 2950 4950 2950
 Wire Wire Line
-	5250 2250 4950 2250
+	4950 3250 5950 3250
 Wire Wire Line
-	5250 2350 4950 2350
+	5950 3050 5800 3050
 Wire Wire Line
-	4950 2450 5950 2450
+	5800 3050 5800 2600
 Wire Wire Line
-	5950 2250 5800 2250
-Wire Wire Line
-	5800 2250 5800 1800
-Wire Wire Line
-	5800 1800 5950 1800
+	5800 2600 5950 2600
 Wire Wire Line
 	3400 4750 3700 4750
 Wire Wire Line
@@ -208,16 +189,8 @@ Wire Wire Line
 	3400 3700 3700 3700
 Wire Wire Line
 	3400 3900 3700 3900
-Wire Wire Line
-	3400 3450 3700 3450
-Wire Wire Line
-	3400 3250 3700 3250
 Text Label 3500 3900 2    60   ~ 0
 5v
-Text Label 3400 3450 0    60   ~ 0
-5v
-Text Label 3400 3250 0    60   ~ 0
-usb2
 Text Label 3400 3700 0    60   ~ 0
 usb1
 Text Label 3400 4500 0    60   ~ 0
@@ -228,11 +201,11 @@ Wire Wire Line
 	3700 5250 3400 5250
 Text Label 3400 5250 0    60   ~ 0
 eth0
-Text Label 3400 5650 0    60   ~ 0
+Text Label 3400 6000 0    60   ~ 0
 eth0
 Wire Wire Line
-	3700 5550 3400 5550
-Text Label 3400 5550 0    60   ~ 0
+	3700 5900 3400 5900
+Text Label 3400 5900 0    60   ~ 0
 12v#2
 Text Label 6150 4450 0    60   ~ 0
 usb4
@@ -301,25 +274,35 @@ Wire Wire Line
 	5400 4400 5150 4400
 Text Label 6250 5600 0    60   ~ 0
 usb5
-Text Label 5700 2550 0    60   ~ 0
+Text Label 5700 3350 0    60   ~ 0
 usb6
 Wire Wire Line
-	5700 2550 5950 2550
+	5700 3350 5950 3350
 $Comp
 L solar-panels U9
 U 1 1 593F50F1
-P 6700 1350
-F 0 "U9" H 6700 1300 60  0001 C CNN
-F 1 "solar-panels" H 6700 1400 60  0000 C CNN
-F 2 "" H 6700 1400 60  0001 C CNN
-F 3 "" H 6700 1400 60  0001 C CNN
-	1    6700 1350
+P 6700 2150
+F 0 "U9" H 6700 2100 60  0001 C CNN
+F 1 "solar-panels" H 6700 2200 60  0000 C CNN
+F 2 "" H 6700 2200 60  0001 C CNN
+F 3 "" H 6700 2200 60  0001 C CNN
+	1    6700 2150
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	5950 2350 5650 2350
+	5950 3150 5650 3150
 Wire Wire Line
-	5650 2350 5650 1350
+	5650 3150 5650 2150
 Wire Wire Line
-	5650 1350 5950 1350
+	5650 2150 5950 2150
+Wire Wire Line
+	5250 3150 4950 3150
+Wire Wire Line
+	5250 3050 4950 3050
+Text Label 5000 3150 0    60   ~ 0
+12v#2
+Text Label 5000 3050 0    60   ~ 0
+12v#1
+Text Notes 3000 3150 0    60   ~ 0
+5v:      5v @ 3A \n15v:    15v @ 2A\n12v#1: 12v @ 2A\n12v#2: 12v @ 4.2A
 $EndSCHEMATC

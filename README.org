@@ -7,6 +7,23 @@ via a point-to-point wireless link. The "glacier" station houses the sensors and
 the "lodge" station houses the internet communications.
 
 * Lodge
+** Summary
+   The Lodge station is composed of the following high level components:
+
+   1) Battery Bank
+   2) Solar Panels
+   3) Charge Controller
+   4) Raspberry Pi
+   5) AC Mains Charger (Summer)
+   6) Proxim Wireless
+   7) ExplorNET Router/Dish
+
+   It's function is to receive data from the glacier over the Proxim wireless
+   link and then relay that information to the web. Note that it does this
+   merely as a router/NAT gateway. The glacier itself runs software that
+   connects to the internet. The Lodge station also has a hard drive backup of
+   the data that the Glacier station has collection.
+
 ** Hardware
    This is a description of the hardware components. For wiring/connection diagrams see below.
 
@@ -91,6 +108,16 @@ the "lodge" station houses the internet communications.
       | 7,17,27,37,47,57 | offsite-backup | Backup glacier data to the lodge.                                         |
 
 * Glacier
+  The Glacier station houses the Geophone and other sensors itself and transmits
+  their information, live, down to the lodge. It's high level components are:
+
+   1) Battery Bank
+   2) Solar Panels
+   3) Charge Controller
+   4) Raspberry Pi
+   5) Proxim Wireless
+   6) Geophone
+
 ** Hardware
    This is a description of the hardware components. For wiring/connection diagrams see below.
 
