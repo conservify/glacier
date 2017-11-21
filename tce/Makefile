@@ -42,12 +42,21 @@ $(TOOLS_ROOT)/app/adc:
 tools: setup $(TOOLS_ROOT)/app/adc $(TOOLS_ROOT)/app/tunneller $(TOOLS_ROOT)/app/resilience $(TOOLS_ROOT)/app/uploader $(TOOLS_ROOT)/app/morningstar $(TOOLS_ROOT)/app/data-roller
 
 $(BUILD)/conservify-glacier-tools.tcz: tools
+	mkdir -p $(TOOLS_ROOT)/etc
+	mkdir -p $(TOOLS_ROOT)/opt
+	mkdir -p $(TOOLS_ROOT)/var/spool/rsyslog
+	cp mydata/opt/boot*  $(TOOLS_ROOT)/opt
+	cp -ar mydata/opt/lodge $(TOOLS_ROOT)/opt
+	cp -ar mydata/opt/glacier $(TOOLS_ROOT)/opt
+	cp mandatory/etc/logrotate.conf $(TOOLS_ROOT)/etc
+	cp mandatory/etc/rsyslog.conf.* $(TOOLS_ROOT)/etc
 	mkdir -p $(TOOLS_ROOT)/usr/local/go/lib/time
 	cp $(GOROOT)/lib/time/zoneinfo.zip $(TOOLS_ROOT)/usr/local/go/lib/time
 	cp adc-wrapper $(TOOLS_ROOT)/app/adc-wrapper
 	cp uploader-wrapper $(TOOLS_ROOT)/app/uploader-wrapper
 	cp tunneller-wrapper $(TOOLS_ROOT)/app/tunneller-wrapper
 	mksquashfs $(TOOLS_ROOT) $(BUILD)/conservify-glacier-tools.tcz -b 4k -no-xattrs -noappend
+	find $(TOOLS_ROOT)
 
 $(BUILD)/mydata.tgz: setup
 	sudo rm -rf mydata.tgz $(MYDATA_ROOT)

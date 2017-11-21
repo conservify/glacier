@@ -1,7 +1,8 @@
 #!/bin/sh
 # -*- mode: sh -*-
 
-/app/resilience --syslog resilience 8.8.8.8 | /usr/bin/logger -t resilience 2>&1
+SCRIPT=/opt/`hostname`/restore-networking.sh
+/app/resilience --action-script "$SCRIPT" --syslog resilience 8.8.8.8 | /usr/bin/logger -t resilience 2>&1
 
 ping -c 1 25.69.9.148 | /usr/bin/logger -t resilience 2>&1
 if [ "$?" == 0 ]; then

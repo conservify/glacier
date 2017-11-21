@@ -1,13 +1,17 @@
 #!/bin/sh
 
-# Start watchdog
-# /usr/sbin/watchdog -T 15 -t 5 /dev/watchdog
-
 # Set CPU frequency governor to ondemand (default is performance)
 echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
 # Start openssh daemon
 /usr/local/etc/init.d/openssh start
+
+# Fix rsyslog configuration and restart the service.
+FILE=/etc/rsyslog.conf.`hostname`
+if [ -f $FILE ]; then
+    mv $FILE /etc/rsyslog.conf
+    pkill rsyslogd && rsyslogd
+fi
 
 # Start hamachi daemon.
 /usr/local/bin/hamachid
