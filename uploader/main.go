@@ -123,7 +123,10 @@ func uploadBinary(file *WaveformBinary, filePath string, config *Config) (err er
 
 	defer resp.Body.Close()
 	_, err = ioutil.ReadAll(resp.Body)
-	log.Printf("%s:\n", resp.Status)
+
+	if resp.Status != "200" {
+		log.Printf("%s:\n", resp.Status)
+	}
 
 	return
 }
