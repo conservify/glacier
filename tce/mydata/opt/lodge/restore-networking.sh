@@ -18,6 +18,7 @@ for i in 1 2 3; do
 
     ping -c 1 8.8.8.8
     if [ "$?" == 0 ]; then
+        pkill hamachid && hamachid
         exit 0
     fi
 done
