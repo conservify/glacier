@@ -90,53 +90,51 @@ type Options struct {
 }
 
 func forwardLocalPortToRemotePort(o *Options, sshConfig *ssh.ClientConfig) {
-	log.Printf("Listening on %v...", o.LocalEndpoint.String())
+	log.Printf("Connecting to %v...", o.ServerEndpoint.String())
 
-	listener, err := net.Listen("tcp", o.LocalEndpoint.String())
+	serverConnection, err := ssh.Dial("tcp", o.ServerEndpoint.String(), sshConfig)
 	if err != nil {
-		log.Printf("Unable to listen on %v: %s", o.LocalEndpoint, err)
+		log.Printf("Unable to connect to remote server: %s", err)
 	} else {
-		for {
-			log.Printf("New connection, opening %s...", o.LocalEndpoint.String())
+		log.Printf("Listening on %v...", o.LocalEndpoint.String())
 
+		listener, err := net.Listen("tcp", o.LocalEndpoint.String())
+		if err != nil {
+			log.Printf("Unable to listen on %v: %s", o.LocalEndpoint, err)
+		} else {
 			clientConnection, err := listener.Accept()
 			if err != nil {
 				if err != io.EOF {
 					log.Printf("Error %s", err)
 				}
-				break
+				return
 			} else {
-				log.Printf("Connecting to %v...", o.ServerEndpoint.String())
+				log.Printf("New connection, opening %s...", o.RemoteEndpoint.String())
 
-				serverConnection, err := ssh.Dial("tcp", o.ServerEndpoint.String(), sshConfig)
+				local, err := serverConnection.Dial("tcp", o.RemoteEndpoint.String())
 				if err != nil {
-					log.Printf("Unable to connect to remote server: %s", err)
+					log.Printf("Unable to connect to local server: %s", err)
 				} else {
-					local, err := serverConnection.Dial("tcp", o.RemoteEndpoint.String())
-					if err != nil {
-						log.Printf("Unable to connect to local server: %s", err)
-					} else {
-						log.Printf("Tunnelling!")
+					log.Printf("Tunnelling!")
 
-						s := time.Now()
+					s := time.Now()
 
-						handleConnection(clientConnection, local)
+					handleConnection(clientConnection, local)
 
-						local.Close()
+					local.Close()
 
-						log.Printf("Done after %v", time.Since(s))
-					}
-
-					serverConnection.Close()
+					log.Printf("Done after %v", time.Since(s))
 				}
+
+				serverConnection.Close()
 
 				clientConnection.Close()
 			}
 
 			time.Sleep(1 * time.Second)
-		}
 
-		listener.Close()
+			listener.Close()
+		}
 	}
 }
 
@@ -240,14 +238,14 @@ func main() {
 	}
 
 	if o.Syslog == "" {
-		f, err := os.OpenFile(o.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("Error opening file: %v", err)
-		}
-		defer f.Close()
 		if o.LogFile != "" {
+			f, err := os.OpenFile(o.LogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+			if err != nil {
+				log.Fatalf("Error opening file: %v", err)
+			}
+			defer f.Close()
 
-		log.SetOutput(f)
+			log.SetOutput(f)
 		}
 	} else {
 		syslog, err := syslog.New(syslog.LOG_NOTICE, o.Syslog)
