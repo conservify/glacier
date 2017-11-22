@@ -224,7 +224,7 @@ func main() {
 
 	flag.StringVar(&o.User, "user", "ubuntu", "user name")
 	flag.StringVar(&o.KeyFile, "key", "", "private key file")
-	flag.StringVar(&o.LogFile, "log", "tunneller.log", "log file")
+	flag.StringVar(&o.LogFile, "log", "", "log file")
 	flag.StringVar(&o.ServerEndpoint.Host, "server", "", "server to expose the local service")
 	flag.StringVar(&o.Syslog, "syslog", "", "enable syslog and name the ap")
 	flag.IntVar(&o.RemoteEndpoint.Port, "remote-port", 7000, "port that will forward to local port")
@@ -245,8 +245,10 @@ func main() {
 			log.Fatalf("Error opening file: %v", err)
 		}
 		defer f.Close()
+		if o.LogFile != "" {
 
 		log.SetOutput(f)
+		}
 	} else {
 		syslog, err := syslog.New(syslog.LOG_NOTICE, o.Syslog)
 		if err == nil {
