@@ -10,8 +10,11 @@ echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 FILE=/etc/rsyslog.conf.`hostname`
 if [ -f $FILE ]; then
     mv $FILE /etc/rsyslog.conf
-    pkill rsyslogd && rsyslogd
 fi
+
+# Restart services to reload configuration.
+pkill rsyslogd && rsyslogd
+pkill crond && crond
 
 # Start hamachi daemon.
 /usr/local/bin/hamachid
