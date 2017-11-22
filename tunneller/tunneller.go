@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/jpillora/backoff"
 	"golang.org/x/crypto/ssh"
 	"io"
 	"io/ioutil"
@@ -89,14 +90,18 @@ type Options struct {
 	ReconnectInterval int
 }
 
-func forwardLocalPortToRemotePort(o *Options, sshConfig *ssh.ClientConfig) {
+func forwardLocalPortToRemotePort(o *Options, sshConfig *ssh.ClientConfig, b *backoff.Backoff) {
 	log.Printf("Connecting to %v...", o.ServerEndpoint.String())
 
 	serverConnection, err := ssh.Dial("tcp", o.ServerEndpoint.String(), sshConfig)
 	if err != nil {
-		log.Printf("Unable to connect to remote server: %s", err)
+		d := b.Duration()
+		log.Printf("Unable to connect to remote server: %s (sleep %v)", err, d)
+		time.Sleep(d)
 	} else {
 		log.Printf("Listening on %v...", o.LocalEndpoint.String())
+
+		b.Reset()
 
 		listener, err := net.Listen("tcp", o.LocalEndpoint.String())
 		if err != nil {
@@ -175,14 +180,18 @@ func serviceRemoteToLocalConnections(listener net.Listener, o *Options, sshConfi
 	}
 }
 
-func forwardRemotePortToLocalPort(o *Options, sshConfig *ssh.ClientConfig) {
+func forwardRemotePortToLocalPort(o *Options, sshConfig *ssh.ClientConfig, b *backoff.Backoff) {
 	log.Printf("Connecting to %v...", o.ServerEndpoint.String())
 
 	serverConnection, err := ssh.Dial("tcp", o.ServerEndpoint.String(), sshConfig)
 	if err != nil {
-		log.Printf("Unable to connect to remote server: %s", err)
+		d := b.Duration()
+		log.Printf("Unable to connect to remote server: %s (sleep %v)", err, d)
+		time.Sleep(d)
 	} else {
-		log.Printf("Done, listening on %v...", o.RemoteEndpoint.String())
+		b.Reset()
+
+		log.Printf("Listening on %v...", o.RemoteEndpoint.String())
 
 		listener, err := serverConnection.Listen("tcp", o.RemoteEndpoint.String())
 		if err != nil {
@@ -254,6 +263,13 @@ func main() {
 		}
 	}
 
+	b := &backoff.Backoff{
+		Min:    100 * time.Millisecond,
+		Max:    60 * time.Second,
+		Factor: 2,
+		Jitter: false,
+	}
+
 	sshConfig := &ssh.ClientConfig{
 		User: o.User,
 		Auth: []ssh.AuthMethod{
@@ -264,9 +280,9 @@ func main() {
 
 	for {
 		if o.Reverse {
-			forwardLocalPortToRemotePort(&o, sshConfig)
+			forwardLocalPortToRemotePort(&o, sshConfig, b)
 		} else {
-			forwardRemotePortToLocalPort(&o, sshConfig)
+			forwardRemotePortToLocalPort(&o, sshConfig, b)
 		}
 
 		time.Sleep(1 * time.Second)
