@@ -95,11 +95,11 @@ type MachineStatus struct {
 }
 
 const offlineWarningAfter = -6 * time.Minute
-const diskUnknownAfter = -10 * time.Minute
+const diskUnknownAfter = -12 * time.Minute
 const geophoneInterval = -20 * time.Second
 const uploaderInterval = -2 * time.Minute
 const localBackupInterval = -10 * time.Minute
-const offsiteBackupInterval = -10 * time.Minute
+const offsiteBackupInterval = -12 * time.Minute
 const resilienceCheckInterval = -32 * time.Minute
 const cronCheckInterval = -6 * time.Minute
 const morningStarCheckInterval = -70 * time.Minute

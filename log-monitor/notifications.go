@@ -99,6 +99,7 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 			log.Printf("Notifying %v %v", problems, to)
 			twilio.SendSMS(fromNumber, to, message, "", "")
 		}
+		log.Printf("%s, %s", newStatus, message)
 	}
 }
 
