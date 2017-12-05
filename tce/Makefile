@@ -41,6 +41,18 @@ $(TOOLS_ROOT)/app/adc:
 
 tools: setup $(TOOLS_ROOT)/app/adc $(TOOLS_ROOT)/app/tunneller $(TOOLS_ROOT)/app/resilience $(TOOLS_ROOT)/app/uploader $(TOOLS_ROOT)/app/morningstar $(TOOLS_ROOT)/app/data-roller
 
+patch: $(BUILD)/conservify-glacier-patch-lodge.tcz
+
+$(BUILD)/conservify-glacier-patch-lodge.tcz: tools
+	mkdir -p $(TOOLS_ROOT)/usr/local/go/lib/time
+	mkdir -p $(TOOLS_ROOT)/etc
+	mkdir -p $(TOOLS_ROOT)/opt
+	cp mydata/opt/bootlocal.sh $(TOOLS_ROOT)/opt
+	cp mandatory/etc/rsyslog.conf.lodge $(TOOLS_ROOT)/etc/rsyslog.conf
+	cp $(GOROOT)/lib/time/zoneinfo.zip $(TOOLS_ROOT)/usr/local/go/lib/time
+	mksquashfs $(TOOLS_ROOT) $(BUILD)/conservify-glacier-patch-lodge.tcz -b 4k -no-xattrs -noappend
+	find $(TOOLS_ROOT)
+
 $(BUILD)/conservify-glacier-tools.tcz: tools
 	mkdir -p $(TOOLS_ROOT)/etc
 	mkdir -p $(TOOLS_ROOT)/opt
