@@ -14,10 +14,12 @@ import (
 type options struct {
 	Device string
 	Syslog string
+	DryRun bool
 }
 
 func main() {
 	o := options{}
+	flag.BoolVar(&o.DryRun, "dry", false, "dry run")
 	flag.StringVar(&o.Syslog, "syslog", "", "enable syslog and name the ap")
 	flag.StringVar(&o.Device, "device", "", "device to use")
 	flag.Parse()
@@ -90,15 +92,16 @@ func main() {
 		if m == "REBOOT" {
 			message := "REBOOTING," + getUptime()
 			err = rb.QueueMessage(message)
-			if err != nil {
-				log.Fatalf("Unable to queue message: %v", err)
-			}
-			_, err := rb.AttemptSession()
-			if err != nil {
-				log.Fatalf("Unable to establish session: %v", err)
+			if err == nil {
+				_, err := rb.AttemptSession()
+				if err != nil {
+					log.Printf("Unable to establish session: %v", err)
+				}
+			} else {
+				log.Printf("Unable to queue message: %v", err)
 			}
 
-			execute([]string{"/sbin/reboot"}, true, 10)
+			execute([]string{"/sbin/reboot"}, o.DryRun, 10)
 		} else {
 			message := "PONG," + getUptime()
 			err = rb.QueueMessage(message)
