@@ -2,15 +2,26 @@
  *
  */
 
+class Summary extends React.Component {
+    render() {
+        const { lodge, glacier } = this.props;
+
+        if (lodge.health.status == "Good" && glacier.health.status == "Good") {
+            return (<div className="col-md-12"> <p className="bg-success summary"> Both the lodge and the glacier are up. </p> </div>);
+        }
+        return (<div className="col-md-12"> <p className="bg-warning summary"> Something is wrong. </p> </div>);
+    }
+}
+
 class LastUpdatedStatus extends React.Component {
     render() {
         const { status, time, title, disabled } = this.props;
         const parsed = moment(time);
         const age = moment().diff(parsed, 'minutes');
 
-	if (disabled) {
+        if (disabled) {
             return <h3 className="time-status"><p className="" style={{ backgroundColor: "#ddd" }}>{title} <span className="age">disabled</span></p></h3>;
-	}
+	    }
 
         if (status == "Good") {
             return <h3 className="time-status"><p className="bg-success">{title} <span className="age">{age} mins</span></p></h3>;
@@ -195,9 +206,6 @@ class LodgeMachine extends Machine {
                 {this.renderResilience(machine.resilience)}
                 {this.renderCron(machine.cron)}
                 {this.renderMorningStar(machine.morningStar)}
-                {this.renderLocalBackup(machine.localBackup)}
-                {this.renderOffsiteBackup(machine.offsiteBackup)}
-                {this.renderMounts(machine.mounts)}
                 </div>);
     }
 }
@@ -212,9 +220,6 @@ class GlacierMachine extends Machine {
                 {this.renderResilience(machine.resilience)}
                 {this.renderCron(machine.cron)}
                 {this.renderMorningStar(machine.morningStar)}
-                {this.renderDisabled("Local Backup")}
-                {this.renderOffsiteBackup(machine.offsiteBackup)}
-                {this.renderMounts(machine.mounts)}
                 {this.renderGeophone(machine.geophone)}
                 {this.renderUploader(machine.uploader)}
                 </div>);
@@ -254,6 +259,7 @@ class StatusPage extends React.Component {
         }
         return (
             <div className="machines row">
+                <Summary lodge={lodge} glacier={glacier} />
                 <LodgeMachine machine={lodge} />
                 <GlacierMachine machine={glacier} />
             </div>
