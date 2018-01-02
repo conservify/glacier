@@ -276,7 +276,7 @@ func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 		Hostname:      lodge.Hostname,
 		Health:        checkHealth(lodge),
 		Mounts:        checkDisk(lodge),
-		LocalBackup:   checkLocalBackup(lodge),
+		// LocalBackup:   checkLocalBackup(lodge),
 		OffsiteBackup: checkOffsiteBackup(lodge),
 		Resilience:    checkResilienceCheck(lodge),
 		Cron:          checkCronCheck(lodge),

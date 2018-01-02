@@ -30,26 +30,31 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 	for _, m := range ns.Machines {
 		all := []StatusUpdate{
 			StatusUpdate{Machine: m.Hostname, Status: m.Health.Status, Name: "Health"},
-			StatusUpdate{Machine: m.Hostname, Status: m.Mounts.Status, Name: "Mounts"},
 		}
+		if m.Health.Status == Fatal {
+		} else {
+			all = append(all, StatusUpdate{Machine: m.Hostname, Status: m.Mounts.Status, Name: "Mounts"})
 
-		if m.LocalBackup != nil {
-			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "LocalBackup", Status: m.LocalBackup.Status})
-		}
-		if m.OffsiteBackup != nil {
-			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "OffsiteBackup", Status: m.OffsiteBackup.Status})
-		}
-		if m.Geophone != nil {
-			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Geophone", Status: m.Geophone.Status})
-		}
-		if m.Resilience != nil {
-			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Resilience", Status: m.Resilience.Status})
-		}
-		if m.Cron != nil {
-			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Cron", Status: m.Cron.Status})
-		}
-		if m.Uploader != nil {
-			all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Uploader", Status: m.Uploader.Status})
+			if false {
+				if m.LocalBackup != nil {
+					all = append(all, StatusUpdate{Machine: m.Hostname, Name: "LocalBackup", Status: m.LocalBackup.Status})
+				}
+				if m.OffsiteBackup != nil {
+					all = append(all, StatusUpdate{Machine: m.Hostname, Name: "OffsiteBackup", Status: m.OffsiteBackup.Status})
+				}
+			}
+			if m.Geophone != nil {
+				all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Geophone", Status: m.Geophone.Status})
+			}
+			if m.Resilience != nil {
+				all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Resilience", Status: m.Resilience.Status})
+			}
+			if m.Cron != nil {
+				all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Cron", Status: m.Cron.Status})
+			}
+			if m.Uploader != nil {
+				all = append(all, StatusUpdate{Machine: m.Hostname, Name: "Uploader", Status: m.Uploader.Status})
+			}
 		}
 
 		machineStatus := Good
