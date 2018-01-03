@@ -33,9 +33,9 @@ func (notifs *NotificationStatus) sendSingleStatus(ni *NetworkInfo) {
 		}
 		if m.Health.Status == Fatal {
 		} else {
-			all = append(all, StatusUpdate{Machine: m.Hostname, Status: m.Mounts.Status, Name: "Mounts"})
-
 			if false {
+				all = append(all, StatusUpdate{Machine: m.Hostname, Status: m.Mounts.Status, Name: "Mounts"})
+
 				if m.LocalBackup != nil {
 					all = append(all, StatusUpdate{Machine: m.Hostname, Name: "LocalBackup", Status: m.LocalBackup.Status})
 				}
