@@ -1,6 +1,6 @@
 set datafile separator ","
 set terminal png size 900,400
-set title "Voltage"
+set title title
 set ylabel "Level"
 set xlabel "Date"
 set xdata time

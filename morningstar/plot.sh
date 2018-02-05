@@ -16,10 +16,10 @@ go build add-unix-time.go
 go build slack-upload-file.go
 
 ./add-unix-time morningstar-lodge.csv > morningstar.csv
-gnuplot < plot.gnuplot > lodge.png
+gnuplot -e "title='Lodge Voltage'" plot.gnuplot > lodge.png
 
 ./add-unix-time morningstar-glacier.csv > morningstar.csv
-gnuplot < plot.gnuplot > glacier.png
+gnuplot -e "title='Glacier Voltage'" plot.gnuplot > glacier.png
 
 rm morningstar.csv morningstar-all.csv
 
