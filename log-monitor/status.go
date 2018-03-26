@@ -96,7 +96,7 @@ type MachineStatus struct {
 
 const offlineWarningAfter = -6 * time.Minute
 const diskUnknownAfter = -12 * time.Minute
-const geophoneInterval = -20 * time.Second
+const geophoneInterval = -2 * time.Minute
 const uploaderInterval = -2 * time.Minute
 const localBackupInterval = -10 * time.Minute
 const offsiteBackupInterval = -12 * time.Minute
@@ -273,9 +273,9 @@ func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 	}
 
 	ns.Machines["lodge"] = &MachineStatus{
-		Hostname:      lodge.Hostname,
-		Health:        checkHealth(lodge),
-		Mounts:        checkDisk(lodge),
+		Hostname: lodge.Hostname,
+		Health:   checkHealth(lodge),
+		Mounts:   checkDisk(lodge),
 		// LocalBackup:   checkLocalBackup(lodge),
 		OffsiteBackup: checkOffsiteBackup(lodge),
 		Resilience:    checkResilienceCheck(lodge),
@@ -284,9 +284,9 @@ func ToNetworkStatus(ni *NetworkInfo) (ns *NetworkStatus, err error) {
 	}
 
 	ns.Machines["glacier"] = &MachineStatus{
-		Hostname:      glacier.Hostname,
-		Health:        checkHealth(glacier),
-		Mounts:        checkDisk(glacier),
+		Hostname: glacier.Hostname,
+		Health:   checkHealth(glacier),
+		Mounts:   checkDisk(glacier),
 		// LocalBackup:   checkLocalBackup(glacier),
 		OffsiteBackup: checkOffsiteBackup(glacier),
 		Geophone:      checkGeophone(glacier),
