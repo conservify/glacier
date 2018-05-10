@@ -224,6 +224,18 @@ func (r *HourlyRendering) DrawHour(hour int64, files []*ArchiveFile) {
 	}
 }
 
+func (r *HourlyRendering) Exists(hour int64) bool {
+	t := time.Unix(hour, 0).UTC()
+	s := t.Format("20060102_150405")
+	name := fmt.Sprintf("frame_%d_%s.png", r.NumberOfRows, s)
+
+	if _, err := os.Stat(name); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
+
 func (r *HourlyRendering) Save() error {
 	if r.Start != nil {
 		s := r.Start.Format("20060102_150405")
@@ -239,7 +251,15 @@ func (r *HourlyRendering) Save() error {
 	return nil
 }
 
+type options struct {
+	Overwrite bool
+}
+
 func main() {
+	o := options{}
+
+	flag.BoolVar(&o.Overwrite, "overwrite", false, "overwite existing frames")
+
 	flag.Parse()
 
 	afs := NewArchiveFileSet()
@@ -258,12 +278,28 @@ func main() {
 
 	hr := NewHourlyRendering(12)
 
+	grouped := make(map[int64][]int64)
+	start := int64(0)
 	for _, h := range afs.Hours {
-		files := afs.Hourly[h]
+		if start == 0 || len(grouped[start]) == 12 {
+			start = h
+			grouped[start] = make([]int64, 0)
+		}
+		grouped[start] = append(grouped[start], h)
+	}
 
-		log.Printf("hour = %v files = %v", time.Unix(h, 0).UTC(), len(files))
-
-		hr.DrawHour(h, files)
+	for start, hours := range grouped {
+		if hr.Exists(start) {
+			if !o.Overwrite {
+				log.Printf("Skipping %v", time.Unix(start, 0))
+				continue
+			}
+		}
+		for _, h := range hours {
+			files := afs.Hourly[h]
+			log.Printf("Adding hour = %v files = %v", time.Unix(h, 0).UTC(), len(files))
+			hr.DrawHour(h, files)
+		}
 	}
 
 	hr.Save()
@@ -310,7 +346,7 @@ func (afs *ArchiveFileSet) Add(af *ArchiveFile) error {
 func (afs *ArchiveFileSet) AddFrom(path string) error {
 	log.Printf("Starting, reading %s...", path)
 	return filepath.Walk(path, func(p string, f os.FileInfo, err error) error {
-		if !f.IsDir() {
+		if f != nil && !f.IsDir() {
 			if af, err := NewArchiveFile(p); err != nil {
 				return err
 			} else {
