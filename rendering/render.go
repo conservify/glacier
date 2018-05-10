@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"flag"
 	"fmt"
 	"image"
 	"image/color"
@@ -23,10 +24,9 @@ type Sample struct {
 	Z float32
 }
 
-type Image struct {
-	W int
-	H int
-}
+const (
+	SamplesPerHour = 500 * 60 * 60
+)
 
 func mapFloat(v, oMin, oMax, nMin, nMax float64) float64 {
 	x := (v - oMin) / (oMax - oMin)
@@ -211,6 +211,10 @@ func (r *HourlyRendering) DrawHour(hour int64, files []*ArchiveFile) {
 		samples = append(samples, s.Samples...)
 	}
 
+	for i := len(samples); i < SamplesPerHour; i += 1 {
+		samples = append(samples, Sample{})
+	}
+
 	r.DrawSamples(samples, r.RowNumber, r.NumberOfRows)
 
 	r.RowNumber += 1
@@ -236,8 +240,17 @@ func (r *HourlyRendering) Save() error {
 }
 
 func main() {
+	flag.Parse()
+
 	afs := NewArchiveFileSet()
-	afs.AddFrom("../23")
+
+	for _, arg := range flag.Args() {
+		afs.AddFrom(arg)
+	}
+
+	if len(afs.Files) == 0 {
+		return
+	}
 
 	log.Printf("Number of files: %v", len(afs.Files))
 	log.Printf("Number of hours: %v", len(afs.Hours))
