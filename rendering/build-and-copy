@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -xe
+
+./dockcross-linux-armv7 make clean all
+
+scp render tc@169.254.128.129:
+scp render tc@lodge:
+ssh tc@lodge "scp render glacier:"
