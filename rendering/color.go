@@ -2,7 +2,10 @@ package main
 
 import (
 	"image/color"
+	_ "log"
 	"math"
+
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 func hsbToRgb(hue, saturation, brightness float64) (uint8, uint8, uint8) {
@@ -60,13 +63,28 @@ func hsbToRgb(hue, saturation, brightness float64) (uint8, uint8, uint8) {
 }
 
 func combine(c1, c2 color.Color) color.Color {
-	r, g, b, a := c1.RGBA()
+	r1, g1, b1, a1 := c1.RGBA()
 	r2, g2, b2, a2 := c2.RGBA()
 
-	return color.RGBA{
-		uint8((r + r2) >> 9), // div by 2 followed by ">> 8"  is ">> 9"
-		uint8((g + g2) >> 9),
-		uint8((b + b2) >> 9),
-		uint8((a + a2) >> 9),
+	if false {
+		cf1 := colorful.MakeColor(c1)
+		cf2 := colorful.MakeColor(c2)
+		return cf1.BlendRgb(cf2, 0.5)
 	}
+
+	if true {
+		r0 := (r1 + r2) >> 9
+		g0 := (g1 + g2) >> 9
+		b0 := (b1 + b2) >> 9
+		a0 := (a1 + a2) >> 9
+
+		return color.RGBA{
+			uint8(r0),
+			uint8(g0),
+			uint8(b0),
+			uint8(a0),
+		}
+	}
+
+	return c2
 }

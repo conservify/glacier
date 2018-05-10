@@ -54,7 +54,7 @@ func NewArchiveFile(fileName string) (*ArchiveFile, error) {
 	re := regexp.MustCompile(".*(\\d{14}).*")
 	matches := re.FindAllStringSubmatch(strings.Replace(path.Base(fileName), "_", "", -1), -1)
 	if len(matches) == 0 {
-		return nil, fmt.Errorf("Error finding time in filename.")
+		return nil, fmt.Errorf("Error finding time in filename: %s", fileName)
 	}
 
 	t, err := time.Parse("20060102150405", matches[0][1])
@@ -62,7 +62,7 @@ func NewArchiveFile(fileName string) (*ArchiveFile, error) {
 		return nil, fmt.Errorf("Error parsing time: %v", err)
 	}
 
-	hour := time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), 0, 0, 0, t.Location())
+	hour := time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), 0, 0, 0, t.Location()).UTC()
 
 	return &ArchiveFile{
 		Time:     &t,
@@ -96,18 +96,44 @@ func (af *ArchiveFile) ReadSamples() (*Samples, error) {
 	}, nil
 }
 
+type Rendering struct {
+	Image *image.RGBA
+}
+
+func NewRendering(cx, cy int) *Rendering {
+	i := image.NewRGBA(image.Rect(0, 0, cx, cy))
+
+	fill(i)
+
+	return &Rendering{
+		Image: i,
+	}
+}
+
+func (gr *Rendering) Clear() {
+	fill(gr.Image)
+}
+
 type AnalyzedSamples struct {
 	Samples []float64
 	Minimum float64
 	Maximum float64
 }
 
-func analyze(samples []Sample) *AnalyzedSamples {
+func (gr *Rendering) Analyze(axis string, samples []Sample) *AnalyzedSamples {
 	selected := make([]float64, 0)
 	minimum := float64(0.0)
 	maximum := float64(0.0)
 	for i, sample := range samples {
-		value := float64(sample.X)
+		value := 0.0
+		switch axis {
+		case "x":
+			value = float64(sample.X)
+		case "y":
+			value = float64(sample.Y)
+		case "z":
+			value = float64(sample.Z)
+		}
 		if i == 0 || value > maximum {
 			maximum = value
 		}
@@ -123,40 +149,22 @@ func analyze(samples []Sample) *AnalyzedSamples {
 	}
 }
 
-type Rendering struct {
-	Image *image.RGBA
-}
-
-func NewRendering() *Rendering {
-	i := image.NewRGBA(image.Rect(0, 0, 3000, 2000))
-
-	fill(i)
-
-	return &Rendering{
-		Image: i,
-	}
-}
-
-func (gr *Rendering) Clear() {
-	fill(gr.Image)
-}
-
-func (gr *Rendering) DrawSamples(samples []Sample, rowNumber, numberOfRows int) error {
-	as := analyze(samples)
+func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numberOfRows int, strictScaling bool) error {
+	as := gr.Analyze(axis, samples)
 
 	dy := gr.Image.Bounds().Dy()
+	rowCy := (dy / (numberOfRows + 1))
 	offsetY := dy / 2
 	if numberOfRows > 1 {
-		// offsetY = mapInt(rowNumber, 0, numberOfRows+1, 50, dy-50) + (dy / (numberOfRows + 1))
-		offsetY = (rowNumber + 1) * (dy / (numberOfRows + 1))
+		offsetY = (rowNumber + 1) * rowCy
 	}
 	numberOfSamples := len(as.Samples)
 	scale := 1.0 / float64(numberOfRows)
 	for i, sample := range as.Samples {
 		x := mapInt(i, 0, numberOfSamples, 0, gr.Image.Bounds().Dx())
 		y := sample * scale
-		if false {
-			y = mapFloat(sample, as.Minimum, as.Maximum, -500, 500)
+		if strictScaling {
+			y = mapFloat(sample, as.Minimum, as.Maximum, float64(-rowCy/2), float64(rowCy/2))
 		}
 
 		hue := mapFloat(math.Pow(math.Abs(sample), 1), 0, math.Pow(400, 1), 0, 255)
@@ -182,16 +190,20 @@ func (gr *Rendering) SaveTo(fileName string) error {
 
 type HourlyRendering struct {
 	*Rendering
-	Start        *time.Time
-	RowNumber    int
-	NumberOfRows int
+	Axis          string
+	StrictScaling bool
+	Start         *time.Time
+	RowNumber     int
+	NumberOfRows  int
 }
 
-func NewHourlyRendering(numberOfRows int) *HourlyRendering {
+func NewHourlyRendering(axis string, numberOfRows, cx, cy int, strictScaling bool) *HourlyRendering {
 	return &HourlyRendering{
-		Rendering:    NewRendering(),
-		Start:        nil,
-		NumberOfRows: numberOfRows,
+		Axis:          strings.ToLower(axis),
+		Rendering:     NewRendering(cx, cy),
+		Start:         nil,
+		NumberOfRows:  numberOfRows,
+		StrictScaling: strictScaling,
 	}
 }
 
@@ -215,7 +227,7 @@ func (r *HourlyRendering) DrawHour(hour int64, files []*ArchiveFile) {
 		samples = append(samples, Sample{})
 	}
 
-	r.DrawSamples(samples, r.RowNumber, r.NumberOfRows)
+	r.DrawSamples(r.Axis, samples, r.RowNumber, r.NumberOfRows, r.StrictScaling)
 
 	r.RowNumber += 1
 
@@ -224,11 +236,18 @@ func (r *HourlyRendering) DrawHour(hour int64, files []*ArchiveFile) {
 	}
 }
 
-func (r *HourlyRendering) Exists(hour int64) bool {
+func (r *HourlyRendering) ToFileName(hour int64) string {
 	t := time.Unix(hour, 0).UTC()
 	s := t.Format("20060102_150405")
-	name := fmt.Sprintf("frame_%d_%s.png", r.NumberOfRows, s)
+	flags := r.Axis
+	if r.StrictScaling {
+		flags += "_ss"
+	}
+	return fmt.Sprintf("frame_%s_%d_%s.png", flags, r.NumberOfRows, s)
+}
 
+func (r *HourlyRendering) Exists(hour int64) bool {
+	name := r.ToFileName(hour)
 	if _, err := os.Stat(name); os.IsNotExist(err) {
 		return false
 	}
@@ -238,8 +257,7 @@ func (r *HourlyRendering) Exists(hour int64) bool {
 
 func (r *HourlyRendering) Save() error {
 	if r.Start != nil {
-		s := r.Start.Format("20060102_150405")
-		name := fmt.Sprintf("frame_%d_%s.png", r.NumberOfRows, s)
+		name := r.ToFileName(r.Start.Unix())
 		log.Printf("Saving %s", name)
 		r.SaveTo(name)
 
@@ -252,12 +270,21 @@ func (r *HourlyRendering) Save() error {
 }
 
 type options struct {
-	Overwrite bool
+	Overwrite     bool
+	StrictScaling bool
+	Axis          string
+	Cx            int
+	Cy            int
 }
 
 func main() {
 	o := options{}
 
+	flag.StringVar(&o.Axis, "axis", "x", "axis")
+	flag.IntVar(&o.Cx, "cx", 60*60*2, "width")
+	flag.IntVar(&o.Cy, "cy", 2000, "height")
+
+	flag.BoolVar(&o.StrictScaling, "strict-scaling", false, "strict scaling")
 	flag.BoolVar(&o.Overwrite, "overwrite", false, "overwite existing frames")
 
 	flag.Parse()
@@ -265,7 +292,9 @@ func main() {
 	afs := NewArchiveFileSet()
 
 	for _, arg := range flag.Args() {
-		afs.AddFrom(arg)
+		if err := afs.AddFrom(arg); err != nil {
+			panic(err)
+		}
 	}
 
 	if len(afs.Files) == 0 {
@@ -276,7 +305,7 @@ func main() {
 	log.Printf("Number of hours: %v", len(afs.Hours))
 	log.Printf("Range: %v - %v", afs.Start, afs.End)
 
-	hr := NewHourlyRendering(12)
+	hr := NewHourlyRendering(o.Axis, 12, o.Cx, o.Cy, o.StrictScaling)
 
 	grouped := make(map[int64][]int64)
 	start := int64(0)
@@ -321,17 +350,18 @@ func NewArchiveFileSet() *ArchiveFileSet {
 }
 
 func (afs *ArchiveFileSet) Add(af *ArchiveFile) error {
+	unix := af.Hour.Unix()
 	afs.Files = append(afs.Files, af)
-	value := afs.Hourly[af.Hour.Unix()]
+	value := afs.Hourly[unix]
 	if value == nil {
 		value = make([]*ArchiveFile, 0)
-		afs.Hours = append(afs.Hours, af.Hour.Unix())
+		afs.Hours = append(afs.Hours, unix)
 		sort.Slice(afs.Hours, func(i, j int) bool {
 			return afs.Hours[i] < afs.Hours[j]
 		})
 	}
 	value = append(value, af)
-	afs.Hourly[af.Hour.Unix()] = value
+	afs.Hourly[unix] = value
 
 	if afs.Start == nil || afs.Start.After(*af.Time) {
 		afs.Start = af.Time
@@ -347,10 +377,12 @@ func (afs *ArchiveFileSet) AddFrom(path string) error {
 	log.Printf("Starting, reading %s...", path)
 	return filepath.Walk(path, func(p string, f os.FileInfo, err error) error {
 		if f != nil && !f.IsDir() {
-			if af, err := NewArchiveFile(p); err != nil {
-				return err
-			} else {
-				return afs.Add(af)
+			if filepath.Ext(p) == ".bin" {
+				if af, err := NewArchiveFile(p); err != nil {
+					return err
+				} else {
+					return afs.Add(af)
+				}
 			}
 		}
 		return nil
