@@ -5,10 +5,8 @@ import (
 	"flag"
 	"fmt"
 	"image"
-	"image/color"
 	"image/png"
 	"log"
-	"math"
 	"os"
 	"path"
 	"path/filepath"
@@ -152,6 +150,8 @@ func (gr *Rendering) Analyze(axis string, samples []Sample) *AnalyzedSamples {
 func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numberOfRows int, strictScaling bool) error {
 	as := gr.Analyze(axis, samples)
 
+	log.Printf("Analyzed [%f, %f]", as.Minimum, as.Maximum)
+
 	dy := gr.Image.Bounds().Dy()
 	rowCy := (dy / (numberOfRows + 1))
 	offsetY := dy / 2
@@ -167,9 +167,8 @@ func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numbe
 			y = mapFloat(sample, as.Minimum, as.Maximum, float64(-rowCy/2), float64(rowCy/2))
 		}
 
-		hue := mapFloat(math.Pow(math.Abs(sample), 1), 0, math.Pow(400, 1), 0, 255)
-		r, g, b := hsbToRgb(hue, 255, 255)
-		drawColumn(gr.Image, x, offsetY, offsetY+int(y), color.RGBA{r, g, b, 255})
+		clr := MapToColor(sample, as.Minimum, as.Maximum)
+		drawColumn(gr.Image, x, offsetY, offsetY+int(y), clr)
 	}
 
 	return nil

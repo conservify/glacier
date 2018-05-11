@@ -11,7 +11,7 @@ func fill(img *image.RGBA) {
 	draw.Draw(img, img.Bounds(), &image.Uniform{color}, image.ZP, draw.Src)
 }
 
-func drawColumn(img *image.RGBA, x, start, end int, color color.RGBA) {
+func drawColumn(img *image.RGBA, x, start, end int, color color.Color) {
 	if start > end {
 		start, end = end, start
 	}
