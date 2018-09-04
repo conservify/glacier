@@ -15,4 +15,4 @@ $(BUILD)/render-archives: rendering/*.go
 	$(GO) build -o $@ $^
 
 clean:
-	rm -f $(BUILD)
+	rm -rf $(BUILD)
