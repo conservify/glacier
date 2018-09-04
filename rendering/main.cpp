@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <sstream>
 #include <queue>
+#include <array>
 
 using XType = int64_t;
 using YType = float;
@@ -132,7 +133,7 @@ public:
                     }
 
                     for (auto i = 0; i < (int32_t)numberOfSamples; ++i) {
-                        samples.samples().emplace(0, Channels{ data[0][i], data[1][i], data[2][i] });
+                        samples.samples().emplace(0, Channels{ { data[0][i], data[1][i], data[2][i] } });
                     }
 
                     if (false) {
@@ -185,7 +186,7 @@ public:
         }
 
         for (auto i = 0; i < (int32_t)NumberOfSamples; ++i) {
-            samples.samples().emplace(tick, Channels{ data[0][i], data[1][i], data[2][i] });
+            samples.samples().emplace(tick, Channels{ { data[0][i], data[1][i], data[2][i] } });
             tick += 1000 / NumberOfSamples;
         }
 
