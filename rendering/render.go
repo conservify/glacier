@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"image"
 	"image/png"
+	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -14,6 +16,11 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"encoding/json"
+	"net/http"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 type Sample struct {
@@ -160,6 +167,8 @@ func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numbe
 	}
 	numberOfSamples := len(as.Samples)
 	scale := 1.0 / float64(numberOfRows)
+
+	log.Printf("Drawing (%v)...", len(as.Samples))
 	for i, sample := range as.Samples {
 		x := mapInt(i, 0, numberOfSamples, 0, gr.Image.Bounds().Dx())
 		y := sample * scale
@@ -170,6 +179,12 @@ func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numbe
 		clr := MapToColor(sample, as.Minimum, as.Maximum)
 		drawColumn(gr.Image, x, offsetY, offsetY+int(y), clr)
 	}
+
+	return nil
+}
+
+func (gr *Rendering) Encode(w io.Writer) error {
+	png.Encode(w, gr.Image)
 
 	return nil
 }
@@ -191,18 +206,20 @@ type HourlyRendering struct {
 	*Rendering
 	Axis          string
 	StrictScaling bool
+	SaveFiles     bool
 	Start         *time.Time
 	RowNumber     int
 	NumberOfRows  int
 }
 
-func NewHourlyRendering(axis string, numberOfRows, cx, cy int, strictScaling bool) *HourlyRendering {
+func NewHourlyRendering(axis string, numberOfRows, cx, cy int, strictScaling bool, saveFiles bool) *HourlyRendering {
 	return &HourlyRendering{
 		Axis:          strings.ToLower(axis),
 		Rendering:     NewRendering(cx, cy),
 		Start:         nil,
 		NumberOfRows:  numberOfRows,
 		StrictScaling: strictScaling,
+		SaveFiles:     saveFiles,
 	}
 }
 
@@ -226,12 +243,16 @@ func (r *HourlyRendering) DrawHour(hour int64, files []*ArchiveFile) {
 		samples = append(samples, Sample{})
 	}
 
+	log.Printf("Draw samples...")
 	r.DrawSamples(r.Axis, samples, r.RowNumber, r.NumberOfRows, r.StrictScaling)
+	log.Printf("Done")
 
 	r.RowNumber += 1
 
 	if r.RowNumber == r.NumberOfRows {
-		r.Save()
+		if r.SaveFiles {
+			r.Save()
+		}
 	}
 }
 
@@ -254,6 +275,12 @@ func (r *HourlyRendering) Exists(hour int64) bool {
 	return true
 }
 
+func (r *HourlyRendering) SaveFrame(w io.Writer) error {
+	r.Encode(w)
+
+	return nil
+}
+
 func (r *HourlyRendering) Save() error {
 	if r.Start != nil {
 		name := r.ToFileName(r.Start.Unix())
@@ -268,10 +295,179 @@ func (r *HourlyRendering) Save() error {
 	return nil
 }
 
+func (r *HourlyRendering) DrawMostRecent(afs *ArchiveFileSet) error {
+	selected := int64(0)
+	for _, h := range afs.Hours {
+		if selected == 0 || selected < h {
+			selected = h
+		}
+	}
+
+	if selected == 0 {
+		log.Printf("No data yet.")
+		return nil
+	}
+
+	files := afs.Hourly[selected]
+	log.Printf("Adding hour = %v files = %v", time.Unix(selected, 0).UTC(), len(files))
+	r.DrawHour(selected, files)
+
+	return nil
+}
+
+func (r *HourlyRendering) DrawAll(afs *ArchiveFileSet, overwrite bool) error {
+	grouped := make(map[int64][]int64)
+	start := int64(0)
+	for _, h := range afs.Hours {
+		if start == 0 || len(grouped[start]) == 12 {
+			start = h
+			grouped[start] = make([]int64, 0)
+		}
+		grouped[start] = append(grouped[start], h)
+	}
+
+	for start, hours := range grouped {
+		if r.Exists(start) {
+			if !overwrite {
+				log.Printf("Skipping %v", time.Unix(start, 0))
+				continue
+			}
+		}
+		for _, h := range hours {
+			files := afs.Hourly[h]
+			log.Printf("Adding hour = %v files = %v", time.Unix(h, 0).UTC(), len(files))
+			r.DrawHour(h, files)
+		}
+	}
+
+	return nil
+}
+
+type DataWatcher struct {
+	Watcher *fsnotify.Watcher
+}
+
+func NewDataWatcher(dir string) (dw *DataWatcher, err error) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return nil, err
+	}
+
+	dw = &DataWatcher{
+		Watcher: watcher,
+	}
+
+	err = dw.WatchRecursively(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+func (dw *DataWatcher) WatchRecursively(dir string) error {
+	log.Printf("Watching '%v'", dir)
+
+	err := dw.Watcher.Add(dir)
+	if err != nil {
+		return err
+	}
+
+	entries, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+
+	for _, e := range entries {
+		if e.IsDir() {
+			child := filepath.Join(dir, e.Name())
+
+			err = dw.WatchRecursively(child)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (dw *DataWatcher) Close() {
+	dw.Watcher.Close()
+}
+
+func (dw *DataWatcher) Watch() {
+	go func() {
+		for {
+			select {
+			case event, ok := <-dw.Watcher.Events:
+				if !ok {
+					return
+				}
+				log.Println("Notify: ", event)
+				if event.Op&fsnotify.Write == fsnotify.Write {
+					log.Println("Modified file: ", event.Name)
+				}
+			case err, ok := <-dw.Watcher.Errors:
+				if !ok {
+					return
+				}
+				log.Println("Error: ", err)
+			}
+		}
+	}()
+}
+
+func ServeData(dw *DataWatcher) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		state := make(map[string]string)
+
+		b, _ := json.Marshal(state)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(b)
+	}
+}
+
+func ServeRendering(dw *DataWatcher) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/png")
+
+		afs := NewArchiveFileSet()
+		afs.AddFrom("/Users/jlewallen/conservify/glacier/data/201808/01")
+
+		hr := NewHourlyRendering("x", 1, 60*60*2, 512, false, false)
+		hr.DrawMostRecent(afs)
+		hr.SaveFrame(w)
+	}
+}
+
+func watchAndServe(dir string, web string) error {
+	dw, err := NewDataWatcher(dir)
+	if err != nil {
+		return err
+	}
+
+	defer dw.Close()
+
+	dw.Watch()
+
+	http.Handle("/", http.FileServer(http.Dir(web)))
+	http.HandleFunc("/data.json", ServeData(dw))
+	http.HandleFunc("/rendering.png", ServeRendering(dw))
+	err = http.ListenAndServe(":9090", nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type options struct {
 	Overwrite     bool
 	StrictScaling bool
 	Axis          string
+	Watch         string
+	Web           string
 	Cx            int
 	Cy            int
 }
@@ -279,6 +475,8 @@ type options struct {
 func main() {
 	o := options{}
 
+	flag.StringVar(&o.Web, "web", "./", "web")
+	flag.StringVar(&o.Watch, "watch", "", "watch")
 	flag.StringVar(&o.Axis, "axis", "x", "axis")
 	flag.IntVar(&o.Cx, "cx", 60*60*2, "width")
 	flag.IntVar(&o.Cy, "cy", 2000, "height")
@@ -287,6 +485,14 @@ func main() {
 	flag.BoolVar(&o.Overwrite, "overwrite", false, "overwite existing frames")
 
 	flag.Parse()
+
+	if o.Watch != "" {
+		err := watchAndServe(o.Watch, o.Web)
+		if err != nil {
+			panic(err)
+		}
+		return
+	}
 
 	afs := NewArchiveFileSet()
 
@@ -304,31 +510,8 @@ func main() {
 	log.Printf("Number of hours: %v", len(afs.Hours))
 	log.Printf("Range: %v - %v", afs.Start, afs.End)
 
-	hr := NewHourlyRendering(o.Axis, 12, o.Cx, o.Cy, o.StrictScaling)
-
-	grouped := make(map[int64][]int64)
-	start := int64(0)
-	for _, h := range afs.Hours {
-		if start == 0 || len(grouped[start]) == 12 {
-			start = h
-			grouped[start] = make([]int64, 0)
-		}
-		grouped[start] = append(grouped[start], h)
-	}
-
-	for start, hours := range grouped {
-		if hr.Exists(start) {
-			if !o.Overwrite {
-				log.Printf("Skipping %v", time.Unix(start, 0))
-				continue
-			}
-		}
-		for _, h := range hours {
-			files := afs.Hourly[h]
-			log.Printf("Adding hour = %v files = %v", time.Unix(h, 0).UTC(), len(files))
-			hr.DrawHour(h, files)
-		}
-	}
+	hr := NewHourlyRendering(o.Axis, 12, o.Cx, o.Cy, o.StrictScaling, true)
+	hr.DrawAll(afs, o.Overwrite)
 
 	hr.Save()
 }
