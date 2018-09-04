@@ -67,8 +67,8 @@ func combine(c1, c2 color.Color) color.Color {
 	r2, g2, b2, a2 := c2.RGBA()
 
 	if false {
-		cf1 := colorful.MakeColor(c1)
-		cf2 := colorful.MakeColor(c2)
+		cf1, _ := colorful.MakeColor(c1)
+		cf2, _ := colorful.MakeColor(c2)
 		return cf1.BlendRgb(cf2, 0.5)
 	}
 
