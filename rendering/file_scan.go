@@ -124,3 +124,15 @@ func (afs *ArchiveFileSet) FilterLatestHour() (newAfs *ArchiveFileSet) {
 
 	return
 }
+
+func (afs *ArchiveFileSet) FilterByHour(h time.Time) (newAfs *ArchiveFileSet) {
+	newAfs = NewArchiveFileSet()
+
+	all := afs.Hourly[h.Unix()]
+
+	for _, af := range all {
+		newAfs.Add(af)
+	}
+
+	return
+}
