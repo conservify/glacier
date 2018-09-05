@@ -130,7 +130,10 @@ func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numbe
 	numberOfSamples := len(as.Samples)
 	scale := 1.0 / float64(numberOfRows)
 
-	log.Printf("Drawing (%v)...", len(as.Samples))
+	if numberOfRows == 1 {
+		scale = 1.0 / 6.0
+	}
+
 	for i, sample := range as.Samples {
 		x := mapInt(i, 0, numberOfSamples, 0, gr.Image.Bounds().Dx())
 		y := sample * scale
@@ -205,9 +208,7 @@ func (r *HourlyRendering) DrawHour(hour int64, files []*ArchiveFile) {
 		samples = append(samples, Sample{})
 	}
 
-	log.Printf("Draw samples...")
 	r.DrawSamples(r.Axis, samples, r.RowNumber, r.NumberOfRows, r.StrictScaling)
-	log.Printf("Done")
 
 	r.RowNumber += 1
 
@@ -258,7 +259,12 @@ func (r *HourlyRendering) DrawAll(afs *ArchiveFileSet, overwrite bool) error {
 		for _, h := range hours {
 			files := afs.Hourly[h]
 			log.Printf("Adding hour = %v files = %v", time.Unix(h, 0).UTC(), len(files))
+
+			s := time.Now()
 			r.DrawHour(h, files)
+			elapsed := time.Now().Sub(s)
+
+			log.Printf("%v", elapsed)
 		}
 	}
 

@@ -41,7 +41,7 @@ func (ws *WebServer) ServeRendering() http.HandlerFunc {
 
 		filtered := afs.FilterLatestHour()
 
-		hr := NewHourlyRendering("x", 1, 60*60*2, 200, true, false)
+		hr := NewHourlyRendering("x", 1, 60*60*2, 250, false, false)
 		hr.DrawAll(filtered, false)
 		hr.EncodeTo(w)
 	}

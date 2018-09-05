@@ -72,7 +72,7 @@ func combine(c1, c2 color.Color) color.Color {
 		return cf1.BlendRgb(cf2, 0.5)
 	}
 
-	if true {
+	if false {
 		r0 := (r1 + r2) >> 9
 		g0 := (g1 + g2) >> 9
 		b0 := (b1 + b2) >> 9
