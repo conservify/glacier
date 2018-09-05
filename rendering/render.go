@@ -2,25 +2,14 @@ package main
 
 import (
 	"encoding/binary"
-	"flag"
 	"fmt"
 	"image"
 	"image/png"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
-	"path"
-	"path/filepath"
-	"regexp"
-	"sort"
 	"strings"
 	"time"
-
-	"encoding/json"
-	"net/http"
-
-	"github.com/fsnotify/fsnotify"
 )
 
 type Sample struct {
@@ -43,38 +32,11 @@ func mapInt(v, oMin, oMax, nMin, nMax int) int {
 	return int(x*float64(nMax-nMin) + float64(nMin))
 }
 
-type ArchiveFile struct {
-	Time     *time.Time
-	Hour     *time.Time
-	FileName string
-}
-
 type ByFileTime []*ArchiveFile
 
 func (a ByFileTime) Len() int           { return len(a) }
 func (a ByFileTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByFileTime) Less(i, j int) bool { return a[i].Time.Unix() < a[j].Time.Unix() }
-
-func NewArchiveFile(fileName string) (*ArchiveFile, error) {
-	re := regexp.MustCompile(".*(\\d{14}).*")
-	matches := re.FindAllStringSubmatch(strings.Replace(path.Base(fileName), "_", "", -1), -1)
-	if len(matches) == 0 {
-		return nil, fmt.Errorf("Error finding time in filename: %s", fileName)
-	}
-
-	t, err := time.Parse("20060102150405", matches[0][1])
-	if err != nil {
-		return nil, fmt.Errorf("Error parsing time: %v", err)
-	}
-
-	hour := time.Date(t.Year(), t.Month(), t.Day(), t.Hour(), 0, 0, 0, t.Location()).UTC()
-
-	return &ArchiveFile{
-		Time:     &t,
-		Hour:     &hour,
-		FileName: fileName,
-	}, nil
-}
 
 type Samples struct {
 	ArchiveFile *ArchiveFile
@@ -275,7 +237,35 @@ func (r *HourlyRendering) Exists(hour int64) bool {
 	return true
 }
 
-func (r *HourlyRendering) SaveFrame(w io.Writer) error {
+func (r *HourlyRendering) DrawAll(afs *ArchiveFileSet, overwrite bool) error {
+	grouped := make(map[int64][]int64)
+	start := int64(0)
+	for _, h := range afs.Hours {
+		if start == 0 || len(grouped[start]) == 12 {
+			start = h
+			grouped[start] = make([]int64, 0)
+		}
+		grouped[start] = append(grouped[start], h)
+	}
+
+	for start, hours := range grouped {
+		if overwrite {
+			if r.Exists(start) {
+				log.Printf("Skipping %v", time.Unix(start, 0))
+				continue
+			}
+		}
+		for _, h := range hours {
+			files := afs.Hourly[h]
+			log.Printf("Adding hour = %v files = %v", time.Unix(h, 0).UTC(), len(files))
+			r.DrawHour(h, files)
+		}
+	}
+
+	return nil
+}
+
+func (r *HourlyRendering) EncodeTo(w io.Writer) error {
 	r.Encode(w)
 
 	return nil
@@ -293,280 +283,4 @@ func (r *HourlyRendering) Save() error {
 		r.Start = nil
 	}
 	return nil
-}
-
-func (r *HourlyRendering) DrawMostRecent(afs *ArchiveFileSet) error {
-	selected := int64(0)
-	for _, h := range afs.Hours {
-		if selected == 0 || selected < h {
-			selected = h
-		}
-	}
-
-	if selected == 0 {
-		log.Printf("No data yet.")
-		return nil
-	}
-
-	files := afs.Hourly[selected]
-	log.Printf("Adding hour = %v files = %v", time.Unix(selected, 0).UTC(), len(files))
-	r.DrawHour(selected, files)
-
-	return nil
-}
-
-func (r *HourlyRendering) DrawAll(afs *ArchiveFileSet, overwrite bool) error {
-	grouped := make(map[int64][]int64)
-	start := int64(0)
-	for _, h := range afs.Hours {
-		if start == 0 || len(grouped[start]) == 12 {
-			start = h
-			grouped[start] = make([]int64, 0)
-		}
-		grouped[start] = append(grouped[start], h)
-	}
-
-	for start, hours := range grouped {
-		if r.Exists(start) {
-			if !overwrite {
-				log.Printf("Skipping %v", time.Unix(start, 0))
-				continue
-			}
-		}
-		for _, h := range hours {
-			files := afs.Hourly[h]
-			log.Printf("Adding hour = %v files = %v", time.Unix(h, 0).UTC(), len(files))
-			r.DrawHour(h, files)
-		}
-	}
-
-	return nil
-}
-
-type DataWatcher struct {
-	Watcher *fsnotify.Watcher
-}
-
-func NewDataWatcher(dir string) (dw *DataWatcher, err error) {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		return nil, err
-	}
-
-	dw = &DataWatcher{
-		Watcher: watcher,
-	}
-
-	err = dw.WatchRecursively(dir)
-	if err != nil {
-		return nil, err
-	}
-
-	return
-}
-
-func (dw *DataWatcher) WatchRecursively(dir string) error {
-	log.Printf("Watching '%v'", dir)
-
-	err := dw.Watcher.Add(dir)
-	if err != nil {
-		return err
-	}
-
-	entries, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return err
-	}
-
-	for _, e := range entries {
-		if e.IsDir() {
-			child := filepath.Join(dir, e.Name())
-
-			err = dw.WatchRecursively(child)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
-}
-
-func (dw *DataWatcher) Close() {
-	dw.Watcher.Close()
-}
-
-func (dw *DataWatcher) Watch() {
-	go func() {
-		for {
-			select {
-			case event, ok := <-dw.Watcher.Events:
-				if !ok {
-					return
-				}
-				log.Println("Notify: ", event)
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("Modified file: ", event.Name)
-				}
-			case err, ok := <-dw.Watcher.Errors:
-				if !ok {
-					return
-				}
-				log.Println("Error: ", err)
-			}
-		}
-	}()
-}
-
-func ServeData(dw *DataWatcher) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		state := make(map[string]string)
-
-		b, _ := json.Marshal(state)
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(b)
-	}
-}
-
-func ServeRendering(dw *DataWatcher) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "image/png")
-
-		afs := NewArchiveFileSet()
-		afs.AddFrom("/Users/jlewallen/conservify/glacier/data/201808/01")
-
-		hr := NewHourlyRendering("x", 1, 60*60*2, 512, false, false)
-		hr.DrawMostRecent(afs)
-		hr.SaveFrame(w)
-	}
-}
-
-func watchAndServe(dir string, web string) error {
-	dw, err := NewDataWatcher(dir)
-	if err != nil {
-		return err
-	}
-
-	defer dw.Close()
-
-	dw.Watch()
-
-	http.Handle("/", http.FileServer(http.Dir(web)))
-	http.HandleFunc("/data.json", ServeData(dw))
-	http.HandleFunc("/rendering.png", ServeRendering(dw))
-	err = http.ListenAndServe(":9090", nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-type options struct {
-	Overwrite     bool
-	StrictScaling bool
-	Axis          string
-	Watch         string
-	Web           string
-	Cx            int
-	Cy            int
-}
-
-func main() {
-	o := options{}
-
-	flag.StringVar(&o.Web, "web", "./", "web")
-	flag.StringVar(&o.Watch, "watch", "", "watch")
-	flag.StringVar(&o.Axis, "axis", "x", "axis")
-	flag.IntVar(&o.Cx, "cx", 60*60*2, "width")
-	flag.IntVar(&o.Cy, "cy", 2000, "height")
-
-	flag.BoolVar(&o.StrictScaling, "strict-scaling", false, "strict scaling")
-	flag.BoolVar(&o.Overwrite, "overwrite", false, "overwite existing frames")
-
-	flag.Parse()
-
-	if o.Watch != "" {
-		err := watchAndServe(o.Watch, o.Web)
-		if err != nil {
-			panic(err)
-		}
-		return
-	}
-
-	afs := NewArchiveFileSet()
-
-	for _, arg := range flag.Args() {
-		if err := afs.AddFrom(arg); err != nil {
-			panic(err)
-		}
-	}
-
-	if len(afs.Files) == 0 {
-		return
-	}
-
-	log.Printf("Number of files: %v", len(afs.Files))
-	log.Printf("Number of hours: %v", len(afs.Hours))
-	log.Printf("Range: %v - %v", afs.Start, afs.End)
-
-	hr := NewHourlyRendering(o.Axis, 12, o.Cx, o.Cy, o.StrictScaling, true)
-	hr.DrawAll(afs, o.Overwrite)
-
-	hr.Save()
-}
-
-type ArchiveFileSet struct {
-	Files  []*ArchiveFile
-	Hours  []int64
-	Hourly map[int64][]*ArchiveFile
-	Start  *time.Time
-	End    *time.Time
-}
-
-func NewArchiveFileSet() *ArchiveFileSet {
-	return &ArchiveFileSet{
-		Files:  make([]*ArchiveFile, 0),
-		Hourly: make(map[int64][]*ArchiveFile),
-	}
-}
-
-func (afs *ArchiveFileSet) Add(af *ArchiveFile) error {
-	unix := af.Hour.Unix()
-	afs.Files = append(afs.Files, af)
-	value := afs.Hourly[unix]
-	if value == nil {
-		value = make([]*ArchiveFile, 0)
-		afs.Hours = append(afs.Hours, unix)
-		sort.Slice(afs.Hours, func(i, j int) bool {
-			return afs.Hours[i] < afs.Hours[j]
-		})
-	}
-	value = append(value, af)
-	afs.Hourly[unix] = value
-
-	if afs.Start == nil || afs.Start.After(*af.Time) {
-		afs.Start = af.Time
-	}
-	if afs.End == nil || afs.End.Before(*af.Time) {
-		afs.End = af.Time
-	}
-
-	return nil
-}
-
-func (afs *ArchiveFileSet) AddFrom(path string) error {
-	log.Printf("Starting, reading %s...", path)
-	return filepath.Walk(path, func(p string, f os.FileInfo, err error) error {
-		if f != nil && !f.IsDir() {
-			if filepath.Ext(p) == ".bin" {
-				if af, err := NewArchiveFile(p); err != nil {
-					return err
-				} else {
-					return afs.Add(af)
-				}
-			}
-		}
-		return nil
-	})
 }
