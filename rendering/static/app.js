@@ -24,13 +24,25 @@ function refresh() {
         else {
             for (let i = 0; i < r.length; i++) {
                 const hour = r[i];
+                const existing = cache[hour];
+
+                console.log(hour, "Loading", existing);
+
                 const img = cache[hour] = new Image();
                 img.src = "/rendering.png?hour=" + hour;
                 img.style.display = "none";
 
                 img.onload = () => {
-                    console.log("Load");
-                    $(img).attr("data-hour", hour).show();
+                    if (existing) {
+                        $(existing).replaceWith(img);
+                        console.log(hour, "Done, replaced");
+                    }
+                    else {
+                        console.log(hour, "Done, first");
+                    }
+
+                    $(img).show();
+
                     if (i == r.length - 1) {
                         refresh();
                     }
