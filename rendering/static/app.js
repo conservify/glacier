@@ -19,7 +19,7 @@ function refresh() {
         if (r.length == 0) {
             setTimeout(() => {
                 refresh();
-            }, 10 * 1000);
+            }, 30 * 1000);
         }
         else {
             for (let i = 0; i < r.length; i++) {
