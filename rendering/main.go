@@ -8,7 +8,7 @@ import (
 
 func watchAndServe(o *options) error {
 	if false {
-		dw, err := NewDataWatcher(o.Watch)
+		dw, err := NewDataWatcher("")
 		if err != nil {
 			return err
 		}
@@ -64,7 +64,7 @@ type options struct {
 	Overwrite     bool
 	StrictScaling bool
 	Axis          string
-	Watch         string
+	Watch         bool
 	Web           string
 	Cx            int
 	Cy            int
@@ -79,11 +79,11 @@ func main() {
 	flag.BoolVar(&o.StrictScaling, "strict-scaling", false, "strict scaling")
 	flag.BoolVar(&o.Overwrite, "overwrite", false, "overwite existing frames")
 	flag.StringVar(&o.Web, "web", "./", "web")
-	flag.StringVar(&o.Watch, "watch", "", "watch")
+	flag.BoolVar(&o.Watch, "watch", false, "watch")
 
 	flag.Parse()
 
-	if o.Watch != "" {
+	if o.Watch {
 		err := watchAndServe(&o)
 		if err != nil {
 			panic(err)

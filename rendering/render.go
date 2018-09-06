@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"io"
 	"log"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -89,26 +90,38 @@ type AnalyzedSamples struct {
 }
 
 func (gr *Rendering) Analyze(axis string, samples []Sample) *AnalyzedSamples {
+	log.Printf("Extracting...")
+
 	selected := make([]float64, len(samples))
-	minimum := float64(0.0)
-	maximum := float64(0.0)
-	for i, sample := range samples {
-		value := 0.0
-		switch axis {
-		case "x":
-			value = float64(sample.X)
-		case "y":
-			value = float64(sample.Y)
-		case "z":
-			value = float64(sample.Z)
+	switch axis {
+	case "x":
+		for i, sample := range samples {
+			selected[i] = float64(sample.X)
 		}
-		if i == 0 || value > maximum {
-			maximum = value
+		break
+	case "y":
+		for i, sample := range samples {
+			selected[i] = float64(sample.Y)
 		}
-		if i == 0 || value < minimum {
-			minimum = value
+		break
+	case "z":
+		for i, sample := range samples {
+			selected[i] = float64(sample.Z)
 		}
-		selected[i] = value
+		break
+	}
+
+	log.Printf("Calculating range...")
+
+	minimum := math.MaxFloat64
+	maximum := -math.MaxFloat64
+	for i := 0; i < len(selected); i += 1 {
+		if selected[i] > maximum {
+			maximum = selected[i]
+		}
+		if selected[i] < minimum {
+			minimum = selected[i]
+		}
 	}
 	return &AnalyzedSamples{
 		Samples: selected,

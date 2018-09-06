@@ -47,15 +47,13 @@ func (cd *ColumnDrawer) DrawColumn(x, start, end int, clr *color.RGBA, fast bool
 		}
 
 		if fast {
-			c1 := color.RGBAModel.Convert(*clr).(color.RGBA)
-
 			i := cd.image.PixOffset(x, start)
 
 			for c := start; c < end; c += 1 {
-				cd.image.Pix[i+0] = c1.R
-				cd.image.Pix[i+1] = c1.G
-				cd.image.Pix[i+2] = c1.B
-				cd.image.Pix[i+3] = c1.A
+				cd.image.Pix[i+0] = clr.R
+				cd.image.Pix[i+1] = clr.G
+				cd.image.Pix[i+2] = clr.B
+				cd.image.Pix[i+3] = clr.A
 
 				i += cd.image.Stride
 			}

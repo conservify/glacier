@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"log"
 	"net/http"
 	"strconv"
@@ -37,13 +38,19 @@ type HourStatus struct {
 
 func (ws *WebServer) ServeStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("/status.json")
+
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		w.Header().Set("Pragma", "no-cache")
 		w.Header().Set("Expires", "0")
 
 		afs := NewArchiveFileSet()
-		afs.AddFrom(ws.o.Watch)
+		for _, arg := range flag.Args() {
+			if err := afs.AddFrom(arg); err != nil {
+				panic(err)
+			}
+		}
 
 		currentHour := afs.FilterCurrentHour()
 		previousHour := afs.FilterPreviousHour()
@@ -71,14 +78,21 @@ func (ws *WebServer) ServeStatus() http.HandlerFunc {
 		}
 
 		b, _ := json.Marshal(status)
+
 		w.Write(b)
 	}
 }
 
 func (ws *WebServer) ServeRendering() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("/rendering.png")
+
 		afs := NewArchiveFileSet()
-		afs.AddFrom(ws.o.Watch)
+		for _, arg := range flag.Args() {
+			if err := afs.AddFrom(arg); err != nil {
+				panic(err)
+			}
+		}
 
 		var filtered *ArchiveFileSet
 
