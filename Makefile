@@ -6,7 +6,9 @@ BUILDARCH ?= $(BUILD)/$(GOOS)-$(GOARCH)
 
 all: $(BUILD) $(BUILD)/render-ascii go-all
 
-go-all: go-deps
+go-all: go-deps all-arch
+
+all-arch:
 	GOOS=linux GOARCH=amd64 make go-binaries
 	GOOS=linux GOARCH=arm make go-binaries
 	GOOS=darwin GOARCH=amd64 make go-binaries
@@ -25,6 +27,7 @@ $(BUILDARCH)/render-archives: rendering/*.go
 go-deps:
 	go get -u golang.org/x/sys/...
 	go get -u github.com/lucasb-eyer/go-colorful
+	go get -u github.com/pierrre/imageutil
 
 clean:
 	rm -rf $(BUILD)
