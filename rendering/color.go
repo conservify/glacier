@@ -97,7 +97,7 @@ func init() {
 }
 
 func MapToColor(sample, min, max float64, c *color.RGBA) {
-	if true {
+	if false {
 		hue := mapFloat(math.Abs(sample), 0, 400, 0, 255)
 		r, g, b := hsbToRgb(hue, 255, 255)
 		*c = color.RGBA{r, g, b, 255}

@@ -10,6 +10,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -153,7 +154,7 @@ func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numbe
 	cd := NewColumnDrawer(gr.Image)
 	bounds := gr.Image.Bounds()
 	waveform := color.RGBA{255, 0, 0, 255}
-	fast := true
+	fast := runtime.GOARCH == "arm"
 
 	for i, sample := range as.Samples {
 		x := mapInt(i, 0, numberOfSamples, 0, bounds.Dx())
