@@ -14,7 +14,12 @@ function shouldRender(data) {
     }
 
     if (previous == null) {
-        rendering.push(data.PreviousHour.Hour);
+        if (data.AvailableHours.length > 2) {
+            rendering.push(data.AvailableHours[data.AvailableHours.length - 3]);
+        }
+        if (data.PreviousHour) {
+            rendering.push(data.PreviousHour.Hour);
+        }
         rendering.push(data.CurrentHour.Hour);
     }
     else {
@@ -29,6 +34,8 @@ function shouldRender(data) {
     }
 
     previous = data;
+
+    console.log("Will render", rendering);
 
     return rendering;
 }
