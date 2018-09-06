@@ -29,5 +29,8 @@ go-deps:
 	go get -u github.com/lucasb-eyer/go-colorful
 	go get -u github.com/pierrre/imageutil
 
+deploy: all-arch
+	rsync -zvua --progress rendering/static $(BUILD)/linux-arm/render-archives glacier:card/rendering
+
 clean:
 	rm -rf $(BUILD)
