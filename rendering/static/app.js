@@ -8,15 +8,22 @@ function hourChanged(previous, current) {
 
 function shouldRender(data) {
     const rendering = [];
+
+    if (data.PreviousHour == null || data.CurrentHour == null) {
+        return rendering;
+    }
+
     if (previous == null) {
         rendering.push(data.PreviousHour.Hour);
         rendering.push(data.CurrentHour.Hour);
     }
     else {
         if (hourChanged(previous.PreviousHour, data.PreviousHour)) {
+            console.log("Previous Hour Changed", previous.PreviousHour, data.PreviousHour);
             rendering.push(data.PreviousHour.Hour);
         }
         if (hourChanged(previous.CurrentHour, data.CurrentHour)) {
+            console.log("Current Hour Changed", previous.CurrentHour, data.CurrentHour);
             rendering.push(data.CurrentHour.Hour);
         }
     }

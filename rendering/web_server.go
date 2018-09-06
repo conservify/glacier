@@ -50,19 +50,26 @@ func (ws *WebServer) ServeStatus() http.HandlerFunc {
 
 		status := StatusResponse{
 			AvailableHours: afs.Hours,
-			CurrentHour: HourStatus{
-				Hour:          currentHour.Files[0].Hour.Unix(),
-				Start:         currentHour.Start,
-				End:           currentHour.End,
-				NumberOfFiles: len(currentHour.Files),
-			},
-			PreviousHour: HourStatus{
-				Hour:          previousHour.Files[0].Hour.Unix(),
-				Start:         previousHour.Start,
-				End:           previousHour.End,
-				NumberOfFiles: len(previousHour.Files),
-			},
 		}
+
+		if len(currentHour.Files) > 0 && len(previousHour.Files) > 0 {
+			status = StatusResponse{
+				AvailableHours: afs.Hours,
+				CurrentHour: HourStatus{
+					Hour:          currentHour.Files[0].Hour.Unix(),
+					Start:         currentHour.Start,
+					End:           currentHour.End,
+					NumberOfFiles: len(currentHour.Files),
+				},
+				PreviousHour: HourStatus{
+					Hour:          previousHour.Files[0].Hour.Unix(),
+					Start:         previousHour.Start,
+					End:           previousHour.End,
+					NumberOfFiles: len(previousHour.Files),
+				},
+			}
+		}
+
 		b, _ := json.Marshal(status)
 		w.Write(b)
 	}
