@@ -122,8 +122,6 @@ func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numbe
 
 	as := gr.Analyze(axis, samples)
 
-	log.Printf("Analyzed [%f, %f]", as.Minimum, as.Maximum)
-
 	dy := gr.Image.Bounds().Dy()
 	rowCy := (dy / (numberOfRows + 1))
 	offsetY := dy / 2
@@ -137,11 +135,11 @@ func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numbe
 		scale = 1.0 / 6.0
 	}
 
-	log.Printf("Drawing...")
+	log.Printf("Analyzed [%f, %f] (%d), drawing...", as.Minimum, as.Maximum, len(as.Samples))
 
 	cd := NewColumnDrawer(gr.Image)
 	bounds := gr.Image.Bounds()
-	color := color.RGBA{255, 0, 0, 255}
+	waveform := color.RGBA{255, 0, 0, 255}
 	fast := true
 
 	for i, sample := range as.Samples {
@@ -152,11 +150,18 @@ func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numbe
 		}
 
 		if fast {
-			cd.DrawColumn(x, offsetY, offsetY+int(y), &color, fast)
+			cd.DrawColumn(x, offsetY, offsetY+int(y), &waveform, fast)
 		} else {
-			MapToColor(sample, as.Minimum, as.Maximum, &color)
-			cd.DrawColumn(x, offsetY, offsetY+int(y), &color, fast)
+			MapToColor(sample, as.Minimum, as.Maximum, &waveform)
+			cd.DrawColumn(x, offsetY, offsetY+int(y), &waveform, fast)
 		}
+	}
+
+	// lines := color.RGBA{192, 192, 192, 255}
+	lines := color.RGBA{128, 128, 128, 255}
+	for c := 0; c < 60; c += 1 {
+		x := mapInt(c, 0, 60, 0, bounds.Dx())
+		cd.DrawColumn(x, 0, bounds.Dy(), &lines, true)
 	}
 
 	return nil
