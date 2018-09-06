@@ -96,11 +96,12 @@ func init() {
 	DefaultGradientTable = CreateDefaultGradientTable()
 }
 
-func MapToColor(sample, min, max float64) color.Color {
-	if false {
+func MapToColor(sample, min, max float64, c *color.RGBA) {
+	if true {
 		hue := mapFloat(math.Abs(sample), 0, 400, 0, 255)
 		r, g, b := hsbToRgb(hue, 255, 255)
-		return color.RGBA{r, g, b, 255}
+		*c = color.RGBA{r, g, b, 255}
+		return
 	}
 
 	t := 0.0
@@ -110,7 +111,9 @@ func MapToColor(sample, min, max float64) color.Color {
 		t = sample / (8192.0 * 1.0)
 	}
 
-	return DefaultGradientTable.GetInterpolatedColorFor(t)
+	_ = DefaultGradientTable.GetInterpolatedColorFor(t)
+
+	return
 }
 
 func CreateDefaultGradientTable() GradientTable {

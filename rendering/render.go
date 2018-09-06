@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"image"
+	"image/color"
 	"image/png"
 	"io"
 	"log"
@@ -88,7 +89,7 @@ type AnalyzedSamples struct {
 }
 
 func (gr *Rendering) Analyze(axis string, samples []Sample) *AnalyzedSamples {
-	selected := make([]float64, 0)
+	selected := make([]float64, len(samples))
 	minimum := float64(0.0)
 	maximum := float64(0.0)
 	for i, sample := range samples {
@@ -107,7 +108,7 @@ func (gr *Rendering) Analyze(axis string, samples []Sample) *AnalyzedSamples {
 		if i == 0 || value < minimum {
 			minimum = value
 		}
-		selected = append(selected, value)
+		selected[i] = value
 	}
 	return &AnalyzedSamples{
 		Samples: selected,
@@ -117,6 +118,8 @@ func (gr *Rendering) Analyze(axis string, samples []Sample) *AnalyzedSamples {
 }
 
 func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numberOfRows int, strictScaling bool) error {
+	log.Printf("Analyzing...")
+
 	as := gr.Analyze(axis, samples)
 
 	log.Printf("Analyzed [%f, %f]", as.Minimum, as.Maximum)
@@ -134,15 +137,26 @@ func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numbe
 		scale = 1.0 / 6.0
 	}
 
+	log.Printf("Drawing...")
+
+	cd := NewColumnDrawer(gr.Image)
+	bounds := gr.Image.Bounds()
+	color := color.RGBA{255, 0, 0, 255}
+	fast := true
+
 	for i, sample := range as.Samples {
-		x := mapInt(i, 0, numberOfSamples, 0, gr.Image.Bounds().Dx())
+		x := mapInt(i, 0, numberOfSamples, 0, bounds.Dx())
 		y := sample * scale
 		if strictScaling {
 			y = mapFloat(sample, as.Minimum, as.Maximum, float64(-rowCy/2), float64(rowCy/2))
 		}
 
-		clr := MapToColor(sample, as.Minimum, as.Maximum)
-		drawColumn(gr.Image, x, offsetY, offsetY+int(y), clr)
+		if fast {
+			cd.DrawColumn(x, offsetY, offsetY+int(y), &color, fast)
+		} else {
+			MapToColor(sample, as.Minimum, as.Maximum, &color)
+			cd.DrawColumn(x, offsetY, offsetY+int(y), &color, fast)
+		}
 	}
 
 	return nil
@@ -264,7 +278,7 @@ func (r *HourlyRendering) DrawAll(afs *ArchiveFileSet, overwrite bool) error {
 			r.DrawHour(h, files)
 			elapsed := time.Now().Sub(s)
 
-			log.Printf("%v", elapsed)
+			log.Printf("Elapsed: %v", elapsed)
 		}
 	}
 
