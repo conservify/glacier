@@ -23,11 +23,16 @@ func NewWebServer(o *options, dw *DataWatcher) (ws *WebServer, err error) {
 }
 
 type StatusResponse struct {
-	Hour           int64
 	AvailableHours []int64
-	Start          *time.Time
-	End            *time.Time
-	NumberOfFiles  int
+	CurrentHour    HourStatus
+	PreviousHour   HourStatus
+}
+
+type HourStatus struct {
+	Hour          int64
+	Start         *time.Time
+	End           *time.Time
+	NumberOfFiles int
 }
 
 func (ws *WebServer) ServeStatus() http.HandlerFunc {
@@ -40,14 +45,23 @@ func (ws *WebServer) ServeStatus() http.HandlerFunc {
 		afs := NewArchiveFileSet()
 		afs.AddFrom(ws.o.Watch)
 
-		filtered := afs.FilterLatestHour()
+		currentHour := afs.FilterCurrentHour()
+		previousHour := afs.FilterPreviousHour()
 
 		status := StatusResponse{
-			Hour:           filtered.Files[0].Hour.Unix(),
 			AvailableHours: afs.Hours,
-			Start:          filtered.Start,
-			End:            filtered.End,
-			NumberOfFiles:  len(filtered.Files),
+			CurrentHour: HourStatus{
+				Hour:          currentHour.Files[0].Hour.Unix(),
+				Start:         currentHour.Start,
+				End:           currentHour.End,
+				NumberOfFiles: len(currentHour.Files),
+			},
+			PreviousHour: HourStatus{
+				Hour:          previousHour.Files[0].Hour.Unix(),
+				Start:         previousHour.Start,
+				End:           previousHour.End,
+				NumberOfFiles: len(previousHour.Files),
+			},
 		}
 		b, _ := json.Marshal(status)
 		w.Write(b)
@@ -73,8 +87,8 @@ func (ws *WebServer) ServeRendering() http.HandlerFunc {
 			log.Printf("Using hour: %v", hour)
 			filtered = afs.FilterByHour(t)
 		} else {
-			log.Printf("Using latest hour")
-			filtered = afs.FilterLatestHour()
+			log.Printf("Using current hour")
+			filtered = afs.FilterCurrentHour()
 		}
 
 		w.Header().Set("Content-Type", "image/png")

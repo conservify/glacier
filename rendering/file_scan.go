@@ -100,29 +100,28 @@ func (afs *ArchiveFileSet) AddFrom(path string) error {
 	return err
 }
 
-func (afs *ArchiveFileSet) FilterLatestHour() (newAfs *ArchiveFileSet) {
+func (afs *ArchiveFileSet) FilterPreviousHour() (newAfs *ArchiveFileSet) {
 	newAfs = NewArchiveFileSet()
 
 	sort.Slice(afs.Files, func(i, j int) bool {
 		return afs.Files[i].Time.After(*afs.Files[j].Time)
 	})
 
-	hour := -1
+	hour := afs.Hours[len(afs.Hours)-2]
 
-	for _, af := range afs.Files {
-		if hour == -1 {
-			hour = af.Time.Hour()
-			log.Printf("Filtering: %v", af.Time)
-		}
+	return afs.FilterByHour(time.Unix(hour, 0))
+}
 
-		if hour != af.Time.Hour() {
-			break
-		}
+func (afs *ArchiveFileSet) FilterCurrentHour() (newAfs *ArchiveFileSet) {
+	newAfs = NewArchiveFileSet()
 
-		newAfs.Add(af)
-	}
+	sort.Slice(afs.Files, func(i, j int) bool {
+		return afs.Files[i].Time.After(*afs.Files[j].Time)
+	})
 
-	return
+	hour := afs.Hours[len(afs.Hours)-1]
+
+	return afs.FilterByHour(time.Unix(hour, 0))
 }
 
 func (afs *ArchiveFileSet) FilterByHour(h time.Time) (newAfs *ArchiveFileSet) {

@@ -2,14 +2,27 @@ const cache = {};
 
 let previous = null;
 
+function hourChanged(previous, current) {
+    return previous.Hour != current.Hour || previous.NumberOfFiles != current.NumberOfFiles;
+}
+
 function shouldRender(data) {
     const rendering = [];
-    if (previous == null || previous.NumberOfFiles != data.NumberOfFiles || previous.Start != data.Start || previous.End != data.End) {
-        previous = data;
-
-        rendering.push(data.AvailableHours[data.AvailableHours.length - 2]);
-        rendering.push(data.Hour);
+    if (previous == null) {
+        rendering.push(data.PreviousHour.Hour);
+        rendering.push(data.CurrentHour.Hour);
     }
+    else {
+        if (hourChanged(previous.PreviousHour, data.PreviousHour)) {
+            rendering.push(data.PreviousHour.Hour);
+        }
+        if (hourChanged(previous.CurrentHour, data.CurrentHour)) {
+            rendering.push(data.CurrentHour.Hour);
+        }
+    }
+
+    previous = data;
+
     return rendering;
 }
 
