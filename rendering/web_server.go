@@ -98,6 +98,10 @@ func (ws *WebServer) ServeRendering() http.HandlerFunc {
 
 		var filtered *ArchiveFileSet
 
+		axis := r.URL.Query().Get("axis")
+		if axis == "" {
+			axis = "x"
+		}
 		hourParam := r.URL.Query().Get("hour")
 		if hourParam != "" {
 			hour, err := strconv.Atoi(hourParam)
@@ -107,10 +111,11 @@ func (ws *WebServer) ServeRendering() http.HandlerFunc {
 
 			t := time.Unix(int64(hour), 0)
 
-			log.Printf("Using hour: %v", hour)
+			log.Printf("Rendering (hour = %v) (axis = %v)", hour, axis)
 			filtered = afs.FilterByHour(t)
 		} else {
-			log.Printf("Using current hour")
+
+			log.Printf("Rendering (CURRENT) (axis = %v)", axis)
 			filtered = afs.FilterCurrentHour()
 		}
 
@@ -119,7 +124,7 @@ func (ws *WebServer) ServeRendering() http.HandlerFunc {
 		w.Header().Set("Pragma", "no-cache")
 		w.Header().Set("Expires", "0")
 
-		hr := NewHourlyRendering("x", 1, 60*60*2, 250, false, false)
+		hr := NewHourlyRendering(axis, 1, 60*60*2, 250, false, false)
 		hr.DrawAll(filtered, false)
 		hr.EncodeTo(w)
 	}

@@ -2,6 +2,18 @@ const cache = {};
 
 let previous = null;
 
+function getQueryVariable(variable, defaultValue) {
+    var query = window.location.search.substring(1);
+    var vars = query.split('&');
+    for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split('=');
+        if (decodeURIComponent(pair[0]) == variable) {
+            return decodeURIComponent(pair[1]);
+        }
+    }
+    return defaultValue;
+}
+
 function hourChanged(previous, current) {
     return previous.Hour != current.Hour || previous.NumberOfFiles != current.NumberOfFiles;
 }
@@ -56,7 +68,7 @@ function refresh() {
                 console.log(hour, "Loading", existing);
 
                 const img = cache[hour] = new Image();
-                img.src = "/rendering.png?hour=" + hour;
+                img.src = "/rendering.png?hour=" + hour + "&axis=" + getQueryVariable("axis", "x");
                 img.style.display = "none";
 
                 img.onload = () => {

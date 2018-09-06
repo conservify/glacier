@@ -2,7 +2,6 @@ package main
 
 import (
 	"image/color"
-	"log"
 	"math"
 
 	"github.com/lucasb-eyer/go-colorful"
@@ -92,7 +91,6 @@ func combine(c1, c2 color.Color) color.Color {
 var DefaultGradientTable GradientTable
 
 func init() {
-	log.Printf("Colors are ready")
 	DefaultGradientTable = CreateDefaultGradientTable()
 }
 
