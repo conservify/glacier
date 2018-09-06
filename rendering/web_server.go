@@ -77,6 +77,8 @@ func (ws *WebServer) ServeStatus() http.HandlerFunc {
 			}
 		}
 
+		log.Printf("/status.json, done")
+
 		b, _ := json.Marshal(status)
 
 		w.Write(b)

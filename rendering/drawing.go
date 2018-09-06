@@ -1,13 +1,9 @@
 package main
 
 import (
-	_ "fmt"
 	"image"
 	"image/color"
 	"image/draw"
-	"math"
-
-	_ "github.com/pierrre/imageutil"
 )
 
 func fill(img *image.RGBA) {
@@ -16,10 +12,7 @@ func fill(img *image.RGBA) {
 }
 
 type ColumnDrawer struct {
-	image  *image.RGBA
-	column int
-	min    int
-	max    int
+	image *image.RGBA
 }
 
 func NewColumnDrawer(image *image.RGBA) (cd *ColumnDrawer) {
@@ -29,44 +22,36 @@ func NewColumnDrawer(image *image.RGBA) (cd *ColumnDrawer) {
 }
 
 func (cd *ColumnDrawer) DrawColumn(x, start, end int, clr *color.RGBA, fast bool) {
-	if true {
-		if start > end {
-			start, end = end, start
-		}
-		if start < 0 {
-			start = 0
-		}
-		if end < 0 {
-			end = 0
-		}
-		if start >= cd.image.Rect.Max.Y {
-			start = cd.image.Rect.Max.Y - 1
-		}
-		if end >= cd.image.Rect.Max.Y {
-			end = cd.image.Rect.Max.Y - 1
-		}
+	if start > end {
+		start, end = end, start
+	}
+	if start < 0 {
+		start = 0
+	}
+	if end < 0 {
+		end = 0
+	}
+	if start >= cd.image.Rect.Max.Y {
+		start = cd.image.Rect.Max.Y - 1
+	}
+	if end >= cd.image.Rect.Max.Y {
+		end = cd.image.Rect.Max.Y - 1
+	}
 
-		if fast {
-			i := cd.image.PixOffset(x, start)
+	if fast {
+		i := cd.image.PixOffset(x, start)
 
-			for c := start; c < end; c += 1 {
-				cd.image.Pix[i+0] = clr.R
-				cd.image.Pix[i+1] = clr.G
-				cd.image.Pix[i+2] = clr.B
-				cd.image.Pix[i+3] = clr.A
+		for c := start; c < end; c += 1 {
+			cd.image.Pix[i+0] = clr.R
+			cd.image.Pix[i+1] = clr.G
+			cd.image.Pix[i+2] = clr.B
+			cd.image.Pix[i+3] = clr.A
 
-				i += cd.image.Stride
-			}
-		} else {
-			for c := start; c < end; c += 1 {
-				cd.image.Set(x, c, combine(cd.image.At(x, c), *clr))
-			}
+			i += cd.image.Stride
 		}
 	} else {
-		if cd.column != x {
-			cd.column = x
-			cd.min = math.MaxInt32
-			cd.max = math.MinInt32
+		for c := start; c < end; c += 1 {
+			cd.image.Set(x, c, combine(cd.image.At(x, c), *clr))
 		}
 	}
 }
