@@ -15,16 +15,25 @@ grep lodge morningstar-all.csv > morningstar-lodge.csv
 go build add-unix-time.go
 go build slack-upload-file.go
 
-./add-unix-time morningstar-lodge.csv > morningstar.csv
-gnuplot -e "title='Lodge Voltage'" plot.gnuplot > lodge.png
+./add-unix-time --days-to-keep 28 morningstar-lodge.csv > morningstar.csv
+gnuplot -e "title='Lodge Voltage (28 days)'" plot.gnuplot > lodge-28d.png
 
-./add-unix-time morningstar-glacier.csv > morningstar.csv
-gnuplot -e "title='Glacier Voltage'" plot.gnuplot > glacier.png
+./add-unix-time --days-to-keep 28 morningstar-glacier.csv > morningstar.csv
+gnuplot -e "title='Glacier Voltage (28 days)'" plot.gnuplot > glacier-28d.png
+
+./add-unix-time --days-to-keep 180 morningstar-lodge.csv > morningstar.csv
+gnuplot -e "title='Lodge Voltage (6 months)'" plot.gnuplot > lodge-6mo.png
+
+./add-unix-time --days-to-keep 180 morningstar-glacier.csv > morningstar.csv
+gnuplot -e "title='Glacier Voltage (6 months)'" plot.gnuplot > glacier-6mo.png
 
 rm morningstar.csv morningstar-all.csv
 
 source ./env
 CHANNEL=glacier
 
-./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file lodge.png
-./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file glacier.png
+./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file lodge-28d.png
+./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file glacier-28d.png
+
+./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file lodge-6mo.png
+./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file glacier-6mo.png

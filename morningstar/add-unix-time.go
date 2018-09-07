@@ -14,10 +14,14 @@ import (
 
 func main() {
 	timeColumn := 1
+	daysToKeep := 14
 
 	flag.IntVar(&timeColumn, "time-column", 1, "index of the time column")
+	flag.IntVar(&daysToKeep, "days-to-keep", 7*4, "days to keep")
 
 	flag.Parse()
+
+	removeBefore := time.Now().Add(time.Duration(-daysToKeep*24) * time.Hour)
 
 	for _, filename := range flag.Args() {
 		file, err := os.Open(filename)
@@ -39,13 +43,16 @@ func main() {
 				log.Fatal(err)
 			}
 
-			fmt.Printf("%d", t.Unix())
+			if t.After(removeBefore) {
+				fmt.Printf("%d", t.Unix())
 
-			for _, field := range record {
-				fmt.Printf(",")
-				fmt.Printf("%s", field)
+				for _, field := range record {
+					fmt.Printf(",")
+					fmt.Printf("%s", field)
+				}
+
+				fmt.Println()
 			}
-			fmt.Println()
 		}
 	}
 }
