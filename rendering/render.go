@@ -22,7 +22,9 @@ type Sample struct {
 }
 
 const (
-	SamplesPerHour = 500 * 60 * 60
+	SamplesPerSecond = 500
+	SamplesPerHour   = SamplesPerSecond * 60 * 60
+	SamplesPerFile   = SamplesPerSecond * 60
 )
 
 func mapFloat(v, oMin, oMax, nMin, nMax float64) float64 {
@@ -43,6 +45,7 @@ func (a ByFileTime) Less(i, j int) bool { return a[i].Time.Unix() < a[j].Time.Un
 
 type Samples struct {
 	ArchiveFile *ArchiveFile
+	HourOffset  int
 	Samples     []Sample
 }
 
@@ -54,14 +57,16 @@ func (af *ArchiveFile) ReadSamples() (*Samples, error) {
 
 	defer df.Close()
 
-	samplesPerFile := 500 * 60
-	samples := make([]Sample, samplesPerFile)
+	samples := make([]Sample, SamplesPerFile)
 	if err := binary.Read(df, binary.LittleEndian, &samples); err != nil {
 		return nil, fmt.Errorf("Error reading %s: %v", af.FileName, err)
 	}
 
+	hourOffset := (af.Second + af.Minute*60) * SamplesPerSecond
+
 	return &Samples{
 		ArchiveFile: af,
+		HourOffset:  int(hourOffset),
 		Samples:     samples[:],
 	}, nil
 }
@@ -221,10 +226,11 @@ func NewHourlyRendering(axis string, numberOfRows, cx, cy int, strictScaling boo
 	}
 }
 
-func (r *HourlyRendering) DrawHour(hour int64, files []*ArchiveFile) {
+func (r *HourlyRendering) DrawHour(hour int64, files []*ArchiveFile) error {
+	hourBegin := time.Unix(hour, 0).UTC()
+
 	if r.Start == nil {
-		t := time.Unix(hour, 0).UTC()
-		r.Start = &t
+		r.Start = &hourBegin
 	}
 
 	samples := make([]Sample, 0)
@@ -232,7 +238,14 @@ func (r *HourlyRendering) DrawHour(hour int64, files []*ArchiveFile) {
 	for _, af := range files {
 		s, err := af.ReadSamples()
 		if err != nil {
-			panic(err)
+			return err
+		}
+		missing := s.HourOffset - len(samples)
+		if missing > 0 {
+			log.Printf("%v: Gap of %v samples (%v seconds)", af.Time, missing, missing/SamplesPerSecond)
+		}
+		for i := 0; i < missing; i += 1 {
+			samples = append(samples, Sample{})
 		}
 		samples = append(samples, s.Samples...)
 	}
@@ -247,9 +260,13 @@ func (r *HourlyRendering) DrawHour(hour int64, files []*ArchiveFile) {
 
 	if r.RowNumber == r.NumberOfRows {
 		if r.SaveFiles {
-			r.Save()
+			err := r.Save()
+			if err != nil {
+				return err
+			}
 		}
 	}
+	return nil
 }
 
 func (r *HourlyRendering) ToFileName(hour int64) string {

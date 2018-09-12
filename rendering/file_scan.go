@@ -15,6 +15,8 @@ import (
 type ArchiveFile struct {
 	Time     *time.Time
 	Hour     *time.Time
+	Minute   uint32
+	Second   uint32
 	FileName string
 }
 
@@ -35,6 +37,8 @@ func NewArchiveFile(fileName string) (*ArchiveFile, error) {
 	return &ArchiveFile{
 		Time:     &t,
 		Hour:     &hour,
+		Minute:   uint32(t.Minute()),
+		Second:   uint32(t.Second()),
 		FileName: fileName,
 	}, nil
 }
