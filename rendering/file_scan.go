@@ -88,9 +88,7 @@ func (afs *ArchiveFileSet) AddFrom(path string) error {
 	err := filepath.Walk(path, func(p string, f os.FileInfo, err error) error {
 		if f != nil && !f.IsDir() {
 			if filepath.Ext(p) == ".bin" {
-				if af, err := NewArchiveFile(p); err != nil {
-					return err
-				} else {
+				if af, err := NewArchiveFile(p); err == nil {
 					return afs.Add(af)
 				}
 			}
