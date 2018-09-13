@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"flag"
-	"github.com/fsnotify/fsnotify"
-	"github.com/jpillora/backoff"
 	"io/ioutil"
 	"log"
 	"log/syslog"
@@ -17,6 +15,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/jpillora/backoff"
 )
 
 type Config struct {

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"log/syslog"
 	"net/http"
 )
 
@@ -61,6 +62,7 @@ func renderFiles(o *options) error {
 }
 
 type options struct {
+	Syslog        string
 	Overwrite     bool
 	StrictScaling bool
 	Axis          string
@@ -80,8 +82,16 @@ func main() {
 	flag.BoolVar(&o.Overwrite, "overwrite", false, "overwite existing frames")
 	flag.StringVar(&o.Web, "web", "./", "web")
 	flag.BoolVar(&o.Watch, "watch", false, "watch")
+	flag.StringVar(&o.Syslog, "syslog", "", "enable syslog and name the ap")
 
 	flag.Parse()
+
+	if o.Syslog != "" {
+		syslog, err := syslog.New(syslog.LOG_NOTICE, o.Syslog)
+		if err == nil {
+			log.SetOutput(syslog)
+		}
+	}
 
 	if o.Watch {
 		err := watchAndServe(&o)
