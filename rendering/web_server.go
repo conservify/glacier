@@ -47,7 +47,7 @@ func (ws *WebServer) ServeStatus() http.HandlerFunc {
 
 		afs := NewArchiveFileSet()
 		for _, arg := range flag.Args() {
-			if err := afs.AddFrom(arg); err != nil {
+			if err := afs.AddFrom(arg, false); err != nil {
 				panic(err)
 			}
 		}
@@ -91,7 +91,7 @@ func (ws *WebServer) ServeRendering() http.HandlerFunc {
 
 		afs := NewArchiveFileSet()
 		for _, arg := range flag.Args() {
-			if err := afs.AddFrom(arg); err != nil {
+			if err := afs.AddFrom(arg, false); err != nil {
 				panic(err)
 			}
 		}

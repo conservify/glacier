@@ -82,10 +82,34 @@ func (afs *ArchiveFileSet) Add(af *ArchiveFile) error {
 	return nil
 }
 
-func (afs *ArchiveFileSet) AddFrom(path string) error {
-	log.Printf("Adding from '%s'...", path)
+func isDir(p string) (bool, error) {
+	i, err := os.Stat(p)
+	if err != nil {
+		return false, err
+	}
+	return i.Mode().IsDir(), nil
+}
 
-	err := filepath.Walk(path, func(p string, f os.FileInfo, err error) error {
+func (afs *ArchiveFileSet) AddFrom(source string, recurse bool) error {
+	dir, err := filepath.Abs(source)
+	if err != nil {
+		return err
+	}
+
+	if !recurse {
+		today := time.Now()
+		yearMonth := today.Format("200601")
+		day := today.Format("02")
+		relative := path.Join(dir, yearMonth, day)
+		if b, _ := isDir(relative); !b {
+			log.Printf("Not found: '%s'", relative)
+		} else {
+			dir = relative
+		}
+	}
+
+	log.Printf("Adding from '%s'", dir)
+	err = filepath.Walk(dir, func(p string, f os.FileInfo, err error) error {
 		if f != nil && !f.IsDir() {
 			if filepath.Ext(p) == ".bin" {
 				if af, err := NewArchiveFile(p); err == nil {
@@ -96,10 +120,13 @@ func (afs *ArchiveFileSet) AddFrom(path string) error {
 		return nil
 
 	})
+	if err != nil {
+		return err
+	}
 
 	log.Printf("Found %d files", len(afs.Files))
 
-	return err
+	return nil
 }
 
 func (afs *ArchiveFileSet) FilterPreviousHour() (newAfs *ArchiveFileSet) {

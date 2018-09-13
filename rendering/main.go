@@ -39,7 +39,7 @@ func renderFiles(o *options) error {
 	afs := NewArchiveFileSet()
 
 	for _, arg := range flag.Args() {
-		if err := afs.AddFrom(arg); err != nil {
+		if err := afs.AddFrom(arg, true); err != nil {
 			panic(err)
 		}
 	}
