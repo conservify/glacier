@@ -1,6 +1,78 @@
 EESchema-LIBRARY Version 2.4
 #encoding utf-8
 #
+# conservify:CONN_01x02
+#
+DEF conservify:CONN_01x02 J 0 40 Y N 1 F N
+F0 "J" 0 100 50 H V C CNN
+F1 "conservify:CONN_01x02" 0 -200 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ Connector*:*_??x*mm*
+ Connector*:*1x??x*mm*
+ Pin?Header?Straight?1X*
+ Pin?Header?Angled?1X*
+ Socket?Strip?Straight?1X*
+ Socket?Strip?Angled?1X*
+$ENDFPLIST
+DRAW
+S -50 -95 0 -105 1 1 6 N
+S -50 5 0 -5 1 1 6 N
+S -50 50 50 -150 1 1 10 f
+X Pin_1 1 -200 0 150 R 50 50 1 1 P
+X Pin_2 2 -200 -100 150 R 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# conservify:CONN_01x05
+#
+DEF conservify:CONN_01x05 J 0 40 Y N 1 F N
+F0 "J" 0 300 50 H V C CNN
+F1 "conservify:CONN_01x05" 0 -300 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ Connector*:*_??x*mm*
+ Connector*:*1x??x*mm*
+ Pin?Header?Straight?1X*
+ Pin?Header?Angled?1X*
+ Socket?Strip?Straight?1X*
+ Socket?Strip?Angled?1X*
+$ENDFPLIST
+DRAW
+S -50 -195 0 -205 1 1 6 N
+S -50 -95 0 -105 1 1 6 N
+S -50 5 0 -5 1 1 6 N
+S -50 105 0 95 1 1 6 N
+S -50 205 0 195 1 1 6 N
+S -50 250 50 -250 1 1 10 f
+X Pin_1 1 -200 200 150 R 50 50 1 1 P
+X Pin_2 2 -200 100 150 R 50 50 1 1 P
+X Pin_3 3 -200 0 150 R 50 50 1 1 P
+X Pin_4 4 -200 -100 150 R 50 50 1 1 P
+X Pin_5 5 -200 -200 150 R 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# conservify:FUSE
+#
+DEF conservify:FUSE F 0 10 Y Y 1 F N
+F0 "F" 100 50 50 H V C CNN
+F1 "conservify:FUSE" -100 -50 50 H V C CNN
+F2 "conservify:MF-PSMF020X" 0 -150 60 H I C CNN
+F3 "" 0 0 60 H V C CNN
+$FPLIST
+ MF-PSMF020X
+$ENDFPLIST
+DRAW
+A -75 0 75 1 1799 0 1 0 N 0 0 -150 0
+A 75 0 75 -1799 -1 0 1 0 N 0 0 150 0
+X ~ 1 -300 0 150 R 40 40 1 1 I
+X ~ 2 300 0 150 L 40 40 1 1 I
+ENDDRAW
+ENDDEF
+#
 # conservify:MOUNT_HOLE
 #
 DEF ~conservify:MOUNT_HOLE M 0 40 Y Y 1 F N
@@ -21,79 +93,11 @@ P 2 0 1 0 25 25 -25 -25 N
 ENDDRAW
 ENDDEF
 #
-# power-bus-rescue:CONN_01X02
+# conservify:POLOLU_VOLTAGE_REGULATOR
 #
-DEF power-bus-rescue:CONN_01X02 J 0 40 Y N 1 F N
-F0 "J" 0 150 50 H V C CNN
-F1 "power-bus-rescue:CONN_01X02" 100 0 50 V V C CNN
-F2 "" 0 0 50 H I C CNN
-F3 "" 0 0 50 H I C CNN
-$FPLIST
- Pin_Header_Straight_1X*
- Pin_Header_Angled_1X*
- Socket_Strip_Straight_1X*
- Socket_Strip_Angled_1X*
-$ENDFPLIST
-DRAW
-S -50 -45 10 -55 0 1 0 N
-S -50 55 10 45 0 1 0 N
-S -50 100 50 -100 0 1 0 N
-X P1 1 -200 50 150 R 50 50 1 1 P
-X P2 2 -200 -50 150 R 50 50 1 1 P
-ENDDRAW
-ENDDEF
-#
-# power-bus-rescue:CONN_01X05
-#
-DEF power-bus-rescue:CONN_01X05 P 0 40 Y N 1 F N
-F0 "P" 0 300 50 H V C CNN
-F1 "power-bus-rescue:CONN_01X05" 100 0 50 V V C CNN
-F2 "" 0 0 50 H V C CNN
-F3 "" 0 0 50 H V C CNN
-$FPLIST
- Pin_Header_Straight_1X05
- Pin_Header_Angled_1X05
- Socket_Strip_Straight_1X05
- Socket_Strip_Angled_1X05
-$ENDFPLIST
-DRAW
-S -50 -195 10 -205 0 1 0 N
-S -50 -95 10 -105 0 1 0 N
-S -50 5 10 -5 0 1 0 N
-S -50 105 10 95 0 1 0 N
-S -50 205 10 195 0 1 0 N
-S -50 250 50 -250 0 1 0 N
-X P1 1 -200 200 150 R 50 50 1 1 P
-X P2 2 -200 100 150 R 50 50 1 1 P
-X P3 3 -200 0 150 R 50 50 1 1 P
-X P4 4 -200 -100 150 R 50 50 1 1 P
-X P5 5 -200 -200 150 R 50 50 1 1 P
-ENDDRAW
-ENDDEF
-#
-# power-bus-rescue:Fuse
-#
-DEF power-bus-rescue:Fuse F 0 0 N Y 1 F N
-F0 "F" 80 0 50 V V C CNN
-F1 "power-bus-rescue:Fuse" -75 0 50 V V C CNN
-F2 "" -70 0 50 V I C CNN
-F3 "" 0 0 50 H I C CNN
-$FPLIST
- *Fuse*
-$ENDFPLIST
-DRAW
-S -30 -100 30 100 0 1 10 N
-P 2 0 1 0 0 100 0 -100 N
-X ~ 1 0 150 50 D 50 50 1 1 P
-X ~ 2 0 -150 50 U 50 50 1 1 P
-ENDDRAW
-ENDDEF
-#
-# power-bus-rescue:pololu-vreg
-#
-DEF power-bus-rescue:pololu-vreg U 0 40 Y Y 1 F N
+DEF conservify:POLOLU_VOLTAGE_REGULATOR U 0 40 Y Y 1 F N
 F0 "U" 0 100 60 H V C CNN
-F1 "power-bus-rescue:pololu-vreg" 0 0 60 H V C CNN
+F1 "conservify:POLOLU_VOLTAGE_REGULATOR" 0 0 60 H V C CNN
 F2 "" 0 0 60 H I C CNN
 F3 "" 0 0 60 H I C CNN
 DRAW

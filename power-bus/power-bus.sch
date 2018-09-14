@@ -15,28 +15,28 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L power-bus-rescue:CONN_01X02 J1
+L conservify:CONN_01x02 J1
 U 1 1 58FA5FA2
-P 800 850
-F 0 "J1" H 800 1000 50  0000 C CNN
-F 1 "CONN_01X02" V 900 850 50  0000 C CNN
-F 2 "conservify:TerminalBlock_Phoenix_MKDS1.5-2pol" H 800 850 50  0001 C CNN
-F 3 "" H 800 850 50  0001 C CNN
-	1    800  850 
+P 850 900
+F 0 "J1" H 850 1050 50  0000 C CNN
+F 1 "CONN_01X02" V 950 900 50  0000 C CNN
+F 2 "conservify:TERMINAL_BLOCK_PHOENIX_MKDS1.5-2pol" H 850 900 50  0001 C CNN
+F 3 "" H 850 900 50  0001 C CNN
+	1    850  900 
 	-1   0    0    1   
 $EndComp
 $Comp
-L power-bus-rescue:pololu-vreg U1
+L conservify:POLOLU_VOLTAGE_REGULATOR U1
 U 1 1 58FA5FFD
 P 4300 1550
 F 0 "U1" H 4300 1650 60  0000 C CNN
 F 1 "pololu-vreg" H 4300 1550 60  0000 C CNN
-F 2 "conservify:pololu-vreg" H 4300 1550 60  0001 C CNN
+F 2 "conservify:POLOLU_VREG" H 4300 1550 60  0001 C CNN
 F 3 "" H 4300 1550 60  0001 C CNN
 	1    4300 1550
 	1    0    0    -1  
 $EndComp
-Text Label 1950 900  0    60   ~ 0
+Text Label 2250 900  0    60   ~ 0
 VRAW
 Text Label 1300 800  0    60   ~ 0
 GND
@@ -49,14 +49,14 @@ Text Label 3050 1700 0    60   ~ 0
 Text Label 3050 1400 0    60   ~ 0
 5V0_1_EN
 $Comp
-L power-bus-rescue:CONN_01X02 J2
+L conservify:CONN_01x02 J2
 U 1 1 58FA6300
-P 2300 1650
-F 0 "J2" H 2300 1800 50  0000 C CNN
-F 1 "CONN_01X02" V 2400 1650 50  0000 C CNN
-F 2 "conservify:TerminalBlock_Phoenix_MKDS1.5-2pol" H 2300 1650 50  0001 C CNN
-F 3 "" H 2300 1650 50  0001 C CNN
-	1    2300 1650
+P 2300 1700
+F 0 "J2" H 2300 1850 50  0000 C CNN
+F 1 "CONN_01X02" V 2400 1700 50  0000 C CNN
+F 2 "conservify:TERMINAL_BLOCK_PHOENIX_MKDS1.5-2pol" H 2300 1700 50  0001 C CNN
+F 3 "" H 2300 1700 50  0001 C CNN
+	1    2300 1700
 	-1   0    0    1   
 $EndComp
 Text Label 2550 1700 0    60   ~ 0
@@ -64,12 +64,12 @@ Text Label 2550 1700 0    60   ~ 0
 Text Label 2550 1600 0    60   ~ 0
 GND
 $Comp
-L power-bus-rescue:pololu-vreg U4
+L conservify:POLOLU_VOLTAGE_REGULATOR U4
 U 1 1 58FA6503
 P 4300 3800
 F 0 "U4" H 4300 3900 60  0000 C CNN
 F 1 "pololu-vreg" H 4300 3800 60  0000 C CNN
-F 2 "conservify:pololu-vreg-adjustable" H 4300 3800 60  0001 C CNN
+F 2 "conservify:POLOLU_VREG_ADJUSTABLE" H 4300 3800 60  0001 C CNN
 F 3 "" H 4300 3800 60  0001 C CNN
 	1    4300 3800
 	1    0    0    -1  
@@ -83,14 +83,14 @@ Text Label 3050 3950 0    60   ~ 0
 Text Label 3050 3650 0    60   ~ 0
 12V0_2_EN
 $Comp
-L power-bus-rescue:CONN_01X02 J5
+L conservify:CONN_01x02 J5
 U 1 1 58FA6517
-P 2300 3900
-F 0 "J5" H 2300 4050 50  0000 C CNN
-F 1 "CONN_01X02" V 2400 3900 50  0000 C CNN
-F 2 "conservify:TerminalBlock_Phoenix_MKDS1.5-2pol" H 2300 3900 50  0001 C CNN
-F 3 "" H 2300 3900 50  0001 C CNN
-	1    2300 3900
+P 2300 3950
+F 0 "J5" H 2300 4100 50  0000 C CNN
+F 1 "CONN_01X02" V 2400 3950 50  0000 C CNN
+F 2 "conservify:TERMINAL_BLOCK_PHOENIX_MKDS1.5-2pol" H 2300 3950 50  0001 C CNN
+F 3 "" H 2300 3950 50  0001 C CNN
+	1    2300 3950
 	-1   0    0    1   
 $EndComp
 Text Label 2550 3850 0    60   ~ 0
@@ -98,14 +98,14 @@ GND
 Text Label 2550 3950 0    60   ~ 0
 12V0_2
 $Comp
-L power-bus-rescue:CONN_01X02 J6
+L conservify:CONN_01x02 J6
 U 1 1 58FA673A
-P 6000 1650
-F 0 "J6" H 6000 1800 50  0000 C CNN
-F 1 "CONN_01X02" V 6100 1650 50  0000 C CNN
-F 2 "conservify:TerminalBlock_Phoenix_MKDS1.5-2pol" H 6000 1650 50  0001 C CNN
-F 3 "" H 6000 1650 50  0001 C CNN
-	1    6000 1650
+P 6000 1700
+F 0 "J6" H 6000 1850 50  0000 C CNN
+F 1 "CONN_01X02" V 6100 1700 50  0000 C CNN
+F 2 "conservify:TERMINAL_BLOCK_PHOENIX_MKDS1.5-2pol" H 6000 1700 50  0001 C CNN
+F 3 "" H 6000 1700 50  0001 C CNN
+	1    6000 1700
 	-1   0    0    1   
 $EndComp
 Text Label 6250 1700 0    60   ~ 0
@@ -113,9 +113,7 @@ VADJ_1
 Text Label 6250 1600 0    60   ~ 0
 GND
 Wire Wire Line
-	1600 900  1000 900 
-Wire Wire Line
-	1600 800  1000 800 
+	1600 800  1050 800 
 Wire Wire Line
 	3050 1400 3550 1400
 Wire Wire Line
@@ -162,14 +160,14 @@ Wire Wire Line
 Wire Wire Line
 	1050 1750 1050 1800
 $Comp
-L power-bus-rescue:CONN_01X02 J11
+L conservify:CONN_01x02 J11
 U 1 1 58FA8689
-P 1400 3900
-F 0 "J11" H 1400 4050 50  0000 C CNN
-F 1 "CONN_01X02" V 1500 3900 50  0000 C CNN
-F 2 "conservify:TerminalBlock_Phoenix_MKDS1.5-2pol" H 1400 3900 50  0001 C CNN
-F 3 "" H 1400 3900 50  0001 C CNN
-	1    1400 3900
+P 1400 3950
+F 0 "J11" H 1400 4100 50  0000 C CNN
+F 1 "CONN_01X02" V 1500 3950 50  0000 C CNN
+F 2 "conservify:TERMINAL_BLOCK_PHOENIX_MKDS1.5-2pol" H 1400 3950 50  0001 C CNN
+F 3 "" H 1400 3950 50  0001 C CNN
+	1    1400 3950
 	-1   0    0    1   
 $EndComp
 Text Label 1650 3850 0    60   ~ 0
@@ -181,12 +179,12 @@ Wire Wire Line
 Wire Wire Line
 	1950 3850 1600 3850
 $Comp
-L power-bus-rescue:CONN_01X05 J9
+L conservify:CONN_01x05 J9
 U 1 1 58FE3D5C
 P 4550 4750
 F 0 "J9" H 4550 5050 50  0000 C CNN
 F 1 "CONN_01X05" V 4650 4750 50  0000 C CNN
-F 2 "Socket_Strips:Socket_Strip_Straight_1x05_Pitch2.54mm" H 4550 4750 50  0001 C CNN
+F 2 "conservify:Socket_Strip_Straight_1x05_Pitch2.54mm" H 4550 4750 50  0001 C CNN
 F 3 "" H 4550 4750 50  0001 C CNN
 	1    4550 4750
 	1    0    0    -1  
@@ -206,18 +204,18 @@ Wire Wire Line
 Wire Wire Line
 	3800 4950 4350 4950
 $Comp
-L power-bus-rescue:Fuse F1
+L conservify:FUSE F1
 U 1 1 58FE4282
-P 1750 900
-F 0 "F1" V 1830 900 50  0000 C CNN
-F 1 "Fuse" V 1675 900 50  0000 C CNN
-F 2 "conservify:Fuseholder6x30_horiz_open_inline_Type-I" V 1680 900 50  0001 C CNN
-F 3 "" H 1750 900 50  0001 C CNN
-	1    1750 900 
-	0    1    1    0   
+P 1900 900
+F 0 "F1" V 1980 900 50  0000 C CNN
+F 1 "Fuse" V 1825 900 50  0000 C CNN
+F 2 "conservify:FUSE_HOLDER_6x30" V 1830 900 50  0001 C CNN
+F 3 "" H 1900 900 50  0001 C CNN
+	1    1900 900 
+	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	2200 900  1900 900 
+	2500 900  2200 900 
 Text Label 1300 900  0    60   ~ 0
 VIN
 $Comp
@@ -265,14 +263,14 @@ F 3 "" H 5650 2600 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power-bus-rescue:CONN_01X02 J8
+L conservify:CONN_01x02 J8
 U 1 1 59024BCB
-P 1400 5000
-F 0 "J8" H 1400 5150 50  0000 C CNN
-F 1 "CONN_01X02" V 1500 5000 50  0000 C CNN
-F 2 "conservify:TerminalBlock_Phoenix_MKDS1.5-2pol" H 1400 5000 50  0001 C CNN
-F 3 "" H 1400 5000 50  0001 C CNN
-	1    1400 5000
+P 1400 5050
+F 0 "J8" H 1400 5200 50  0000 C CNN
+F 1 "CONN_01X02" V 1500 5050 50  0000 C CNN
+F 2 "conservify:TERMINAL_BLOCK_PHOENIX_MKDS1.5-2pol" H 1400 5050 50  0001 C CNN
+F 3 "" H 1400 5050 50  0001 C CNN
+	1    1400 5050
 	-1   0    0    1   
 $EndComp
 Text Label 1750 4950 0    60   ~ 0
@@ -284,14 +282,14 @@ Wire Wire Line
 Wire Wire Line
 	2050 5050 1600 5050
 $Comp
-L power-bus-rescue:CONN_01X02 J12
+L conservify:CONN_01x02 J12
 U 1 1 5A0A3125
-P 1400 4500
-F 0 "J12" H 1400 4650 50  0000 C CNN
-F 1 "CONN_01X02" V 1500 4500 50  0000 C CNN
-F 2 "conservify:TerminalBlock_Phoenix_MKDS1.5-2pol" H 1400 4500 50  0001 C CNN
-F 3 "" H 1400 4500 50  0001 C CNN
-	1    1400 4500
+P 1400 4550
+F 0 "J12" H 1400 4700 50  0000 C CNN
+F 1 "CONN_01X02" V 1500 4550 50  0000 C CNN
+F 2 "conservify:TERMINAL_BLOCK_PHOENIX_MKDS1.5-2pol" H 1400 4550 50  0001 C CNN
+F 3 "" H 1400 4550 50  0001 C CNN
+	1    1400 4550
 	-1   0    0    1   
 $EndComp
 Text Label 1750 4450 0    60   ~ 0
@@ -303,14 +301,14 @@ Wire Wire Line
 Wire Wire Line
 	2050 4550 1600 4550
 $Comp
-L power-bus-rescue:CONN_01X02 J13
+L conservify:CONN_01x02 J13
 U 1 1 5A0A35B3
-P 1400 5500
-F 0 "J13" H 1400 5650 50  0000 C CNN
-F 1 "CONN_01X02" V 1500 5500 50  0000 C CNN
-F 2 "conservify:TerminalBlock_Phoenix_MKDS1.5-2pol" H 1400 5500 50  0001 C CNN
-F 3 "" H 1400 5500 50  0001 C CNN
-	1    1400 5500
+P 1400 5550
+F 0 "J13" H 1400 5700 50  0000 C CNN
+F 1 "CONN_01X02" V 1500 5550 50  0000 C CNN
+F 2 "conservify:TERMINAL_BLOCK_PHOENIX_MKDS1.5-2pol" H 1400 5550 50  0001 C CNN
+F 3 "" H 1400 5550 50  0001 C CNN
+	1    1400 5550
 	-1   0    0    1   
 $EndComp
 Text Label 1750 5450 0    60   ~ 0
@@ -334,14 +332,14 @@ GND
 Text Label 1650 3250 0    60   ~ 0
 12V0_1
 $Comp
-L power-bus-rescue:CONN_01X02 J10
+L conservify:CONN_01x02 J10
 U 1 1 58FA8646
-P 1400 3200
-F 0 "J10" H 1400 3350 50  0000 C CNN
-F 1 "CONN_01X02" V 1500 3200 50  0000 C CNN
-F 2 "conservify:TerminalBlock_Phoenix_MKDS1.5-2pol" H 1400 3200 50  0001 C CNN
-F 3 "" H 1400 3200 50  0001 C CNN
-	1    1400 3200
+P 1400 3250
+F 0 "J10" H 1400 3400 50  0000 C CNN
+F 1 "CONN_01X02" V 1500 3250 50  0000 C CNN
+F 2 "conservify:TERMINAL_BLOCK_PHOENIX_MKDS1.5-2pol" H 1400 3250 50  0001 C CNN
+F 3 "" H 1400 3250 50  0001 C CNN
+	1    1400 3250
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
@@ -359,14 +357,14 @@ GND
 Text Label 2550 3250 0    60   ~ 0
 12V0_1
 $Comp
-L power-bus-rescue:CONN_01X02 J4
+L conservify:CONN_01x02 J4
 U 1 1 58FA6511
-P 2300 3200
-F 0 "J4" H 2300 3350 50  0000 C CNN
-F 1 "CONN_01X02" V 2400 3200 50  0000 C CNN
-F 2 "conservify:TerminalBlock_Phoenix_MKDS1.5-2pol" H 2300 3200 50  0001 C CNN
-F 3 "" H 2300 3200 50  0001 C CNN
-	1    2300 3200
+P 2300 3250
+F 0 "J4" H 2300 3400 50  0000 C CNN
+F 1 "CONN_01X02" V 2400 3250 50  0000 C CNN
+F 2 "conservify:TERMINAL_BLOCK_PHOENIX_MKDS1.5-2pol" H 2300 3250 50  0001 C CNN
+F 3 "" H 2300 3250 50  0001 C CNN
+	1    2300 3250
 	-1   0    0    1   
 $EndComp
 Text Label 3050 3250 0    60   ~ 0
@@ -376,16 +374,24 @@ GND
 Text Label 3050 3050 0    60   ~ 0
 VRAW
 $Comp
-L power-bus-rescue:pololu-vreg U3
+L conservify:POLOLU_VOLTAGE_REGULATOR U3
 U 1 1 58FA64F5
 P 4300 3100
 F 0 "U3" H 4300 3200 60  0000 C CNN
 F 1 "pololu-vreg" H 4300 3100 60  0000 C CNN
-F 2 "conservify:pololu-vreg-adjustable" H 4300 3100 60  0001 C CNN
+F 2 "conservify:POLOLU_VREG_ADJUSTABLE" H 4300 3100 60  0001 C CNN
 F 3 "" H 4300 3100 60  0001 C CNN
 	1    4300 3100
 	1    0    0    -1  
 $EndComp
 Text Label 3800 4650 0    60   ~ 0
 12V0_1_EN
+Connection ~ 1050 900 
+Wire Wire Line
+	1050 900  1000 900 
+Connection ~ 1050 800 
+Wire Wire Line
+	1050 800  1000 800 
+Wire Wire Line
+	1050 900  1600 900 
 $EndSCHEMATC
