@@ -128,7 +128,8 @@ func (ws *WebServer) ServeRendering() http.HandlerFunc {
 }
 
 func (ws *WebServer) Register() {
-	http.Handle("/", http.FileServer(http.Dir(ws.o.Web)))
-	http.HandleFunc("/status.json", ws.ServeStatus())
-	http.HandleFunc("/rendering.png", ws.ServeRendering())
+	http.Handle("/glacher/", http.StripPrefix("/glacier", http.FileServer(http.Dir(ws.o.Web))))
+	http.HandleFunc("/glacier/status.json", ws.ServeStatus())
+	http.HandleFunc("/glacier/rendering.png", ws.ServeRendering())
+
 }
