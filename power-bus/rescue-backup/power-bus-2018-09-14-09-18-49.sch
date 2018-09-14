@@ -1,6 +1,36 @@
-EESchema Schematic File Version 4
+EESchema Schematic File Version 2
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:conservify
 LIBS:power-bus-cache
-EELAYER 26 0
+EELAYER 25 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -15,7 +45,7 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 $Comp
-L power-bus-rescue:CONN_01X02 J1
+L CONN_01X02 J1
 U 1 1 58FA5FA2
 P 800 850
 F 0 "J1" H 800 1000 50  0000 C CNN
@@ -26,7 +56,7 @@ F 3 "" H 800 850 50  0001 C CNN
 	-1   0    0    1   
 $EndComp
 $Comp
-L power-bus-rescue:pololu-vreg U1
+L pololu-vreg U1
 U 1 1 58FA5FFD
 P 4300 1550
 F 0 "U1" H 4300 1650 60  0000 C CNN
@@ -49,7 +79,7 @@ Text Label 3050 1700 0    60   ~ 0
 Text Label 3050 1400 0    60   ~ 0
 5V0_1_EN
 $Comp
-L power-bus-rescue:CONN_01X02 J2
+L CONN_01X02 J2
 U 1 1 58FA6300
 P 2300 1650
 F 0 "J2" H 2300 1800 50  0000 C CNN
@@ -64,7 +94,7 @@ Text Label 2550 1700 0    60   ~ 0
 Text Label 2550 1600 0    60   ~ 0
 GND
 $Comp
-L power-bus-rescue:pololu-vreg U4
+L pololu-vreg U4
 U 1 1 58FA6503
 P 4300 3800
 F 0 "U4" H 4300 3900 60  0000 C CNN
@@ -83,7 +113,7 @@ Text Label 3050 3950 0    60   ~ 0
 Text Label 3050 3650 0    60   ~ 0
 12V0_2_EN
 $Comp
-L power-bus-rescue:CONN_01X02 J5
+L CONN_01X02 J5
 U 1 1 58FA6517
 P 2300 3900
 F 0 "J5" H 2300 4050 50  0000 C CNN
@@ -98,7 +128,7 @@ GND
 Text Label 2550 3950 0    60   ~ 0
 12V0_2
 $Comp
-L power-bus-rescue:CONN_01X02 J6
+L CONN_01X02 J6
 U 1 1 58FA673A
 P 6000 1650
 F 0 "J6" H 6000 1800 50  0000 C CNN
@@ -145,7 +175,7 @@ Wire Wire Line
 Wire Wire Line
 	6550 1700 6200 1700
 $Comp
-L power:GND #PWR01
+L GND #PWR01
 U 1 1 58FA74B4
 P 1050 1800
 F 0 "#PWR01" H 1050 1550 50  0001 C CNN
@@ -162,7 +192,7 @@ Wire Wire Line
 Wire Wire Line
 	1050 1750 1050 1800
 $Comp
-L power-bus-rescue:CONN_01X02 J11
+L CONN_01X02 J11
 U 1 1 58FA8689
 P 1400 3900
 F 0 "J11" H 1400 4050 50  0000 C CNN
@@ -181,7 +211,7 @@ Wire Wire Line
 Wire Wire Line
 	1950 3850 1600 3850
 $Comp
-L power-bus-rescue:CONN_01X05 J9
+L CONN_01X05 J9
 U 1 1 58FE3D5C
 P 4550 4750
 F 0 "J9" H 4550 5050 50  0000 C CNN
@@ -206,7 +236,7 @@ Wire Wire Line
 Wire Wire Line
 	3800 4950 4350 4950
 $Comp
-L power-bus-rescue:Fuse F1
+L Fuse F1
 U 1 1 58FE4282
 P 1750 900
 F 0 "F1" V 1830 900 50  0000 C CNN
@@ -221,7 +251,7 @@ Wire Wire Line
 Text Label 1300 900  0    60   ~ 0
 VIN
 $Comp
-L conservify:MOUNT_HOLE M1
+L MOUNT_HOLE M1
 U 1 1 59023B33
 P 5050 2600
 F 0 "M1" H 5050 2750 50  0000 C CNN
@@ -232,7 +262,7 @@ F 3 "" H 5050 2600 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L conservify:MOUNT_HOLE M2
+L MOUNT_HOLE M2
 U 1 1 59023BD7
 P 5250 2600
 F 0 "M2" H 5250 2750 50  0000 C CNN
@@ -243,7 +273,7 @@ F 3 "" H 5250 2600 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L conservify:MOUNT_HOLE M3
+L MOUNT_HOLE M3
 U 1 1 59023C27
 P 5450 2600
 F 0 "M3" H 5450 2750 50  0000 C CNN
@@ -254,7 +284,7 @@ F 3 "" H 5450 2600 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L conservify:MOUNT_HOLE M4
+L MOUNT_HOLE M4
 U 1 1 59023C7E
 P 5650 2600
 F 0 "M4" H 5650 2750 50  0000 C CNN
@@ -265,7 +295,7 @@ F 3 "" H 5650 2600 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power-bus-rescue:CONN_01X02 J8
+L CONN_01X02 J8
 U 1 1 59024BCB
 P 1400 5000
 F 0 "J8" H 1400 5150 50  0000 C CNN
@@ -284,7 +314,7 @@ Wire Wire Line
 Wire Wire Line
 	2050 5050 1600 5050
 $Comp
-L power-bus-rescue:CONN_01X02 J12
+L CONN_01X02 J12
 U 1 1 5A0A3125
 P 1400 4500
 F 0 "J12" H 1400 4650 50  0000 C CNN
@@ -303,7 +333,7 @@ Wire Wire Line
 Wire Wire Line
 	2050 4550 1600 4550
 $Comp
-L power-bus-rescue:CONN_01X02 J13
+L CONN_01X02 J13
 U 1 1 5A0A35B3
 P 1400 5500
 F 0 "J13" H 1400 5650 50  0000 C CNN
@@ -334,7 +364,7 @@ GND
 Text Label 1650 3250 0    60   ~ 0
 12V0_1
 $Comp
-L power-bus-rescue:CONN_01X02 J10
+L CONN_01X02 J10
 U 1 1 58FA8646
 P 1400 3200
 F 0 "J10" H 1400 3350 50  0000 C CNN
@@ -359,7 +389,7 @@ GND
 Text Label 2550 3250 0    60   ~ 0
 12V0_1
 $Comp
-L power-bus-rescue:CONN_01X02 J4
+L CONN_01X02 J4
 U 1 1 58FA6511
 P 2300 3200
 F 0 "J4" H 2300 3350 50  0000 C CNN
@@ -376,7 +406,7 @@ GND
 Text Label 3050 3050 0    60   ~ 0
 VRAW
 $Comp
-L power-bus-rescue:pololu-vreg U3
+L pololu-vreg U3
 U 1 1 58FA64F5
 P 4300 3100
 F 0 "U3" H 4300 3200 60  0000 C CNN

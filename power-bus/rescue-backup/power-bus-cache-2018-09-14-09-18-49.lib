@@ -1,31 +1,11 @@
-EESchema-LIBRARY Version 2.4
+EESchema-LIBRARY Version 2.3
 #encoding utf-8
 #
-# conservify:MOUNT_HOLE
+# CONN_01X02
 #
-DEF ~conservify:MOUNT_HOLE M 0 40 Y Y 1 F N
-F0 "M" 0 150 50 H V C CNN
-F1 "conservify:MOUNT_HOLE" 0 -150 50 H I C CNN
-F2 "conservify:HOLE_PTH_3.2MM" 25 -225 50 H I C CNN
-F3 "" 0 0 50 H V C CNN
-$FPLIST
- HOLE_NPTH_2.2MM
- HOLE_PTH_2.2MM
- HOLE_NPTH_3.2MM
- HOLE_PTH_3.2MM
-$ENDFPLIST
-DRAW
-C 0 0 71 0 1 0 N
-P 2 0 1 0 25 -25 -25 25 N
-P 2 0 1 0 25 25 -25 -25 N
-ENDDRAW
-ENDDEF
-#
-# power-bus-rescue:CONN_01X02
-#
-DEF power-bus-rescue:CONN_01X02 J 0 40 Y N 1 F N
+DEF CONN_01X02 J 0 40 Y N 1 F N
 F0 "J" 0 150 50 H V C CNN
-F1 "power-bus-rescue:CONN_01X02" 100 0 50 V V C CNN
+F1 "CONN_01X02" 100 0 50 V V C CNN
 F2 "" 0 0 50 H I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -43,11 +23,11 @@ X P2 2 -200 -50 150 R 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# power-bus-rescue:CONN_01X05
+# CONN_01X05
 #
-DEF power-bus-rescue:CONN_01X05 P 0 40 Y N 1 F N
+DEF CONN_01X05 P 0 40 Y N 1 F N
 F0 "P" 0 300 50 H V C CNN
-F1 "power-bus-rescue:CONN_01X05" 100 0 50 V V C CNN
+F1 "CONN_01X05" 100 0 50 V V C CNN
 F2 "" 0 0 50 H V C CNN
 F3 "" 0 0 50 H V C CNN
 $FPLIST
@@ -71,11 +51,11 @@ X P5 5 -200 -200 150 R 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# power-bus-rescue:Fuse
+# Fuse
 #
-DEF power-bus-rescue:Fuse F 0 0 N Y 1 F N
+DEF Fuse F 0 0 N Y 1 F N
 F0 "F" 80 0 50 V V C CNN
-F1 "power-bus-rescue:Fuse" -75 0 50 V V C CNN
+F1 "Fuse" -75 0 50 V V C CNN
 F2 "" -70 0 50 V I C CNN
 F3 "" 0 0 50 H I C CNN
 $FPLIST
@@ -89,11 +69,44 @@ X ~ 2 0 -150 50 U 50 50 1 1 P
 ENDDRAW
 ENDDEF
 #
-# power-bus-rescue:pololu-vreg
+# GND
 #
-DEF power-bus-rescue:pololu-vreg U 0 40 Y Y 1 F N
+DEF GND #PWR 0 0 Y Y 1 F P
+F0 "#PWR" 0 -250 50 H I C CNN
+F1 "GND" 0 -150 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+P 6 0 1 0 0 0 0 -50 50 -50 0 -100 -50 -50 0 -50 N
+X GND 1 0 0 0 D 50 50 1 1 W N
+ENDDRAW
+ENDDEF
+#
+# MOUNT_HOLE
+#
+DEF ~MOUNT_HOLE M 0 40 Y Y 1 F N
+F0 "M" 0 150 50 H V C CNN
+F1 "MOUNT_HOLE" 0 -150 50 H I C CNN
+F2 "RocketScreamKicadLibrary:HOLE_PTH_3.2MM" 25 -225 50 H I C CNN
+F3 "" 0 0 50 H V C CNN
+$FPLIST
+ HOLE_NPTH_2.2MM
+ HOLE_PTH_2.2MM
+ HOLE_NPTH_3.2MM
+ HOLE_PTH_3.2MM
+$ENDFPLIST
+DRAW
+C 0 0 71 0 1 0 N
+P 2 0 1 0 25 -25 -25 25 N
+P 2 0 1 0 25 25 -25 -25 N
+ENDDRAW
+ENDDEF
+#
+# pololu-vreg
+#
+DEF pololu-vreg U 0 40 Y Y 1 F N
 F0 "U" 0 100 60 H V C CNN
-F1 "power-bus-rescue:pololu-vreg" 0 0 60 H V C CNN
+F1 "pololu-vreg" 0 0 60 H V C CNN
 F2 "" 0 0 60 H I C CNN
 F3 "" 0 0 60 H I C CNN
 DRAW
@@ -102,19 +115,6 @@ X VOUT 1 -750 -150 200 R 50 50 1 1 I
 X GND 2 -750 -50 200 R 50 50 1 1 I
 X VIN 3 -750 50 200 R 50 50 1 1 I
 X SHDN 4 -750 150 200 R 50 50 1 1 I
-ENDDRAW
-ENDDEF
-#
-# power:GND
-#
-DEF power:GND #PWR 0 0 Y Y 1 F P
-F0 "#PWR" 0 -250 50 H I C CNN
-F1 "power:GND" 0 -150 50 H V C CNN
-F2 "" 0 0 50 H I C CNN
-F3 "" 0 0 50 H I C CNN
-DRAW
-P 6 0 1 0 0 0 0 -50 50 -50 0 -100 -50 -50 0 -50 N
-X GND 1 0 0 0 D 50 50 1 1 W N
 ENDDRAW
 ENDDEF
 #
