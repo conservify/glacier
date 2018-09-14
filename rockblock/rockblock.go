@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 	"flag"
-	"github.com/conservify/goridium"
 	"log"
 	"log/syslog"
 	"os"
 	"os/exec"
 	"time"
+
+	"github.com/Conservify/goridium"
 )
 
 type options struct {
