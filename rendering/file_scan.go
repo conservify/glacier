@@ -130,11 +130,9 @@ func (afs *ArchiveFileSet) AddFrom(source string, recurse bool) error {
 }
 
 func (afs *ArchiveFileSet) FilterPreviousHour() (newAfs *ArchiveFileSet) {
-	newAfs = NewArchiveFileSet()
-
-	sort.Slice(afs.Files, func(i, j int) bool {
-		return afs.Files[i].Time.After(*afs.Files[j].Time)
-	})
+	if len(afs.Hours) < 2 {
+		return NewArchiveFileSet()
+	}
 
 	hour := afs.Hours[len(afs.Hours)-2]
 
@@ -142,12 +140,6 @@ func (afs *ArchiveFileSet) FilterPreviousHour() (newAfs *ArchiveFileSet) {
 }
 
 func (afs *ArchiveFileSet) FilterCurrentHour() (newAfs *ArchiveFileSet) {
-	newAfs = NewArchiveFileSet()
-
-	sort.Slice(afs.Files, func(i, j int) bool {
-		return afs.Files[i].Time.After(*afs.Files[j].Time)
-	})
-
 	hour := afs.Hours[len(afs.Hours)-1]
 
 	return afs.FilterByHour(time.Unix(hour, 0))
