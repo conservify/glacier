@@ -90,6 +90,31 @@ func isDir(p string) (bool, error) {
 	return i.Mode().IsDir(), nil
 }
 
+func FindLatestDirectory(source string) (string, error) {
+	dir, err := filepath.Abs(source)
+	if err != nil {
+		return "", err
+	}
+
+	t := time.Now()
+
+	for i := 0; i < 365; i += 1 {
+		day := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location()).UTC()
+		relative := path.Join(dir, day.Format("200601"), day.Format("02"))
+		if b, _ := isDir(relative); !b {
+			log.Printf("Not found: '%s'", relative)
+		} else {
+			dir = relative
+			break
+		}
+
+		// TOOD: This could be faster if we checked to see if months are missing.
+		t = t.Add(time.Hour * -24)
+	}
+
+	return dir, nil
+}
+
 func (afs *ArchiveFileSet) AddFrom(source string, recurse bool) error {
 	dir, err := filepath.Abs(source)
 	if err != nil {
@@ -97,14 +122,9 @@ func (afs *ArchiveFileSet) AddFrom(source string, recurse bool) error {
 	}
 
 	if !recurse {
-		today := time.Now()
-		yearMonth := today.Format("200601")
-		day := today.Format("02")
-		relative := path.Join(dir, yearMonth, day)
-		if b, _ := isDir(relative); !b {
-			log.Printf("Not found: '%s'", relative)
-		} else {
-			dir = relative
+		dir, err = FindLatestDirectory(source)
+		if err != nil {
+			return err
 		}
 	}
 
