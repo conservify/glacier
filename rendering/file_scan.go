@@ -140,6 +140,10 @@ func (afs *ArchiveFileSet) FilterPreviousHour() (newAfs *ArchiveFileSet) {
 }
 
 func (afs *ArchiveFileSet) FilterCurrentHour() (newAfs *ArchiveFileSet) {
+	if len(afs.Hours) < 1 {
+		return NewArchiveFileSet()
+	}
+
 	hour := afs.Hours[len(afs.Hours)-1]
 
 	return afs.FilterByHour(time.Unix(hour, 0))
