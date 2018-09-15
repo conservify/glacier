@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -90,13 +91,11 @@ func isDir(p string) (bool, error) {
 	return i.Mode().IsDir(), nil
 }
 
-func FindLatestDirectory(source string) (string, error) {
+func FindDirectoryOnOrBefore(t time.Time, source string) (string, error) {
 	dir, err := filepath.Abs(source)
 	if err != nil {
 		return "", err
 	}
-
-	t := time.Now()
 
 	for i := 0; i < 365; i += 1 {
 		day := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location()).UTC()
@@ -104,8 +103,16 @@ func FindLatestDirectory(source string) (string, error) {
 		if b, _ := isDir(relative); !b {
 			log.Printf("Not found: '%s'", relative)
 		} else {
-			dir = relative
-			break
+			files, err := ioutil.ReadDir(dir)
+			if err != nil {
+				return "", err
+			}
+			if len(files) > 0 {
+				dir = relative
+				break
+			} else {
+				log.Printf("Empty: '%s'", relative)
+			}
 		}
 
 		// TOOD: This could be faster if we checked to see if months are missing.
@@ -122,7 +129,7 @@ func (afs *ArchiveFileSet) AddFrom(source string, recurse bool) error {
 	}
 
 	if !recurse {
-		dir, err = FindLatestDirectory(source)
+		dir, err = FindDirectoryOnOrBefore(time.Now(), source)
 		if err != nil {
 			return err
 		}
