@@ -91,6 +91,25 @@ func isDir(p string) (bool, error) {
 	return i.Mode().IsDir(), nil
 }
 
+func FindArchiveFiles(dir string) (*ArchiveFileSet, error) {
+	afs := NewArchiveFileSet()
+	err := filepath.Walk(dir, func(p string, f os.FileInfo, err error) error {
+		if f != nil && !f.IsDir() {
+			if filepath.Ext(p) == ".bin" {
+				if af, err := NewArchiveFile(p); err == nil {
+					return afs.Add(af)
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return afs, nil
+}
+
 func FindDirectoryOnOrBefore(t time.Time, source string) (string, error) {
 	dir, err := filepath.Abs(source)
 	if err != nil {
@@ -103,15 +122,15 @@ func FindDirectoryOnOrBefore(t time.Time, source string) (string, error) {
 		if b, _ := isDir(relative); !b {
 			log.Printf("Not found: '%s'", relative)
 		} else {
-			files, err := ioutil.ReadDir(dir)
+			files, err := ioutil.ReadDir(relative)
 			if err != nil {
 				return "", err
 			}
-			if len(files) > 0 {
+			if len(files) > 2 {
 				dir = relative
 				break
 			} else {
-				log.Printf("Empty: '%s'", relative)
+				log.Printf("Empty: '%s' (%v)", relative, len(files))
 			}
 		}
 
@@ -120,6 +139,13 @@ func FindDirectoryOnOrBefore(t time.Time, source string) (string, error) {
 	}
 
 	return dir, nil
+}
+
+func (afs *ArchiveFileSet) Merge(other *ArchiveFileSet) error {
+	for _, af := range other.Files {
+		afs.Add(af)
+	}
+	return nil
 }
 
 func (afs *ArchiveFileSet) AddFrom(source string, recurse bool) error {
@@ -136,20 +162,12 @@ func (afs *ArchiveFileSet) AddFrom(source string, recurse bool) error {
 	}
 
 	log.Printf("Adding from '%s'", dir)
-	err = filepath.Walk(dir, func(p string, f os.FileInfo, err error) error {
-		if f != nil && !f.IsDir() {
-			if filepath.Ext(p) == ".bin" {
-				if af, err := NewArchiveFile(p); err == nil {
-					return afs.Add(af)
-				}
-			}
-		}
-		return nil
-
-	})
+	found, err := FindArchiveFiles(dir)
 	if err != nil {
 		return err
 	}
+
+	afs.Merge(found)
 
 	log.Printf("Found %d files", len(afs.Files))
 
