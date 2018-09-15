@@ -53,7 +53,7 @@ function shouldRender(data) {
 }
 
 function refresh() {
-    $.getJSON('/status.json', (data) => {
+    $.getJSON('status.json', (data) => {
         const r = shouldRender(data);
         if (r.length == 0) {
             setTimeout(() => {
@@ -68,7 +68,7 @@ function refresh() {
                 console.log(hour, "Loading", existing);
 
                 const img = cache[hour] = new Image();
-                img.src = "/rendering.png?hour=" + hour + "&axis=" + getQueryVariable("axis", "x");
+                img.src = "rendering.png?hour=" + hour + "&axis=" + getQueryVariable("axis", "x");
                 img.style.display = "none";
 
                 img.onload = () => {
