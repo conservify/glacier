@@ -110,7 +110,9 @@ func FindArchiveFiles(dir string) (*ArchiveFileSet, error) {
 	return afs, nil
 }
 
-func FindDirectoryOnOrBefore(t time.Time, source string) (string, error) {
+type CheckDirectory func(dir string) (bool, error)
+
+func FindDirectoryOnOrBefore(t time.Time, source string, check CheckDirectory) (string, error) {
 	dir, err := filepath.Abs(source)
 	if err != nil {
 		return "", err
@@ -127,8 +129,14 @@ func FindDirectoryOnOrBefore(t time.Time, source string) (string, error) {
 				return "", err
 			}
 			if len(files) > 2 {
-				dir = relative
-				break
+				good, err := check(relative)
+				if err != nil {
+					return "", err
+				}
+				if good {
+					dir = relative
+					break
+				}
 			} else {
 				log.Printf("Empty: '%s' (%v)", relative, len(files))
 			}
@@ -155,19 +163,30 @@ func (afs *ArchiveFileSet) AddFrom(source string, recurse bool) error {
 	}
 
 	if !recurse {
-		dir, err = FindDirectoryOnOrBefore(time.Now(), source)
+		dir, err = FindDirectoryOnOrBefore(time.Now(), source, func(adding string) (bool, error) {
+			found, err := FindArchiveFiles(adding)
+			if err != nil {
+				return false, err
+			}
+			if len(found.Files) == 0 {
+				return false, err
+			}
+			log.Printf("Adding from '%s' (%d files)", dir, len(found.Files))
+			afs.Merge(found)
+			return true, nil
+		})
 		if err != nil {
 			return err
 		}
-	}
+	} else {
+		found, err := FindArchiveFiles(dir)
+		if err != nil {
+			return err
+		}
 
-	log.Printf("Adding from '%s'", dir)
-	found, err := FindArchiveFiles(dir)
-	if err != nil {
-		return err
+		log.Printf("Added from '%s' (%d files)", dir, len(found.Files))
+		afs.Merge(found)
 	}
-
-	afs.Merge(found)
 
 	log.Printf("Found %d files", len(afs.Files))
 
