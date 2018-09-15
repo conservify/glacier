@@ -137,7 +137,9 @@ func (gr *Rendering) Analyze(axis string, samples []Sample) *AnalyzedSamples {
 }
 
 func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numberOfRows int, strictScaling bool) error {
-	log.Printf("Analyzing...")
+	fast := runtime.GOARCH == "arm"
+
+	log.Printf("Analyzing (fast = %v)...", fast)
 
 	as := gr.Analyze(axis, samples)
 
@@ -159,7 +161,6 @@ func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numbe
 	cd := NewColumnDrawer(gr.Image)
 	bounds := gr.Image.Bounds()
 	waveform := color.RGBA{255, 0, 0, 255}
-	fast := runtime.GOARCH == "arm"
 
 	for i, sample := range as.Samples {
 		x := mapInt(i, 0, numberOfSamples, 0, bounds.Dx())

@@ -109,7 +109,9 @@ func MapToColor(sample, min, max float64, c *color.RGBA) {
 		t = sample / (8192.0 * 1.0)
 	}
 
-	_ = DefaultGradientTable.GetInterpolatedColorFor(t)
+	r, g, b := DefaultGradientTable.GetInterpolatedColorFor(t).RGB255()
+
+	*c = color.RGBA{r, g, b, 255}
 
 	return
 }
