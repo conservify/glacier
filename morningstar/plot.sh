@@ -2,6 +2,8 @@
 
 set -xe
 
+cd ~jlewallen/conservify/glacier/morningstar
+
 scp ubuntu@code.conservify.org:/var/log/morningstar.log .
 
 grep READING morningstar.log > morningstar-all.csv
