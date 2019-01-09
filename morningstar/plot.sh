@@ -2,6 +2,13 @@
 
 set -xe
 
+env
+
+echo $GOPATH
+echo $GOROOT
+
+export GOPATH=~jlewallen/go
+
 cd ~jlewallen/conservify/glacier/morningstar
 
 scp ubuntu@code.conservify.org:/var/log/morningstar.log .
@@ -33,6 +40,8 @@ rm morningstar.csv morningstar-all.csv
 
 source ./env
 CHANNEL=glacier
+
+chown -R jlewallen. $PWD
 
 ./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file lodge-28d.png
 ./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file glacier-28d.png
