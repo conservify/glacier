@@ -43,8 +43,14 @@ CHANNEL=glacier
 
 chown -R jlewallen. $PWD
 
-./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file lodge-28d.png
-./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file glacier-28d.png
+convert glacier-28d.png glacier-6mo.png -append glacier.png
+convert lodge-28d.png lodge-6mo.png -append lodge.png
+convert lodge.png glacier.png +append battery.png
 
-./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file lodge-6mo.png
-./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file glacier-6mo.png
+# ./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file lodge-28d.png
+# ./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file glacier-28d.png
+
+# ./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file lodge-6mo.png
+# ./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file glacier-6mo.png
+
+./slack-upload-file --token $SLACK_TOKEN --channel $CHANNEL --file battery.png
