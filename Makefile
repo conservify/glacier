@@ -4,7 +4,7 @@ GO ?= env GOOS=$(GOOS) GOARCH=$(GOARCH) go
 BUILD ?= build
 BUILDARCH ?= $(BUILD)/$(GOOS)-$(GOARCH)
 
-all: $(BUILD) $(BUILD)/render-ascii go-deps linux-amd64
+all: $(BUILD) $(BUILD)/render-ascii linux-amd64
 
 linux-amd64:
 	GOOS=linux GOARCH=amd64 make go-binaries
@@ -43,19 +43,6 @@ $(BUILDARCH)/data-roller: data-roller/*.go
 
 $(BUILDARCH)/morningstar: morningstar/morningstar.go
 	$(GO) build -o $@ $^
-
-go-deps:
-	go get -u golang.org/x/sys/...
-	go get -u github.com/lucasb-eyer/go-colorful
-	go get -u github.com/pierrre/imageutil
-	go get -u github.com/Conservify/goridium
-	go get -u golang.org/x/crypto/ssh
-	go get -u github.com/tatsushid/go-fastping
-	go get -u github.com/fsnotify/fsnotify
-	go get -u github.com/docker/docker/api
-	go get -u github.com/docker/docker/client
-	go get -u github.com/goburrow/modbus
-	go get -u github.com/jpillora/backoff
 
 deploy: all-arch
 	rsync -zvua --progress rendering/static $(BUILD)/linux-arm/render-archives tc@glacier:card/rendering
