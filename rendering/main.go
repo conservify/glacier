@@ -65,6 +65,7 @@ type options struct {
 	Syslog        string
 	Overwrite     bool
 	StrictScaling bool
+	Recurse       bool
 	Axis          string
 	Watch         bool
 	Web           string
@@ -80,6 +81,7 @@ func main() {
 	flag.IntVar(&o.Cy, "cy", 2000, "height")
 	flag.BoolVar(&o.StrictScaling, "strict-scaling", false, "strict scaling")
 	flag.BoolVar(&o.Overwrite, "overwrite", false, "overwite existing frames")
+	flag.BoolVar(&o.Recurse, "recurse", false, "always recurse to find archives")
 	flag.StringVar(&o.Web, "web", "./", "web")
 	flag.BoolVar(&o.Watch, "watch", false, "watch")
 	flag.StringVar(&o.Syslog, "syslog", "", "enable syslog and name the ap")

@@ -60,7 +60,7 @@ func (ws *WebServer) ServeStatus() http.HandlerFunc {
 
 		afs := NewArchiveFileSet()
 		for _, arg := range flag.Args() {
-			if err := afs.AddFrom(arg, false); err != nil {
+			if err := afs.AddFrom(arg, ws.o.Recurse); err != nil {
 				panic(err)
 			}
 		}
