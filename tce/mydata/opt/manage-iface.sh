@@ -25,7 +25,7 @@ while /bin/true; do
             ifconfig "$@" | /usr/bin/logger -t "$TAG" 2>&1
             UP="/opt/$HOST/iface-$IFACE-up.sh"
             log "Running $UP"
-            sh $UP
+            sh $UP | /usr/bin/logger -t $TAG
             DELAY=2
         fi
     else

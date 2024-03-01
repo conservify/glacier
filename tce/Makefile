@@ -26,17 +26,10 @@ $(TOOLS_ROOT)/app/resilience: ../resilience/*.go
 $(TOOLS_ROOT)/app/uploader: ../uploader/*.go
 	$(GO) build -o $@ $^
 
-$(TOOLS_ROOT)/app/data-roller: ../data-roller/*.go
-	$(GO) build -o $@ $^
-
 $(TOOLS_ROOT)/app/morningstar: ../morningstar/morningstar.go
 	$(GO) build -o $@ $^
 
-$(TOOLS_ROOT)/app/adc:
-	cd ../psn-adc && $(MAKE) 
-	cp ../psn-adc/AdcDemo $(TOOLS_ROOT)/app/adc
-
-tools: setup $(TOOLS_ROOT)/app/adc $(TOOLS_ROOT)/app/tunneller $(TOOLS_ROOT)/app/resilience $(TOOLS_ROOT)/app/uploader $(TOOLS_ROOT)/app/morningstar $(TOOLS_ROOT)/app/data-roller
+tools: setup $(TOOLS_ROOT)/app/tunneller $(TOOLS_ROOT)/app/resilience $(TOOLS_ROOT)/app/uploader $(TOOLS_ROOT)/app/morningstar 
 
 patch: $(BUILD)/conservify-glacier-patch-lodge.tcz
 

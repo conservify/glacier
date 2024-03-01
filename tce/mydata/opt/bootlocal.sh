@@ -20,4 +20,4 @@ pkill crond && crond
 /opt/`hostname`/bootlocal.sh
 
 # Wait for the wireless before we do some things.
-/opt/await-wireless.sh
+# /opt/await-wireless.sh
