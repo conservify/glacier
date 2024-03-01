@@ -13,7 +13,6 @@ echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 # Data folders.
 mkdir -p /data
 ln -sf /mnt/mmcblk0p2/data/geophone /data/geophone
-ln -sf /mnt/mmcblk0p2/data/obsidian /data/obsidian
 
 # Execute configuration based on our hostname.
 /opt/`hostname`/bootsync.sh

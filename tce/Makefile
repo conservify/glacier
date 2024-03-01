@@ -12,7 +12,6 @@ all: images
 fixes: $(BUILD)/conservify-glacier-tools.tcz
 
 setup:
-	mkdir -p $(BUILD)/app/data/obsidian
 	mkdir -p $(TOOLS_ROOT)/app
 
 image-setup: setup

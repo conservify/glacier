@@ -94,7 +94,6 @@ unarchive_directory $BUILD/card1.gz $CARD1_WORK
 sudo touch $CARD1_WORK/tce/copy2fs.flg
 sudo cp -ar $PROJECT/.extensions-cache/* $CARD1_WORK/tce/optional
 sudo mkdir -p $CARD1_WORK/data/geophone
-sudo mkdir -p $CARD1_WORK/data/obsidian
 sudo mkdir -p $CARD1_WORK/data/log
 sudo cp $PROJECT/onboot.lst $CARD1_WORK/tce
 sudo cp $BUILD/mydata.tgz $CARD1_WORK/tce
