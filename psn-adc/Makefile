@@ -4,7 +4,7 @@ all: libpsn32.a AdcDemo
 
 CXX ?= $(TOOLCHAIN_PREFIX)g++
 AR ?= $(TOOLCHAIN_PREFIX)ar
-ADC_CPPFLAGS = $(CPPFLAGS) -D__i386 -D_LINUX -D_INTEL -D_USE_SCHED  -D_USE_PTHREADS -D_USE_TERMIOS -O3 -Wall -Wno-write-strings -c $(CPPFLAGS_EXTRA)
+ADC_CPPFLAGS = $(CPPFLAGS) -D__i386 -g -D_LINUX -D_INTEL -D_USE_SCHED  -D_USE_PTHREADS -D_USE_TERMIOS -O3 -Wall -Wno-write-strings -c $(CPPFLAGS_EXTRA)
 ADC_LDFLAGS = $(LDFLAGS_EXTRA)
 
 OBJS = PSNADBoard.o AdcBoard.o Adcv1.o Adcv2.o Adcvm.o AdcSdr24.o GpsRef.o GpsRefVco.o PcRef.o WwvRef.o WwvbRef.o

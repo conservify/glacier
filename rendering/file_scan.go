@@ -59,6 +59,10 @@ func NewArchiveFileSet() *ArchiveFileSet {
 	}
 }
 
+func (afs *ArchiveFileSet) Sort() error {
+	return nil
+}
+
 func (afs *ArchiveFileSet) Add(af *ArchiveFile) error {
 	unix := af.Hour.Unix()
 	afs.Files = append(afs.Files, af)

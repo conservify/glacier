@@ -21,6 +21,18 @@ func NewColumnDrawer(image *image.RGBA) (cd *ColumnDrawer) {
 	}
 }
 
+func (cd *ColumnDrawer) DrawRow(y, start, end int, clr *color.RGBA) {
+	i := cd.image.PixOffset(start, y)
+
+	for c := start; c < end; c += 1 {
+		cd.image.Pix[i+0] = clr.R
+		cd.image.Pix[i+1] = clr.G
+		cd.image.Pix[i+2] = clr.B
+		cd.image.Pix[i+3] = clr.A
+		i += 4
+	}
+}
+
 func (cd *ColumnDrawer) DrawColumn(x, start, end int, clr *color.RGBA, fast bool) {
 	if start > end {
 		start, end = end, start

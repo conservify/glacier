@@ -22,9 +22,12 @@ type Sample struct {
 }
 
 const (
-	SamplesPerSecond = 500
-	SamplesPerHour   = SamplesPerSecond * 60 * 60
+	SamplesPerSecond = 60
 	SamplesPerFile   = SamplesPerSecond * 60
+	SamplesPerHour   = SamplesPerSecond * 60 * 60
+	MaximumSamplesPerSecond = 500
+	MaximumSamplesPerFile   = MaximumSamplesPerSecond * 60
+	MaximumSamplesPerHour   = MaximumSamplesPerSecond * 60 * 60
 )
 
 func mapFloat(v, oMin, oMax, nMin, nMax float64) float64 {
@@ -57,9 +60,19 @@ func (af *ArchiveFile) ReadSamples() (*Samples, error) {
 
 	defer df.Close()
 
-	samples := make([]Sample, SamplesPerFile)
+	samples := make([]Sample, MaximumSamplesPerFile)
 	if err := binary.Read(df, binary.LittleEndian, &samples); err != nil {
 		return nil, fmt.Errorf("Error reading %s: %v", af.FileName, err)
+	}
+
+	if MaximumSamplesPerSecond != SamplesPerSecond {
+		truncated := make([]Sample, SamplesPerFile)
+		for second := 0; second < 60; second += 1 {
+			for sample := 0; sample < SamplesPerSecond; sample += 1 {
+				truncated[second * SamplesPerSecond + sample] = samples[second * MaximumSamplesPerSecond + sample]
+			}
+		}
+		samples = truncated
 	}
 
 	hourOffset := (af.Second + af.Minute*60) * SamplesPerSecond
@@ -136,53 +149,101 @@ func (gr *Rendering) Analyze(axis string, samples []Sample) *AnalyzedSamples {
 	}
 }
 
+type Column struct {
+	amp float64
+	min float64
+	max float64
+	n int32
+}
+
 func (gr *Rendering) DrawSamples(axis string, samples []Sample, rowNumber, numberOfRows int, strictScaling bool) error {
 	fast := runtime.GOARCH == "arm"
 
-	log.Printf("Analyzing (fast = %v)...", fast)
+	log.Printf("Analyzing (fast = %v, strict = %v)...", fast, strictScaling)
 
 	as := gr.Analyze(axis, samples)
 
-	dy := gr.Image.Bounds().Dy()
+	numberOfSamples := len(as.Samples)
+	bounds := gr.Image.Bounds()
+	dy := bounds.Dy()
 	rowCy := (dy / (numberOfRows + 1))
+	numberColumns := bounds.Dx()
 	offsetY := dy / 2
 	if numberOfRows > 1 {
 		offsetY = (rowNumber + 1) * rowCy
 	}
-	numberOfSamples := len(as.Samples)
 	scale := 1.0 / float64(numberOfRows)
 
 	if numberOfRows == 1 {
 		scale = 1.0 / 6.0
 	}
 
-	log.Printf("Analyzed [%f, %f] (%d), drawing...", as.Minimum, as.Maximum, len(as.Samples))
+	log.Printf("Analyzed [%f, %f] (%d samples) (%d columns)...", as.Minimum, as.Maximum, len(as.Samples), numberColumns)
 
 	cd := NewColumnDrawer(gr.Image)
-	bounds := gr.Image.Bounds()
-	waveform := color.RGBA{255, 0, 0, 255}
+	lines := color.RGBA{128, 128, 128, 255}
+	linesHeavy := color.RGBA{32, 32, 32, 255}
 
-	for i, sample := range as.Samples {
-		x := mapInt(i, 0, numberOfSamples, 0, bounds.Dx())
-		y := sample * scale
-		if strictScaling {
-			y = mapFloat(sample, as.Minimum, as.Maximum, float64(-rowCy/2), float64(rowCy/2))
+	if true {
+		columns := make([]Column, numberColumns)
+		for i, sample := range as.Samples {
+			x := mapInt(i, 0, numberOfSamples, 0, numberColumns)
+			if sample != 0 {
+				if sample > 0 {
+					if sample > columns[x].max {
+						// columns[x].max += sample
+						columns[x].max = sample
+					}
+				} else {
+					if sample < columns[x].min {
+						// columns[x].min += sample
+					 columns[x].min = sample
+					}
+				}
+				if math.Abs(sample) > math.Abs(columns[x].amp) {
+					columns[x].amp = sample
+				}
+				// columns[x].n += 1
+				columns[x].n = 1
+			}
 		}
 
-		if fast {
-			cd.DrawColumn(x, offsetY, offsetY+int(y), &waveform, fast)
-		} else {
-			MapToColor(sample, as.Minimum, as.Maximum, &waveform)
-			cd.DrawColumn(x, offsetY, offsetY+int(y), &waveform, fast)
+		waveform := color.RGBA{255, 0, 0, 255}
+		for x, column := range columns {
+			min := int(column.min / float64(column.n) * scale)
+			max := int(column.max / float64(column.n) * scale)
+			MapToColor(column.amp, as.Minimum, as.Maximum, &waveform)
+			cd.DrawColumn(x, offsetY+min, offsetY+max, &waveform, fast)
+		}
+		cd.DrawRow(offsetY, 0, numberColumns, &linesHeavy)
+	} else {
+		waveform := color.RGBA{255, 0, 0, 255}
+		for i, sample := range as.Samples {
+			x := mapInt(i, 0, numberOfSamples, 0, bounds.Dx())
+			y := sample * scale
+			if strictScaling {
+				y = mapFloat(sample, as.Minimum, as.Maximum, float64(-rowCy/2), float64(rowCy/2))
+			}
+
+			if fast {
+				cd.DrawColumn(x, offsetY, offsetY+int(y), &waveform, fast)
+			} else {
+				MapToColor(sample, as.Minimum, as.Maximum, &waveform)
+				cd.DrawColumn(x, offsetY, offsetY+int(y), &waveform, fast)
+			}
 		}
 	}
 
-	// lines := color.RGBA{192, 192, 192, 255}
-	lines := color.RGBA{128, 128, 128, 255}
 	for c := 0; c < 60; c += 1 {
 		x := mapInt(c, 0, 60, 0, bounds.Dx())
-		cd.DrawColumn(x, 0, bounds.Dy(), &lines, true)
+		if c%10 == 0 {
+			cd.DrawColumn(x, 0, bounds.Dy(), &linesHeavy, true)
+		} else {
+			cd.DrawColumn(x, 0, bounds.Dy(), &lines, true)
+		}
 	}
+
+	log.Printf("Done drawing")
 
 	return nil
 }
