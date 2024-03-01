@@ -5,9 +5,7 @@ MYDATA_ROOT=$(BUILD)/mydata-temp
 TOOLS_ROOT=$(BUILD)/conservify-glacier-tools
 GO=env GOOS=linux GOARCH=arm go
 MAKE=env TOOLCHAIN_PREFIX=arm-linux-gnueabi- CPPFLAGS_EXTRA=-I/usr/arm-linux-gnueabi/include LDFLAGS_EXTRA=-L/usr/arm-linux-gnueabi/lib make
-
-GO=go
-MAKE=make
+PI_CORE_VERSION = 14.1.0
 
 all: images
 
@@ -133,19 +131,19 @@ packages: setup $(BUILD)/zerotier.tcz $(BUILD)/hamachi.tcz $(BUILD)/conservify-g
 	cp $(BUILD)/*.tcz $(EXTENSIONS_CACHE)
 	for name in `cat extensions`; do                                                                    \
 		if [ ! -f $(EXTENSIONS_CACHE)/$$name ]; then                                                    \
-			(cd $(EXTENSIONS_CACHE) && wget -cq http://tinycorelinux.net/9.x/armv7/tcz/$$name.md5.txt); \
-			(cd $(EXTENSIONS_CACHE) && wget -cq http://tinycorelinux.net/9.x/armv7/tcz/$$name.dep);     \
-			(cd $(EXTENSIONS_CACHE) && wget -cq http://tinycorelinux.net/9.x/armv7/tcz/$$name);         \
+			(cd $(EXTENSIONS_CACHE) && wget -cq http://tinycorelinux.net/14.x/armv7/tcz/$$name.md5.txt); \
+			(cd $(EXTENSIONS_CACHE) && wget -cq http://tinycorelinux.net/14.x/armv7/tcz/$$name.dep);     \
+			(cd $(EXTENSIONS_CACHE) && wget -cq http://tinycorelinux.net/14.x/armv7/tcz/$$name);         \
 		fi                                                                                              \
 	done
 
-piCore-9.0.3.img:
-	wget http://tinycorelinux.net/9.x/armv7/releases/RPi/piCore-9.0.3.zip
-	unzip piCore-9.0.3.zip
+piCore-$(PI_CORE_VERSION).img:
+	wget http://tinycorelinux.net/14.x/armv6/releases/RPi/piCore-$(PI_CORE_VERSION).zip
+	unzip piCore-$(PI_CORE_VERSION).zip
 	rm -f README piCore-*.txt
 
-$(BUILD)/card0.gz $(BUILD)/card1.gz: piCore-9.0.3.img
-	bash ./archive-partitions.sh piCore-9.0.3.img
+$(BUILD)/card0.gz $(BUILD)/card1.gz: piCore-$(PI_CORE_VERSION).img
+	bash ./archive-partitions.sh piCore-$(PI_CORE_VERSION).img
 
 $(BUILD)/card0-lodge.gz $(BUILD)/card0-glacier.gz $(BUILD)/card1-both.gz: image-setup $(BUILD)/card0.gz $(BUILD)/card1.gz $(BUILD)/mydata.tgz packages
 	bash create-image.sh

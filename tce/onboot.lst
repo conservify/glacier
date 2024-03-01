@@ -18,7 +18,9 @@ iproute2.tcz
 libevent.tcz
 libcap.tcz
 ntp.tcz
-netfilter-4.9.22-piCore-v7.tcz
-hamachi.tcz
 ca-certificates.tcz
+libasound.tcz
+alsa-modules-6.1.68-piCore-v7.tcz
+alsa.tcz
+alsa-utils.tcz
 conservify-glacier-tools.tcz

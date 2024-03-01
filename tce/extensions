@@ -28,7 +28,6 @@ gmp.tcz
 gnutls.tcz
 grep.tcz
 iptables.tcz
-ipv6-4.9.22-piCore-v7.tcz
 isl.tcz
 jansson.tcz
 libacl.tcz
@@ -52,7 +51,6 @@ mc.tcz
 mpc.tcz
 mpfr.tcz
 ncurses.tcz
-netfilter-4.9.22-piCore-v7.tcz
 nettle.tcz
 openssh.tcz
 openssl.tcz
@@ -82,5 +80,8 @@ ca-certificates.tcz
 conservify-glacier-tools.tcz
 r8152.tcz
 usbserial.tcz
-zerotier.tcz
-hamachi.tcz
+libasound.tcz
+modules-6.1.68-piCore.tar.xz
+alsa-modules-6.1.68-piCore-v7.tcz
+alsa.tcz
+alsa-utils.tcz
