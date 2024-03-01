@@ -16,9 +16,6 @@ fi
 pkill rsyslogd && rsyslogd
 pkill crond && crond
 
-# Start hamachi daemon.
-/usr/local/bin/hamachid
-
 # Execute configuration based on our hostname.
 /opt/`hostname`/bootlocal.sh
 

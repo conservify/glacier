@@ -107,26 +107,13 @@ godeps:
 	go get github.com/goburrow/modbus
 	go get github.com/jpillora/backoff
 
-$(BUILD)/zerotier.tcz: setup
-	mksquashfs packages/zerotier $(BUILD)/zerotier.tcz -b 4k -no-xattrs -noappend
-
-$(BUILD)/hamachi.tcz: setup
-	sudo rm -rf packages/hamachi/dev/net
-	mkdir -p packages/hamachi/dev/net
-	mkdir -p packages/hamachi/lib
-	sudo mknod packages/hamachi/dev/net/tun c 10 200
-	sudo chmod 0666 packages/hamachi/dev/net/tun
-	ln -sf ld-linux-armhf.so.3 packages/hamachi/lib/ld-linux.so.3
-	ln -sf hamachid packages/hamachi/usr/local/bin/hamachi
-	mksquashfs packages/hamachi $(BUILD)/hamachi.tcz -b 4k -no-xattrs -noappend
-
 $(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz:
 	echo These are made on another Pi.
 	cp packages/r8152.tcz $(BUILD)
 	cp packages/usbserial.tcz $(BUILD)
 	cp packages/logrotate.tcz $(BUILD)
 
-packages: setup $(BUILD)/zerotier.tcz $(BUILD)/hamachi.tcz $(BUILD)/conservify-glacier-tools.tcz $(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz
+packages: setup $(BUILD)/conservify-glacier-tools.tcz $(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz
 	mkdir -p $(EXTENSIONS_CACHE)
 	cp $(BUILD)/*.tcz $(EXTENSIONS_CACHE)
 	for name in `cat extensions`; do                                                                    \
