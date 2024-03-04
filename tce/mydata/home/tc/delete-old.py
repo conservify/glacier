@@ -14,18 +14,24 @@ class DatedFile:
     path: str
     stamp: datetime.datetime
 
+    def remove(self):
+        os.remove(self.path)
+
 def get_dated_file(dir_path):
     m = re.search(r"(\d\d\d\d)(\d\d)(\d\d)_(\d\d)(\d\d)(\d\d)", dir_path)
     if m is None:
         return None
     
     stamp = datetime.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4)), int(m.group(5)), int(m.group(6)))
-    return DatedPath(dir_path, stamp)
+    return DatedFile(dir_path, stamp)
 
 @dataclasses.dataclass
 class DatedPath:
     path: str
     stamp: datetime.datetime
+
+    def remove(self):
+        shutil.rmtree(self.path)
 
 def get_dated_path(dir_path):
     m = re.search(r"(\d\d\d\d)(\d\d)\/(\d\d)\/(\d\d)", dir_path)
@@ -72,7 +78,7 @@ def main():
         size_after -= size
         print(f"deleting {df.path} ({size_after / MB} bytes after)")
         if args.force:
-            shutil.rmtree(df.path)
+            df.remove()
 
 if __name__ == '__main__':
     main()
