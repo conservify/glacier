@@ -4,6 +4,8 @@
 # and therefore not slow down the boot process.
 /usr/bin/sethostname box
 
+export $(grep -v '^#' /etc/secure.env | xargs)
+
 # Set CPU frequency governor to ondemand (default is performance)
 echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
@@ -22,6 +24,8 @@ fi
 # Restart services to reload configuration.
 pkill rsyslogd && rsyslogd
 pkill crond && crond
+
+env | /usr/bin/logger -t env
 
 # Execute configuration based on our hostname.
 /opt/`hostname`/bootsync.sh
