@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -xe
+
+GPSDATE=`gpspipe -w | head -10 | grep TPV | sed -r 's/.*"time":"([^"]*)".*/\1/' | head -1`
+
+echo $GPSDATE | /usr/bin/logger -t gps-time
+
+# date -s "$GPSDATE"
