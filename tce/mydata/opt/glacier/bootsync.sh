@@ -6,4 +6,9 @@ chown -R tc. /home/tc/card/data
 
 su tc -c "/home/tc/geophone.py --path /home/tc/card/data/geophone" 2>&1 | /usr/bin/logger -t geophone &
 
+# This will not overwrite if a key and identity is already there.
+/opt/syncthing/syncthing generate
+
 su tc -c "/opt/syncthing/syncthing" 2>&1 | /usr/bin/logger -t syncthing &
+
+# eof
