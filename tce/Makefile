@@ -48,22 +48,22 @@ $(BUILD)/mydata.tgz: setup
 	sudo rm -rf mydata.tgz $(MYDATA_ROOT)
 	cp -ar mydata $(MYDATA_ROOT)
 	mkdir $(MYDATA_ROOT)/home/tc/.ssh -p
-	cp ~/.ssh/id_rsa* $(MYDATA_ROOT)/home/tc/.ssh
+	# cp ~/.ssh/id_rsa* $(MYDATA_ROOT)/home/tc/.ssh
 	cp ~/.ssh/id_rsa.pub $(MYDATA_ROOT)/home/tc/.ssh/authorized_keys
 	chmod 755 $(MYDATA_ROOT)/home/tc
 	chmod 700 $(MYDATA_ROOT)/home/tc/.ssh
-	chmod 600 $(MYDATA_ROOT)/home/tc/.ssh/id_rsa
-	chmod 644 $(MYDATA_ROOT)/home/tc/.ssh/id_rsa.pub
+	# chmod 600 $(MYDATA_ROOT)/home/tc/.ssh/id_rsa
+	# chmod 644 $(MYDATA_ROOT)/home/tc/.ssh/id_rsa.pub
 	chmod 644 $(MYDATA_ROOT)/home/tc/.ssh/authorized_keys
 	sudo chown 1001.50 -R $(MYDATA_ROOT)/home/tc
 
 	mkdir $(MYDATA_ROOT)/root/.ssh -p
-	cp ~/.ssh/id_rsa* $(MYDATA_ROOT)/root/.ssh
+	# cp ~/.ssh/id_rsa* $(MYDATA_ROOT)/root/.ssh
 	cp ~/.ssh/id_rsa.pub $(MYDATA_ROOT)/root/.ssh/authorized_keys
 	chmod 755 $(MYDATA_ROOT)/root
 	chmod 700 $(MYDATA_ROOT)/root/.ssh
-	chmod 600 $(MYDATA_ROOT)/root/.ssh/id_rsa
-	chmod 644 $(MYDATA_ROOT)/root/.ssh/id_rsa.pub
+	# chmod 600 $(MYDATA_ROOT)/root/.ssh/id_rsa
+	# chmod 644 $(MYDATA_ROOT)/root/.ssh/id_rsa.pub
 	chmod 644 $(MYDATA_ROOT)/root/.ssh/authorized_keys
 	sudo chown 0.0 -R $(MYDATA_ROOT)/root
 
