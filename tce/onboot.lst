@@ -20,6 +20,7 @@ iproute2.tcz
 libevent.tcz
 libcap.tcz
 ntp.tcz
+vim.tcz
 ca-certificates.tcz
 libasound.tcz
 alsa-modules-6.1.68-piCore-v7.tcz
@@ -29,4 +30,5 @@ alsa.tcz
 alsa-utils.tcz
 syncthing.tcz
 python3.11.tcz
+gpsd-3.25.tcz
 conservify-glacier-tools.tcz

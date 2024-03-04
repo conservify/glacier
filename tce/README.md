@@ -21,4 +21,11 @@ tce-load -wi glibc_base-dev
 
 ```
 tce-load -wi python3.11-pip
+pip3 install scons
+```
+
+Command used to compile `gpsd`.
+
+```
+scons prefix=/home/tc/card/build/gpsd/usr/local install
 ```

@@ -80,7 +80,11 @@ logrotate.tcz
 ca-certificates.tcz
 python3.11.tcz
 zstd.tcz
+lzo.tcz
+squashfs-tools.tcz
+vim.tcz
 conservify-glacier-tools.tcz
+gpsd-3.25.tcz
 r8152.tcz
 usbserial.tcz
 libasound.tcz
