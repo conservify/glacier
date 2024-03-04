@@ -1,3 +1,5 @@
+openssl.tcz
+openssl-1.1.1.tcz
 openssh.tcz
 screen.tcz
 libattr.tcz
@@ -21,6 +23,10 @@ ntp.tcz
 ca-certificates.tcz
 libasound.tcz
 alsa-modules-6.1.68-piCore-v7.tcz
+wireguard-6.1.68-piCore-v7.tcz
+usb-serial-6.1.68-piCore-v7.tcz
 alsa.tcz
 alsa-utils.tcz
+syncthing.tcz
+python3.11.tcz
 conservify-glacier-tools.tcz

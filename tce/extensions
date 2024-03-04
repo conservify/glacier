@@ -54,6 +54,7 @@ ncurses.tcz
 nettle.tcz
 openssh.tcz
 openssl.tcz
+openssl-1.1.1.tcz
 p11-kit.tcz
 patch.tcz
 pcre.tcz
@@ -77,11 +78,16 @@ acl-dev.tcz
 watchdog.tcz
 logrotate.tcz
 ca-certificates.tcz
+python3.11.tcz
+zstd.tcz
 conservify-glacier-tools.tcz
 r8152.tcz
 usbserial.tcz
 libasound.tcz
 modules-6.1.68-piCore.tar.xz
 alsa-modules-6.1.68-piCore-v7.tcz
+wireguard-6.1.68-piCore-v7.tcz
+usb-serial-6.1.68-piCore-v7.tcz
 alsa.tcz
 alsa-utils.tcz
+syncthing.tcz

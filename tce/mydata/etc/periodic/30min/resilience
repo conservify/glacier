@@ -1,0 +1,14 @@
+#!/bin/sh
+# -*- mode: sh -*-
+
+# SCRIPT=/opt/`hostname`/restore-networking.sh
+# /app/resilience --action-script "$SCRIPT" --syslog resilience 8.8.8.8 | /usr/bin/logger -t resilience 2>&1
+
+# ping -c 1 25.69.9.148 | /usr/bin/logger -t resilience 2>&1
+# if [ "$?" == 0 ]; then
+#   /usr/bin/logger -t resilience "VPN Good"
+# else
+#   /usr/bin/logger -t resilience "Restarting VPN..."
+#   pkill hamachid
+#   hamachid
+# fi

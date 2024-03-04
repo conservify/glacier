@@ -1,0 +1,4 @@
+#!/bin/sh
+# -*- mode: sh -*-
+
+/home/tc/delete-old.py --path /home/tc/card/data/geophone --maximum 32 --force | /usr/bin/logger -t delete-old

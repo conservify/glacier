@@ -2,14 +2,13 @@ PROJECT=$(shell pwd)
 BUILD=$(PROJECT)/build
 EXTENSIONS_CACHE=".extensions-cache"
 MYDATA_ROOT=$(BUILD)/mydata-temp
-TOOLS_ROOT=$(BUILD)/conservify-glacier-tools
+TOOLS_ROOT=$(BUILD)/working-conservify-glacier-tools
+SYNCTHING_ROOT=$(BUILD)/working-syncthing
 GO=env GOOS=linux GOARCH=arm go
 MAKE=env TOOLCHAIN_PREFIX=arm-linux-gnueabi- CPPFLAGS_EXTRA=-I/usr/arm-linux-gnueabi/include LDFLAGS_EXTRA=-L/usr/arm-linux-gnueabi/lib make
 PI_CORE_VERSION = 14.1.0
 
 all: images
-
-fixes: $(BUILD)/conservify-glacier-tools.tcz
 
 setup:
 	mkdir -p $(TOOLS_ROOT)/app
@@ -31,32 +30,17 @@ $(TOOLS_ROOT)/app/morningstar: ../morningstar/morningstar.go
 
 tools: setup $(TOOLS_ROOT)/app/tunneller $(TOOLS_ROOT)/app/resilience $(TOOLS_ROOT)/app/uploader $(TOOLS_ROOT)/app/morningstar 
 
-patch: $(BUILD)/conservify-glacier-patch-lodge.tcz
-
-$(BUILD)/conservify-glacier-patch-lodge.tcz: tools
-	mkdir -p $(TOOLS_ROOT)/usr/local/go/lib/time
-	mkdir -p $(TOOLS_ROOT)/etc
-	mkdir -p $(TOOLS_ROOT)/opt
-	cp mydata/opt/bootlocal.sh $(TOOLS_ROOT)/opt
-	cp mandatory/etc/rsyslog.conf.lodge $(TOOLS_ROOT)/etc/rsyslog.conf
-	cp $(GOROOT)/lib/time/zoneinfo.zip $(TOOLS_ROOT)/usr/local/go/lib/time
-	mksquashfs $(TOOLS_ROOT) $(BUILD)/conservify-glacier-patch-lodge.tcz -b 4k -no-xattrs -noappend
-	find $(TOOLS_ROOT)
-
 $(BUILD)/conservify-glacier-tools.tcz: tools
 	mkdir -p $(TOOLS_ROOT)/etc
 	mkdir -p $(TOOLS_ROOT)/opt
 	mkdir -p $(TOOLS_ROOT)/var/spool/rsyslog
-	cp mydata/opt/boot*  $(TOOLS_ROOT)/opt
+	cp -ar mydata/opt/boot*  $(TOOLS_ROOT)/opt
 	cp -ar mydata/opt/lodge $(TOOLS_ROOT)/opt
 	cp -ar mydata/opt/glacier $(TOOLS_ROOT)/opt
-	cp mandatory/etc/logrotate.conf $(TOOLS_ROOT)/etc
-	cp mandatory/etc/rsyslog.conf.* $(TOOLS_ROOT)/etc
+	cp -ar mydata/etc/logrotate.conf $(TOOLS_ROOT)/etc
+	cp -ar mydata/etc/rsyslog.conf.* $(TOOLS_ROOT)/etc
 	mkdir -p $(TOOLS_ROOT)/usr/local/go/lib/time
 	cp $(GOROOT)/lib/time/zoneinfo.zip $(TOOLS_ROOT)/usr/local/go/lib/time
-	cp adc-wrapper $(TOOLS_ROOT)/app/adc-wrapper
-	cp uploader-wrapper $(TOOLS_ROOT)/app/uploader-wrapper
-	cp tunneller-wrapper $(TOOLS_ROOT)/app/tunneller-wrapper
 	mksquashfs $(TOOLS_ROOT) $(BUILD)/conservify-glacier-tools.tcz -b 4k -no-xattrs -noappend
 	find $(TOOLS_ROOT)
 
@@ -105,7 +89,7 @@ $(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz:
 	cp packages/usbserial.tcz $(BUILD)
 	cp packages/logrotate.tcz $(BUILD)
 
-packages: setup $(BUILD)/conservify-glacier-tools.tcz $(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz
+packages: setup $(BUILD)/syncthing.tcz $(BUILD)/conservify-glacier-tools.tcz $(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz
 	mkdir -p $(EXTENSIONS_CACHE)
 	cp $(BUILD)/*.tcz $(EXTENSIONS_CACHE)
 	for name in `cat extensions`; do                                                                    \
@@ -120,6 +104,17 @@ piCore-$(PI_CORE_VERSION).img:
 	wget http://tinycorelinux.net/14.x/armv6/releases/RPi/piCore-$(PI_CORE_VERSION).zip
 	unzip piCore-$(PI_CORE_VERSION).zip
 	rm -f README piCore-*.txt
+
+syncthing-linux-arm-v1.27.3.tar.gz:
+	wget https://github.com/syncthing/syncthing/releases/download/v1.27.3/syncthing-linux-arm-v1.27.3.tar.gz
+
+$(BUILD)/syncthing.tcz: syncthing-linux-arm-v1.27.3.tar.gz
+	rm -rf $(SYNCTHING_ROOT)
+	mkdir -p $(SYNCTHING_ROOT)/etc
+	mkdir -p $(SYNCTHING_ROOT)/opt
+	cd $(SYNCTHING_ROOT)/opt && tar xf ../../../syncthing-linux-arm-v1.27.3.tar.gz
+	mv $(SYNCTHING_ROOT)/opt/syncthing-linux-arm* $(SYNCTHING_ROOT)/opt/syncthing
+	mksquashfs $(SYNCTHING_ROOT) $(BUILD)/syncthing.tcz -b 4k -no-xattrs -noappend
 
 $(BUILD)/card0.gz $(BUILD)/card1.gz: piCore-$(PI_CORE_VERSION).img
 	bash ./archive-partitions.sh piCore-$(PI_CORE_VERSION).img
@@ -140,5 +135,4 @@ $(BUILD)/glacier.img: $(BUILD)/card0-glacier.gz $(BUILD)/card1-both.gz
 images: $(BUILD)/lodge.img $(BUILD)/glacier.img
 
 clean:
-	cd ../psn-adc && make clean
 	sudo rm -rf $(BUILD)

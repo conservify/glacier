@@ -16,15 +16,14 @@ mkdir $CARD0_LODGE_BASE_WORK
 pushd $CARD0_LODGE_BASE_WORK
 zcat $CARD0_LODGE_WORK/rootfs-piCore-14.1.gz | sudo cpio -d -i
 sudo patch etc/init.d/tc-config -i $PROJECT/tc-config-rsyslogd.patch
-for a in $PROJECT/mandatory/*.tcz; do
+for a in $PROJECT/packages/*.tcz; do
     if [ -f $a ]; then
         sudo unsquashfs -f -d ./ $a;
     fi
 done
-sudo cp $PROJECT/mandatory/etc/rsyslog.conf.lodge etc/rsyslog.conf
-sudo cp $PROJECT/mandatory/etc/logrotate.conf etc
-sudo cp -ar $PROJECT/mandatory/etc/periodic etc
-sudo cp etc/periodic/offsite-backup etc/periodic/13min
+sudo cp $PROJECT/mydata/etc/rsyslog.conf.lodge etc/rsyslog.conf
+sudo cp $PROJECT/mydata/etc/logrotate.conf etc
+sudo cp -ar $PROJECT/mydata/etc/periodic etc
 sudo cp -ar /etc/ssl etc
 sudo rmdir var/log
 sudo ln -sf /mnt/mmcblk0p2/data/log var/log
@@ -57,15 +56,14 @@ mkdir $CARD0_GLACIER_BASE_WORK
 pushd $CARD0_GLACIER_BASE_WORK
 zcat $CARD0_GLACIER_WORK/rootfs-piCore-14.1.gz | sudo cpio -d -i
 sudo patch etc/init.d/tc-config -i $PROJECT/tc-config-rsyslogd.patch
-for a in $PROJECT/mandatory/*.tcz; do
+for a in $PROJECT/packages/*.tcz; do
     if [ -f $a ]; then
         sudo unsquashfs -f -d ./ $a;
     fi
 done
-sudo cp $PROJECT/mandatory/etc/rsyslog.conf.glacier etc/rsyslog.conf
-sudo cp $PROJECT/mandatory/etc/logrotate.conf etc
-sudo cp -ar $PROJECT/mandatory/etc/periodic etc
-sudo cp etc/periodic/data-roller etc/periodic/5min
+sudo cp $PROJECT/mydata/etc/rsyslog.conf.glacier etc/rsyslog.conf
+sudo cp $PROJECT/mydata/etc/logrotate.conf etc
+sudo cp -ar $PROJECT/mydata/etc/periodic etc
 sudo cp -ar /etc/ssl etc
 sudo rmdir var/log
 sudo ln -sf /mnt/mmcblk0p2/data/log var/log

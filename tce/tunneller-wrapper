@@ -1,7 +1,0 @@
-#!/bin/sh
-
-while /bin/true; do
-    /app/tunneller "$@"
-    sleep 5
-done
-

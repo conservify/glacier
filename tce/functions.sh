@@ -62,7 +62,7 @@ function fill_partition {
 
 function partition_image {
     IMAGE=$1
-    dd if=/dev/zero bs=1M count=300 > $IMAGE
+    dd if=/dev/zero bs=1M count=512 > $IMAGE
     sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | fdisk $IMAGE
     o # clear the in memory partition table
     n # new partition

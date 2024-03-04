@@ -1,6 +1,0 @@
-#!/bin/sh
-
-while /bin/true; do
-    # /app/adc "$@" | /usr/bin/logger -t adc 2>&1
-    sleep 5
-done

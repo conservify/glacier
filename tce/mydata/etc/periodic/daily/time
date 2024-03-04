@@ -1,3 +1,5 @@
 #!/bin/sh
 
-ntpdate tick.ucla.edu | /usr/bin/logger
+NTP_SERVER=us.pool.ntp.org
+
+ntpdate $NTP_SERVER | /usr/bin/logger

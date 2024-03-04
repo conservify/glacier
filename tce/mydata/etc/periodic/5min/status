@@ -1,0 +1,5 @@
+#!/bin/sh
+# -*- mode: sh -*-
+
+date | /usr/bin/logger -t time
+uptime | /usr/bin/logger -t status

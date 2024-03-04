@@ -1,0 +1,28 @@
+#################
+#### MODULES ####
+#################
+
+module(load="imuxsock" SysSock.Use="on") # provides support for local system logging
+module(load="imklog")                    # provides kernel logging support
+module(load="imtcp")
+input(type="imtcp" port="514")
+
+$ActionFileDefaultTemplate RSYSLOG_TraditionalFileFormat
+
+$FileOwner tc
+$FileGroup staff
+$FileCreateMode 0640
+$DirCreateMode 0755
+$Umask 0022
+
+$IncludeConfig /etc/rsyslog.d/*.conf
+
+$WorkDirectory /var/spool/rsyslog
+$ActionQueueType LinkedList # use asynchronous processing
+$ActionQueueFileName srvrfwd # set file name, also enables disk mode
+$ActionResumeRetryCount -1 # infinite retries on insert failure
+$ActionQueueSaveOnShutdown on # save in-memory data if rsyslog shuts down
+$ActionQueueMaxDiskSpace 1g
+
+# *.*   				@@lodge:514
+*.*   				-/var/log/syslog

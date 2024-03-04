@@ -1,0 +1,4 @@
+#!/bin/sh
+# -*- mode: sh -*-
+
+# /app/morningstar --driver pl2303 --syslog morningstar > /dev/null

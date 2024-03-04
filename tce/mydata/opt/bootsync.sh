@@ -8,23 +8,15 @@ chmod 700 /root
 
 echo "169.254.128.129 lodge" >> /etc/hosts
 echo "169.254.128.130 glacier" >> /etc/hosts
-echo "nameserver 8.8.8.8" >> /etc/resolv.conf
-
-# Data folders.
-mkdir -p /data
-ln -sf /mnt/mmcblk0p2/data/geophone /data/geophone
+echo "nameserver 1.1.1.1" >> /etc/resolv.conf
 
 # Execute configuration based on our hostname.
 /opt/`hostname`/bootsync.sh
 
-# Start sync
-ntpd
+# Start time sync
+# ntpd
 
 # Do background stuff now that everything is ready.
 /opt/bootlocal.sh &
 
-# Left over from an older package.
-if [ -f /etc/periodic/13min ]; then
-    rm /etc/periodic/13min
-    filetool.sh -r
-fi
+# eof

@@ -1,7 +1,0 @@
-#!/bin/sh
-
-while /bin/true; do
-    /app/uploader "$@"
-    sleep 1
-done
-
