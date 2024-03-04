@@ -27,6 +27,12 @@ pkill crond && crond
 
 env | /usr/bin/logger -t env
 
+# Mount USB drive if we find one.
+if [ -e /dev/sda1 ]; then
+    mkdir /usb
+    mount /dev/sda1 /usb
+fi
+
 # Execute configuration based on our hostname.
 /opt/`hostname`/bootsync.sh
 
