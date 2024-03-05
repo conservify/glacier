@@ -86,11 +86,14 @@ vim.tcz
 conservify-glacier-tools.tcz
 gpsd-3.25.tcz
 r8152.tcz
+coreutils.tcz
 usbserial.tcz
 libasound.tcz
 modules-6.1.68-piCore.tar.xz
 alsa-modules-6.1.68-piCore-v7.tcz
+ipv6-netfilter-6.1.68-piCore-v7.tcz
 wireguard-6.1.68-piCore-v7.tcz
+wireguard-tools.tcz
 usb-serial-6.1.68-piCore-v7.tcz
 alsa.tcz
 alsa-utils.tcz

@@ -11,8 +11,6 @@ logrotate.tcz
 rsync.tcz
 screen.tcz
 rsync.tcz
-r8152.tcz
-usbserial.tcz
 libelf.tcz
 iptables.tcz
 libacl.tcz
@@ -21,10 +19,13 @@ libevent.tcz
 libcap.tcz
 ntp.tcz
 vim.tcz
+coreutils.tcz
 ca-certificates.tcz
 libasound.tcz
 alsa-modules-6.1.68-piCore-v7.tcz
+ipv6-netfilter-6.1.68-piCore-v7.tcz
 wireguard-6.1.68-piCore-v7.tcz
+wireguard-tools.tcz
 usb-serial-6.1.68-piCore-v7.tcz
 alsa.tcz
 alsa-utils.tcz

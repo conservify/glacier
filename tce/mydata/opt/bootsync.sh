@@ -47,4 +47,7 @@ fi
 # Do background stuff now that everything is ready.
 /opt/bootlocal.sh &
 
+# Bring up wireguard.
+/usr/local/bin/wg-quick up wg0-`hostname`
+
 # eof
