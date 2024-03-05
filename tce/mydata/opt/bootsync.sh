@@ -48,6 +48,7 @@ fi
 /opt/bootlocal.sh &
 
 # Bring up wireguard.
+modprobe -a ipv6 wireguard
 /usr/local/bin/wg-quick up wg0-`hostname`
 
 # eof
