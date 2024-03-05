@@ -1,3 +1,4 @@
+acl.tcz
 acl-dev.tcz
 alsa-modules-6.1.68-piCore-v7.tcz
 alsa.tcz
@@ -13,6 +14,7 @@ compiletc.tcz
 conservify-glacier-tools.tcz
 coreutils.tcz
 curl.tcz
+db.tcz
 diffutils.tcz
 e2fsprogs_base-dev.tcz
 expat2.tcz
@@ -25,6 +27,7 @@ gcc_base-dev.tcz
 gcc_libs-dev.tcz
 gcc_libs.tcz
 gcc.tcz
+gdbm.tcz
 git.tcz
 glib2.tcz
 glibc_add_lib.tcz
@@ -55,6 +58,7 @@ liblzma.tcz
 libmnl.tcz
 libmount-dev.tcz
 libmount.tcz
+libnetfilter_conntrack.tcz
 libnftnl.tcz
 libssh2.tcz
 libtasn1.tcz
@@ -92,7 +96,6 @@ usb-serial-6.1.68-piCore-v7.tcz
 usbserial.tcz
 util-linux_base-dev.tcz
 vim.tcz
-watchdog.tcz
 wireguard-6.1.68-piCore-v7.tcz
 wireguard-tools.tcz
 zlib_base-dev.tcz

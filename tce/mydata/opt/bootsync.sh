@@ -8,12 +8,11 @@ export $(grep -v '^#' /etc/secure.env | xargs)
 
 # Set CPU frequency governor to ondemand (default is performance)
 echo powersave > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-
-chmod 700 /root
-
 echo "169.254.128.129 lodge" >> /etc/hosts
 echo "169.254.128.130 glacier" >> /etc/hosts
 echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+
+chmod 700 /root
 
 # Fix rsyslog configuration and restart the service.
 FILE=/etc/rsyslog.conf.`hostname`
@@ -25,6 +24,7 @@ fi
 pkill rsyslogd && rsyslogd
 pkill crond && crond
 
+# Log environment, debugging.
 env | /usr/bin/logger -t env
 
 # Mount USB drive if we find one.
@@ -36,19 +36,7 @@ fi
 # Execute configuration based on our hostname.
 /opt/`hostname`/bootsync.sh
 
-# Start gpsd if we have a serial device.
-if [ -e /dev/ttyACM0 ]; then
-    gpsd /dev/ttyACM0 2>&1 | /usr/bin/logger -t gpsd &
-fi
-
-# Start time sync
-# ntpd
-
 # Do background stuff now that everything is ready.
 /opt/bootlocal.sh &
-
-# Bring up wireguard.
-modprobe -a ipv6 wireguard
-/usr/local/bin/wg-quick up wg0-`hostname`
 
 # eof
