@@ -83,14 +83,10 @@ godeps:
 	go get github.com/goburrow/modbus
 	go get github.com/jpillora/backoff
 
-$(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz:
-	echo These are made on another Pi.
-	cp packages/r8152.tcz $(BUILD)
-	cp packages/usbserial.tcz $(BUILD)
-	cp packages/logrotate.tcz $(BUILD)
-
-packages: setup $(BUILD)/syncthing.tcz $(BUILD)/conservify-glacier-tools.tcz $(BUILD)/r8152.tcz $(BUILD)/usbserial.tcz $(BUILD)/logrotate.tcz
+packages: setup $(BUILD)/syncthing.tcz $(BUILD)/conservify-glacier-tools.tcz
 	mkdir -p $(EXTENSIONS_CACHE)
+	echo These are made on another Pi.
+	cp packages/*.tcz $(BUILD)
 	cp $(BUILD)/*.tcz $(EXTENSIONS_CACHE)
 	for name in `cat extensions`; do                                                                    \
 		if [ ! -f $(EXTENSIONS_CACHE)/$$name ]; then                                                    \
