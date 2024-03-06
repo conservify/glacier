@@ -41,6 +41,12 @@ def get_dated_path(dir_path):
     stamp = datetime.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4)), 0, 0)
     return DatedPath(dir_path, stamp)
 
+def is_month_directory_or_child(dir_path):
+    m = re.search(r"(\d\d\d\d)(\d\d)", dir_path)
+    if m is None:
+        return False
+    return True
+
 def main():
     parser = argparse.ArgumentParser(description="delete old data directories")
     parser.add_argument("--path", type=str)
@@ -50,10 +56,13 @@ def main():
 
     print(args)
 
+    empty_dirs = []
     total_size = 0
     dated_files = []
     dated_dirs = []
     for dir_path, children, files in os.walk(args.path):
+        if len(files) == 0 and len(children) == 0 and is_month_directory_or_child(dir_path):
+            empty_dirs.append(dir_path)
         dated = get_dated_path(dir_path)
         if dated:
             dir_size = 0
@@ -70,6 +79,11 @@ def main():
 
     dated_dirs = sorted(dated_dirs, key=lambda x: x[0].stamp, reverse=True)
     dated_files = sorted(dated_files, key=lambda x: x[0].stamp, reverse=True)
+
+    for empty_dir in empty_dirs:
+        print(f"deleting {empty_dir} (empty-dir)")
+        if args.force:
+            os.rmdir(empty_dir)
 
     size_after = total_size
     maximum = args.maximum * MB
