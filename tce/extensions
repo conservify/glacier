@@ -89,6 +89,7 @@ readline.tcz
 rsync.tcz
 screen.tcz
 sed.tcz
+sox.tcz
 sqlite3.tcz
 squashfs-tools.tcz
 syncthing.tcz
