@@ -19,8 +19,10 @@ libcap.tcz
 ntp.tcz
 vim.tcz
 coreutils.tcz
+cpulimit.tcz
 ca-certificates.tcz
 libasound.tcz
+sox.tcz
 alsa-modules-6.1.68-piCore-v7.tcz
 ipv6-netfilter-6.1.68-piCore-v7.tcz
 wireguard-6.1.68-piCore-v7.tcz

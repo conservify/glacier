@@ -13,6 +13,7 @@ ca-certificates.tcz
 compiletc.tcz
 conservify-glacier-tools.tcz
 coreutils.tcz
+cpulimit.tcz
 curl.tcz
 db.tcz
 diffutils.tcz
@@ -62,6 +63,7 @@ libnetfilter_conntrack.tcz
 libnftnl.tcz
 libssh2.tcz
 libtasn1.tcz
+libltdl.tcz
 linux-4.9.y_api_headers.tcz
 logrotate.tcz
 lzo.tcz
