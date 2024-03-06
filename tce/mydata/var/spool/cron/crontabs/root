@@ -1,6 +1,6 @@
-*/5              *          *       *       *       /opt/run-parts.sh /etc/periodic/5min
-*/15             *          *       *       *       /opt/run-parts.sh /etc/periodic/15min
-*/20             *          *       *       *       /opt/run-parts.sh /etc/periodic/20min
-*/30             0-5,13-23  *       *       *       /opt/run-parts.sh /etc/periodic/30min
-0                *          *       *       *       /opt/run-parts.sh /etc/periodic/hourly
-0                2          *       *       *       /opt/run-parts.sh /etc/periodic/daily
+*/5              *          *       *       *       /opt/run-parts.sh /etc/periodic/5min   | /usr/bin/logger -t "5m"
+*/15             *          *       *       *       /opt/run-parts.sh /etc/periodic/15min  | /usr/bin/logger -t "15m"
+*/20             *          *       *       *       /opt/run-parts.sh /etc/periodic/20min  | /usr/bin/logger -t "20m"
+*/30             0-5,13-23  *       *       *       /opt/run-parts.sh /etc/periodic/30min  | /usr/bin/logger -t "30m"
+0                *          *       *       *       /opt/run-parts.sh /etc/periodic/hourly | /usr/bin/logger -t "hourly"
+0                2          *       *       *       /opt/run-parts.sh /etc/periodic/daily  | /usr/bin/logger -t "daily"
