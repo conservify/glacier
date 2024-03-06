@@ -1,14 +1,41 @@
 #!/bin/sh
 # -*- mode: sh -*-
 
-# SCRIPT=/opt/`hostname`/restore-networking.sh
-# /app/resilience --action-script "$SCRIPT" --syslog resilience 8.8.8.8 | /usr/bin/logger -t resilience 2>&1
+LAN_TARGET=192.168.5.1
+WAN_TARGET=192.168.5.1
 
-# ping -c 1 25.69.9.148 | /usr/bin/logger -t resilience 2>&1
-# if [ "$?" == 0 ]; then
-#   /usr/bin/logger -t resilience "VPN Good"
-# else
-#   /usr/bin/logger -t resilience "Restarting VPN..."
-#   pkill hamachid
-#   hamachid
-# fi
+function reachable() {
+    IP=$1
+
+    ping -c 1 $IP
+    if [ "$?" == 0 ]; then
+        return 2
+    fi
+
+    ping -c 1 $IP
+    if [ "$?" == 0 ]; then
+        return 2
+    fi
+
+    ping -c 1 $IP
+    if [ "$?" == 0 ]; then
+        return 2
+    fi
+
+    return 0
+}
+
+if reachable $WAN_TARGET; then
+    echo "WAN unreachable"
+
+    if reachable $LAN_TARGET; then
+        echo "LAN unreachable."
+        exit 2
+    else
+        echo "LAN reachable, assuming upstream networking error."
+        exit 0
+    fi
+else
+    echo "WAN reachable."
+    exit 0
+fi
