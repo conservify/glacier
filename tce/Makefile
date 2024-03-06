@@ -39,6 +39,7 @@ $(BUILD)/conservify-glacier-tools.tcz: tools
 	cp -ar mydata/opt/glacier $(TOOLS_ROOT)/opt
 	cp -ar mydata/etc/logrotate.conf $(TOOLS_ROOT)/etc
 	cp -ar mydata/etc/rsyslog.conf.* $(TOOLS_ROOT)/etc
+	chmod 644 $(TOOLS_ROOT)/etc/*.conf
 	mkdir -p $(TOOLS_ROOT)/usr/local/go/lib/time
 	cp $(GOROOT)/lib/time/zoneinfo.zip $(TOOLS_ROOT)/usr/local/go/lib/time
 	mksquashfs $(TOOLS_ROOT) $(BUILD)/conservify-glacier-tools.tcz -b 4k -no-xattrs -noappend
