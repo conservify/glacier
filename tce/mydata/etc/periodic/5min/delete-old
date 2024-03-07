@@ -2,11 +2,11 @@
 # -*- mode: sh -*-
 
 if [ -d /home/tc/card/data/geophone ]; then
-    /home/tc/delete-old.py --path /home/tc/card/data/geophone --maximum 32 --force | /usr/bin/logger -t delete-old
+    nice -19 /home/tc/delete-old.py --path /home/tc/card/data/geophone --maximum 32 --force | /usr/bin/logger -t delete-old
 fi
 
 if [ -d /usb ]; then
-    /home/tc/delete-old.py --path /usb --maximum 2048 --force | /usr/bin/logger -t delete-old
+    nice -19 /home/tc/delete-old.py --path /usb --maximum 2048 --force | /usr/bin/logger -t delete-old
 fi
 
 # eof
