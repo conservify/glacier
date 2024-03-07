@@ -20,9 +20,16 @@ def block_for_new_minute():
     return datetime.datetime.now()
 
 
+def consume_child_procs(children):
+    for proc in children:
+        code = proc.poll()
+        if code is not None:
+            children.remove(proc)
+
 def main():
     parser = argparse.ArgumentParser(description="delete old data directories")
     parser.add_argument("--path", type=str)
+    parser.add_argument("--done", type=str)
     args = parser.parse_args()
 
     device_number = find_device_number()
@@ -34,6 +41,8 @@ def main():
 
     block_for_new_minute()
 
+    running_procs = []
+
     while True:
         now = datetime.datetime.now()
         relative = now.strftime('%Y%m/%d/%H')
@@ -41,9 +50,14 @@ def main():
         path = args.path + "/" + relative
         print(now, path)
         pathlib.Path(path).mkdir(parents=True, exist_ok=True)
-        completed = subprocess.run(["arecord", "-D", device, "-d", "60", "-f", "S32_LE", "-c", "3", path + "/" + fn])
-        if completed.returncode != 0:
+        full_path = path + "/" + fn
+        completed = subprocess.run(["arecord", "-D", device, "-d", "60", "-f", "S32_LE", "-c", "3", full_path])
+        consume_child_procs(running_procs)
+        if completed.returncode == 0:
+            running_procs.append(subprocess.Popen([args.done, full_path]))
+        else:
             time.sleep(1)
+
 
 if __name__ == '__main__':
     main()
