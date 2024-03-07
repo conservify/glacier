@@ -1,6 +1,6 @@
 #!/bin/bash
 
-while /bin/true; done
+while /bin/true; do
     /home/tc/geophone.py "$@" 2>&1 | /usr/bin/logger -t geophone
 
     sleep 1

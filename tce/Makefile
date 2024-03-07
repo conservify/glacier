@@ -11,24 +11,18 @@ PI_CORE_VERSION = 14.1.0
 all: images
 
 setup:
-	mkdir -p $(TOOLS_ROOT)/app
+	mkdir -p $(TOOLS_ROOT)/home/tc
 
 image-setup: setup
 	sudo losetup -D
 
-$(TOOLS_ROOT)/app/tunneller: ../tunneller/*.go
+$(TOOLS_ROOT)/home/tc/uploader: ../uploader/*.go
 	$(GO) build -o $@ $^
 
-$(TOOLS_ROOT)/app/resilience: ../resilience/*.go
+$(TOOLS_ROOT)/home/tc/morningstar: ../morningstar/morningstar.go
 	$(GO) build -o $@ $^
 
-$(TOOLS_ROOT)/app/uploader: ../uploader/*.go
-	$(GO) build -o $@ $^
-
-$(TOOLS_ROOT)/app/morningstar: ../morningstar/morningstar.go
-	$(GO) build -o $@ $^
-
-tools: setup $(TOOLS_ROOT)/app/tunneller $(TOOLS_ROOT)/app/resilience $(TOOLS_ROOT)/app/uploader $(TOOLS_ROOT)/app/morningstar 
+tools: setup $(TOOLS_ROOT)/home/tc/uploader $(TOOLS_ROOT)/home/tc/morningstar 
 
 $(BUILD)/conservify-glacier-tools.tcz: tools
 	mkdir -p $(TOOLS_ROOT)/etc
@@ -78,8 +72,6 @@ godeps:
 	go get github.com/tatsushid/go-fastping
 	go get github.com/fsnotify/fsnotify
 	go get golang.org/x/sys/...
-	go get github.com/docker/docker/api
-	go get github.com/docker/docker/client
 	go get github.com/nlopes/slack
 	go get github.com/goburrow/modbus
 	go get github.com/jpillora/backoff
@@ -119,7 +111,7 @@ $(BUILD)/card0.gz $(BUILD)/card1.gz: piCore-$(PI_CORE_VERSION).img
 $(BUILD)/card0-lodge.gz $(BUILD)/card0-glacier.gz $(BUILD)/card1-both.gz: image-setup $(BUILD)/card0.gz $(BUILD)/card1.gz $(BUILD)/mydata.tgz packages
 	bash create-image.sh
 
-$(BUILD)/lodge.img: $(BUILD)/card0-lodge.gz $(BUILD)/card0-glacier.gz $(BUILD)/card1-both.gz
+$(BUILD)/lodge.img: $(BUILD)/card0-lodge.gz $(BUILD)/card1-both.gz
 	./partition-image.sh $(BUILD)/lodge.img
 	./fill-partition.sh $(BUILD)/lodge.img "W95" $(BUILD)/card0-lodge.gz "sudo mkfs.vfat"
 	./fill-partition.sh $(BUILD)/lodge.img "Linux" $(BUILD)/card1-both.gz "sudo mkfs.ext4"
