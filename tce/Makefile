@@ -36,6 +36,7 @@ $(BUILD)/conservify-glacier-tools.tcz: tools
 	chmod 644 $(TOOLS_ROOT)/etc/*.conf
 	mkdir -p $(TOOLS_ROOT)/usr/local/go/lib/time
 	cp $(GOROOT)/lib/time/zoneinfo.zip $(TOOLS_ROOT)/usr/local/go/lib/time
+	sudo chown 1001.50 -R $(TOOLS_ROOT)/home/tc
 	mksquashfs $(TOOLS_ROOT) $(BUILD)/conservify-glacier-tools.tcz -b 4k -no-xattrs -noappend
 	find $(TOOLS_ROOT)
 
