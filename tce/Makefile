@@ -34,6 +34,7 @@ $(BUILD)/conservify-glacier-tools.tcz: tools
 	cp -ar mydata/etc/logrotate.conf $(TOOLS_ROOT)/etc
 	cp -ar mydata/etc/rsyslog.conf.* $(TOOLS_ROOT)/etc
 	chmod 644 $(TOOLS_ROOT)/etc/*.conf
+	sudo chown 0.0 $(TOOLS_ROOT)/etc/*.conf
 	mkdir -p $(TOOLS_ROOT)/usr/local/go/lib/time
 	cp $(GOROOT)/lib/time/zoneinfo.zip $(TOOLS_ROOT)/usr/local/go/lib/time
 	sudo chown 1001.50 -R $(TOOLS_ROOT)/home/tc
@@ -51,6 +52,7 @@ $(BUILD)/mydata.tgz: setup
 	# chmod 600 $(MYDATA_ROOT)/home/tc/.ssh/id_rsa
 	# chmod 644 $(MYDATA_ROOT)/home/tc/.ssh/id_rsa.pub
 	chmod 644 $(MYDATA_ROOT)/home/tc/.ssh/authorized_keys
+	sudo chown 0.0 -R $(MYDATA_ROOT)/etc
 	sudo chown 1001.50 -R $(MYDATA_ROOT)/home/tc
 
 	mkdir $(MYDATA_ROOT)/root/.ssh -p
