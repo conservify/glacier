@@ -13,10 +13,10 @@ echo "169.254.128.130 glacier" >> /etc/hosts
 echo "nameserver 1.1.1.1" >> /etc/resolv.conf
 
 chmod 700 /root
-chown -R 0.0 /etc/*.conf
-chown -R 0.0 /etc/rsyslog.*
-chown -R 0.0 /etc/periodic
-chown -R 0.0 /etc/wireguard
+chown -R 0:0 /etc/*.conf
+chown -R 0:0 /etc/rsyslog.*
+chown -R 0:0 /etc/periodic
+chown -R 0:0 /etc/wireguard
 
 # Fix rsyslog configuration and restart the service.
 FILE=/etc/rsyslog.conf.`hostname`

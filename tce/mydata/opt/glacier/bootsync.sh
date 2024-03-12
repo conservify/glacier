@@ -12,8 +12,8 @@ mkdir -p $DATA
 mkdir -p $DATA/config/syncthing
 mkdir -p /home/tc/.local/state
 ln -sf $DATA/config/syncthing /home/tc/.local/state/syncthing
-chown -R tc. /home/tc/.local
-chown -R tc. $DATA
+chown -R tc: /home/tc/.local
+chown -R tc: $DATA
 
 # This will not overwrite if a key and identity is already there.
 /opt/syncthing/syncthing generate
