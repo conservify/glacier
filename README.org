@@ -32,11 +32,6 @@ the "lodge" station houses the internet communications.
       
       See 'Software' section for a description of the operating system and daemons/services/etc...
 
-***** External USB HDD
-      http://wdlabs.wd.com/products/wd-pidrive-berryboot-edition/
-      
-      Provides 1TB of extra storage.
-
 ***** USB To Ethernet Adapter
       Provides two extra USB ports as well as the Ethernet port for the Proxim.
 
@@ -58,14 +53,6 @@ the "lodge" station houses the internet communications.
 ***** Power Control Board
       This board is used to turn on/off external devices, specifically the Proxim and the Internet (via a Relay)
       The schematics and PCB for this board are in the ~hardware/power-control~ directory. These can be ordered from OshPark.
-
-***** RockBlock+ and USB to RS232 Adapter
-      http://www.rock7mobile.com/products-rockblock-plus
-
-      This is used for emergency communications and status updates when there is
-      no connectivity. It is wired to the Pi directly, now. Eventually the plan
-      was to introduce a MCU that's always powered and could possibly trigger
-      restarts, etc...
 
 ***** Proxim Wireless Station
       http://www.proxim.com/products/point-to-multipoint/tsunami-mp-10100-series
@@ -91,10 +78,6 @@ the "lodge" station houses the internet communications.
       late to get that in.
 
 ** Software
-***** Tunneller:
-      1) SSH - provides a backup SSH mechanism, allowing a user to ssh to a local port on the AWS server to ssh to the station.
-      2) rsyslog - forwards rsyslog messages to the AWS server.
-
 ***** Scheduled ~cron~ jobs:
       | Schedule         | Name           | Task                                                                      |
       |------------------+----------------+---------------------------------------------------------------------------|
@@ -105,7 +88,6 @@ the "lodge" station houses the internet communications.
       | 5min             | status         | Log disk status and uptime information.                                   |
       | 5min             | local-backup   | Copy archived data to the external HDD.                                   |
       | 5min             | glacier-logs   | Copy glacier logs to the lodge.                                           |
-      | 7,17,27,37,47,57 | offsite-backup | Backup glacier data to the lodge.                                         |
 
 * Glacier
   The Glacier station houses the Geophone and other sensors itself and transmits
@@ -125,11 +107,6 @@ the "lodge" station houses the internet communications.
       https://www.amazon.com/Raspberry-Pi-RASPBERRYPI3-MODB-1GB-Model-Motherboard/dp/B01CD5VC92/ref=sr_1_1
       
       See 'Software' section for a description of the operating system and daemons/services/etc...
-
-***** External USB HDD
-      http://wdlabs.wd.com/products/wd-pidrive-berryboot-edition/
-      
-      Provides 1TB of extra storage.
 
 ***** USB To Ethernet Adapter
       Provides two extra USB ports as well as the Ethernet port for the Proxim.
@@ -151,18 +128,6 @@ the "lodge" station houses the internet communications.
       4) 1 Adjustable Regulator (set to 15V for the Geophone) 
          https://www.pololu.com/product/2573
 
-***** Power Control Board
-      This board is used to turn on/off external devices, specifically the Proxim and the Internet (via a Relay)
-      The schematics and PCB for this board are in the ~hardware/power-control~ directory.
-
-***** RockBlock+ and USB to RS232 Adapter
-      http://www.rock7mobile.com/products-rockblock-plus
-      
-      This is used for emergency communications and status updates when there is
-      no connectivity. It is wired to the Pi directly, now. Eventually the plan
-      was to introduce a MCU that's always powered and could possibly trigger
-      restarts, etc...
-
 ***** Proxim Wireless Station
       http://www.proxim.com/products/point-to-multipoint/tsunami-mp-10100-series
       
@@ -173,18 +138,7 @@ the "lodge" station houses the internet communications.
 
 ***** Batteries (x15)
 
-***** Obsidian Accelerometer
-      https://kinemetrics.com/post_products/obsidian-4x/
-
-      Powered via one of the 2A 12V regulators.
-
 ** Software
-***** Tunneller:
-      1) SSH - provides a backup SSH mechanism, allowing a user to ssh to a local port on the AWS server to ssh to the station.
-
-***** adc 
-      Communicates with the Geophone, saving the raw incoming data.
-
 ***** uploader
       Monitors for incoming data, uploads the files, and then archives them.
 
@@ -202,7 +156,7 @@ the "lodge" station houses the internet communications.
 
 * Operating System
   Each of the Raspberry Pi's is running an instance of Tiny Core Linux
-  (piCore-9.0.03) Tiny Core Linux is specifically designed for embedded
+  (piCore-14.1.0) Tiny Core Linux is specifically designed for embedded
   situations where reliability is important. Key features include:
 
   1) Low memory (runtime and physical) 
@@ -230,23 +184,6 @@ the "lodge" station houses the internet communications.
    | 169.254.128.131 | Lodge Proxim IP             |
    | 169.254.128.132 | Glacier Proxim IP           |
    | 169.254.127.130 | Glacier Obsidian Network IP |
-   | 169.254.127.129 | Obsidian IP                 |
-
-** Additional Drivers 
-   These drivers had software packages were included on top of the base piCore image:
-
-   | Driver                       | Purpose                                                 |
-   |------------------------------+---------------------------------------------------------|
-   | pl2303.tcz                   | USB <-> RS232 Cable Driver                              |
-   | r8152.tcz                    | USB <-> Ethernet Adapter Driver                         |
-   | usbserial.tcz                | USB <-> UART Cable Driver                               |
-   | logrotate.tcz                | Binaries for logrotate (configuration is in ~tce~)      |
-   | logmein-hamachi.tgz          | Binaries for Hamachi VPN                                |
-   | rsyslog.tcz                  | Binaries for rsyslog (see below)                        |
-   | libestr.tcz                  | rsyslog dependency                                      |
-   | libfastjson.tcz              | rsyslog dependency                                      |
-   | liblogging.tgz               | rsyslog dependency                                      |
-   | conservify-glacier-tools.tcz | Tools binaries in /app (morningstar, resilience, etc..) |
 
 ** Startup
    Startup is controlled via ~/opt/bootlocal.sh~ and ~/opt/bootsync.sh~ like any
@@ -276,7 +213,8 @@ the "lodge" station houses the internet communications.
    configuration is available there as well.
 
 * Monitoring AWS Server
-  Can be a small instance, even free tier. This is only used to aggregate logs for monitoring and serve as a location for backup SSH tunnels to originate.
+  Can be a small instance, even free tier. This is only used to aggregate logs
+  for monitoring and serve as a location for backup SSH tunnels to originate.
   
 * Proxim Wireless
 ** Power
