@@ -1,0 +1,6 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+"H1, H2, H3, H4",MountingHole_3.2mm_M3,4,MountingHole,
+"J1, J3, J6",BarrelJack_Horizontal,3,Conn_01x02_Socket,
+"J10, J7, J8, J9",RJ45_Amphenol_54602-x08_Horizontal,4,RJ45,
+U1,Pololu_VReg_U3V50AHV,1,Pololu_VReg_U3V50AHV,
+U2,Pololu_VReg_D36V50F,1,Pololu_VReg_D36V50F,
